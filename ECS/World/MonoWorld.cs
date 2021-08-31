@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,6 +10,7 @@ namespace GDG.ECS
     {
         public UnityAction awake=null;
         public UnityAction start=null;
+        public UnityAction ongui = null;
         public UnityAction update=null;
         public UnityAction fixedUpdate=null;
         public UnityAction lateUpdate=null;
@@ -18,6 +20,7 @@ namespace GDG.ECS
         public UnityAction proxyConvertExcute = null;
         void Awake() { if (awake != null) awake(); }
         void Start() { if (start != null) start(); if (proxyConvertExcute != null) proxyConvertExcute(); }
+        void OnGUI() { if (ongui != null) ongui(); }
         void Update() { if (update != null) update(); }
         void FixedUpdate() { if (fixedUpdate != null) fixedUpdate(); }
         void LateUpdate() { if (lateUpdate != null) lateUpdate(); }
@@ -44,6 +47,10 @@ namespace GDG.ECS
                     if (isAdd) proxyConvertExcute += fun;
                     else proxyConvertExcute -= fun;
                     break;
+                case "OnGUI":
+                    if (isAdd) ongui += fun;
+                    else ongui -= fun;
+                    break;
                 case "Update":
                     if (isAdd) update += fun;
                     else update -= fun;
@@ -69,6 +76,16 @@ namespace GDG.ECS
                     else destroy -= fun;
                     break;
             }
+        }
+        public void StartTimer(Action callback,float secondTime)
+        {
+            StartCoroutine(Timer(callback,secondTime));
+        }
+        private IEnumerator Timer(Action callback,float secondTime)
+        {
+            yield return new WaitForSeconds(secondTime);
+            if(callback!=null)
+                callback();
         }
     }
 }

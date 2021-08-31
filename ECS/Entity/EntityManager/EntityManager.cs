@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using GDG.ModuleManager;
+using GDG.Utils;
+
 namespace GDG.ECS
 {
     public class EntityManager : IEntityCreateable, IEntityDestoryable, IEntityRecyclable
@@ -31,32 +33,44 @@ namespace GDG.ECS
             m_TypeId2IndexMapping = new Dictionary<uint, List<ulong>>();
             m_ActivedEntityList = new List<AbsEntity>();//活跃实体列表，供世界使用
         }
-        private AbsEntity CreateEntity(uint typeId)
+        public AbsEntity CreateEntity(uint typeId)
         {
-            AddTypeId2EntityPoolMapping(typeId, out EntityPool entityPool,(entityPool)=>{});
-            var entity = entityPool.PopEntity((obj)=>{},(obj)=>{});
-            m_Index2EnityMapping.Add(entity.Index, entity);
-            m_ActivedEntityList.Add(entity);
+            AddTypeId2EntityPoolMapping(typeId, out EntityPool entityPool, (entityPool) => { }, (entityPool) => { });
+            var entity = entityPool.PopEntity((obj) => { }, (obj) => { });
+    
+            if (!m_Index2EnityMapping.ContainsKey(entity.Index))
+                m_Index2EnityMapping.Add(entity.Index, entity);
+            if (!m_ActivedEntityList.Contains(entity))
+                m_ActivedEntityList.Add(entity);
 
             BaseWorld.Instance.UpdateEntitiesOfSystems(m_ActivedEntityList);
 
             return entity;
         }
-        public T CreateEntity<T>() where T : AbsEntity => CreateEntity(0) as T;
-        public Entity CreateEntity() => CreateEntity(0) as Entity;
-        public GameEntity CreateGameEntity(bool isCreateGameObject = true)
+        public T CreateEntity<T>(uint typeId = 0) where T : AbsEntity
         {
-            AddTypeId2EntityPoolMapping(0, out EntityPool entityPool,(entityPool)=>{});
-            var entity = entityPool.PopEntity<GameEntity>((gameEntity) => { gameEntity.isCreateGameObject = isCreateGameObject; },(obj)=>{});
-            m_Index2EnityMapping.Add(entity.Index, entity);
-            m_ActivedEntityList.Add(entity);
+            if (typeof(T) == typeof(GameEntity))
+            {
+                return CreateGameEntity(typeId) as T;
+            }
+            return CreateEntity(typeId) as T;
+        }
+        public GameEntity CreateGameEntity(uint typeId = 0, bool isCreateGameObject = true)
+        {
+            AddTypeId2EntityPoolMapping(typeId, out EntityPool entityPool, (entityPool) => { }, (entityPool) => { });
+            var entity = entityPool.PopEntity<GameEntity>((gameEntity) => { gameEntity.isCreateGameObject = isCreateGameObject; }, (obj) => { });
+            
+            if (!m_Index2EnityMapping.ContainsKey(entity.Index))
+                m_Index2EnityMapping.Add(entity.Index, entity);
+            if (!m_ActivedEntityList.Contains(entity))
+                m_ActivedEntityList.Add(entity);
 
             BaseWorld.Instance.UpdateEntitiesOfSystems(m_ActivedEntityList);
             return entity;
         }
-        public void RecycleEntity(AbsEntity entity) 
+        public void RecycleEntity(AbsEntity entity)
         {
-            AddTypeId2EntityPoolMapping(entity.TypeId, out EntityPool entityPool, (pool) => { pool.PushEntity(entity,(obj)=>{}); });
+            AddTypeId2EntityPoolMapping(entity.TypeId, out EntityPool entityPool, (pool) => { pool.PushEntity(entity); }, (pool) => { pool.PushEntity(entity); });
             m_ActivedEntityList.Remove(entity);
             BaseWorld.Instance.UpdateEntitiesOfSystems(m_ActivedEntityList);
         }
@@ -66,7 +80,7 @@ namespace GDG.ECS
             RemoveTypeId2IndexMapping(entity.TypeId, entity.Index, () => { });
             RemoveIndex2EnityMapping(entity.Index, () => { });
             m_ActivedEntityList.Remove(entity);
-            
+
             BaseWorld.Instance.UpdateEntitiesOfSystems(m_ActivedEntityList);
 
             entity.OnDestroy();
@@ -99,7 +113,7 @@ namespace GDG.ECS
         }
         public bool TrySelectEntitiesWithTypeId<T>(uint typeId, out List<T> resultList) where T : AbsEntity
         {
-            var indexList =  GetEntityIndexesWithTypeId(typeId);
+            var indexList = GetEntityIndexesWithTypeId(typeId);
             List<T> entityList = new List<T>();
             foreach (var index in indexList)
             {
@@ -158,7 +172,7 @@ namespace GDG.ECS
         }
         public List<AbsEntity> SelectEntitiesWithTypeId(uint typeId)
         {
-            var indexList =  GetEntityIndexesWithTypeId(typeId);
+            var indexList = GetEntityIndexesWithTypeId(typeId);
             List<AbsEntity> entityList = new List<AbsEntity>();
             foreach (var index in indexList)
             {
@@ -178,7 +192,7 @@ namespace GDG.ECS
         public List<AbsEntity> SelectActivedEntitiesWithTypeId(uint typeId)
         {
             var indexList = GetEntityIndexesWithTypeId(typeId);
-            if(indexList==null) 
+            if (indexList == null)
                 return null;
             List<AbsEntity> entityList = new List<AbsEntity>();
             foreach (var index in indexList)
@@ -198,18 +212,20 @@ namespace GDG.ECS
         {
             if (!entity.IsActived)
             {
-                LogManager.Instance.ConsoleLogError("Illegal Operation! Entity is IsActived");
+                LogManager.Instance.LogError("Illegal Operation! Entity is IsActived");
                 return null;
             }
 
             AddComponentTypes(entity, componentTypes);
             return entity.Components;
         }
-        public T AddComponent<T>(AbsEntity entity) where T : IComponentData
+        public T AddComponent<T>(AbsEntity entity) where T : IComponentData, new()
         {
+            // ComponentTypes type = new ComponentTypes(typeof(T));
+            // GDGLogger.LogWarning(type.TypeId);
             if (!entity.IsActived)
             {
-                LogManager.Instance.ConsoleLogError("Illegal Operation! Entity is IsActived");
+                LogManager.Instance.LogError("Illegal Operation! Entity is IsActived");
                 return default(T);
             }
             return AddComponentTypes<T>(entity);
@@ -218,7 +234,7 @@ namespace GDG.ECS
         {
             if (!entity.IsActived)
             {
-                LogManager.Instance.ConsoleLogError("Illegal Operation! Entity is IsActived");
+                LogManager.Instance.LogError("Illegal Operation! Entity is IsActived");
                 return false;
             }
             return RemoveComponentTypes(entity, componentTypes);
@@ -227,22 +243,22 @@ namespace GDG.ECS
         {
             if (!entity.IsActived)
             {
-                LogManager.Instance.ConsoleLogError("Illegal Operation! Entity is IsActived");
+                LogManager.Instance.LogError("Illegal Operation! Entity is IsActived");
                 return false;
             }
             return RemoveComponentTypes<T>(entity);
         }
-        public void SetComponentData<T>(Entity entity,T component)where T:IComponentData
+        public void SetComponentData<T>(Entity entity, T component) where T : IComponentData
         {
             foreach (var item in entity.Components)
             {
-                if(item is T tempComponent)
+                if (item is T tempComponent)
                 {
                     tempComponent = component;
                     return;
                 }
             }
-            LogManager.Instance.ConsoleLogError($"Entity doesn't exist Component!Index:{entity.Index}, Component:{typeof(T)}");
+            LogManager.Instance.LogError($"Entity doesn't exist Component!Index:{entity.Index}, Component:{typeof(T)}");
         }
         #region detail
         internal uint GetTypeId(ComponentTypes componentTypes)
@@ -252,7 +268,7 @@ namespace GDG.ECS
                 if (item.Count != componentTypes.Count)
                     continue;
 
-                if(item.Equals(componentTypes))
+                if (item.Equals(componentTypes))
                 {
                     return item.TypeId;
                 }
@@ -261,25 +277,27 @@ namespace GDG.ECS
         }
         internal uint RequestTypeId(ComponentTypes componentTypes)
         {
-            if(componentTypes.Count==0)
+            if (componentTypes.Count == 0)
                 return 0;
             componentTypes.SetTypeId(++maxTypeId);
             m_TypeId2ComponentTypeMapping.Add(componentTypes.TypeId, componentTypes);
             return componentTypes.TypeId;
         }
-        internal bool AddTypeId2EntityPoolMapping(uint typeId,out EntityPool entityPool,Action<EntityPool> sucessCallback)
+        internal bool AddTypeId2EntityPoolMapping(uint typeId, out EntityPool entityPool, Action<EntityPool> sucessCallback, Action<EntityPool> failedCallback)
         {
             if (!m_TypeId2EntityPoolMapping.TryGetValue(typeId, out EntityPool outEntityPool))
             {
                 entityPool = new EntityPool();
+                entityPool.typeId = typeId;
                 m_TypeId2EntityPoolMapping.Add(typeId, entityPool);
                 sucessCallback(entityPool);
                 return true;
             }
-            entityPool = m_TypeId2EntityPoolMapping[typeId];
+            entityPool = outEntityPool;
+            failedCallback(entityPool);
             return false;
         }
-        internal bool RemoveTypeId2EntityPoolMapping(uint typeId,Action sucessCallback)
+        internal bool RemoveTypeId2EntityPoolMapping(uint typeId, Action sucessCallback)
         {
             if (m_TypeId2EntityPoolMapping.TryGetValue(typeId, out EntityPool outEntityPool))
             {
@@ -289,7 +307,7 @@ namespace GDG.ECS
             }
             return false;
         }
-        internal bool AddIndex2EnityMapping(ulong typeId, AbsEntity entity,Action<AbsEntity> sucessCallback)
+        internal bool AddIndex2EnityMapping(ulong typeId, AbsEntity entity, Action<AbsEntity> sucessCallback)
         {
             if (!m_Index2EnityMapping.TryGetValue(typeId, out AbsEntity outEntity))
             {
@@ -299,7 +317,7 @@ namespace GDG.ECS
             }
             return false;
         }
-        internal bool RemoveIndex2EnityMapping(ulong typeId,Action sucessCallback)
+        internal bool RemoveIndex2EnityMapping(ulong typeId, Action sucessCallback)
         {
             if (m_Index2EnityMapping.TryGetValue(typeId, out AbsEntity outentity))
             {
@@ -311,42 +329,42 @@ namespace GDG.ECS
         }
         internal ComponentTypes GetComponentTypesWithTypeId(uint typeId)
         {
-            if(!m_TypeId2ComponentTypeMapping.TryGetValue(typeId,out ComponentTypes outComponentTypes))
+            if (!m_TypeId2ComponentTypeMapping.TryGetValue(typeId, out ComponentTypes outComponentTypes))
             {
-                LogManager.Instance.ConsoleLogError($"Get ComponentTypes failed ! TypeId can't be found , TypeId:{typeId}");
+                LogManager.Instance.LogError($"Get ComponentTypes failed ! TypeId can't be found , TypeId:{typeId}");
             }
             return outComponentTypes;
         }
         internal List<ulong> GetEntityIndexesWithTypeId(uint typeId)
         {
-            if(!m_TypeId2IndexMapping.TryGetValue(typeId,out List<ulong> indexList))
+            if (!m_TypeId2IndexMapping.TryGetValue(typeId, out List<ulong> indexList))
             {
-                LogManager.Instance.ConsoleLogError($"Get EntityIndexes failed ! TypeId can't be found , TypeId:{typeId}");
+                LogManager.Instance.LogError($"Get EntityIndexes failed ! TypeId can't be found , TypeId:{typeId}");
             }
             return indexList;
         }
-        internal bool RemoveTypeId2IndexMapping(uint typeId,ulong index,Action sucessCallback)
+        internal bool RemoveTypeId2IndexMapping(uint typeId, ulong index, Action sucessCallback)
         {
-            if(m_TypeId2IndexMapping.TryGetValue(typeId,out List<ulong> indexList))
+            if (m_TypeId2IndexMapping.TryGetValue(typeId, out List<ulong> indexList))
             {
-                if(m_TypeId2IndexMapping[typeId].Contains(index))
+                if (m_TypeId2IndexMapping[typeId].Contains(index))
                 {
                     m_TypeId2IndexMapping[typeId].Remove(index);
                     sucessCallback();
-                }   
+                }
                 else
                 {
-                    LogManager.Instance.ConsoleLogError($"Remove index failed ! Index can't be found , Index:{index}");
+                    LogManager.Instance.LogError($"Remove index failed ! Index can't be found , Index:{index}");
                     return false;
                 }
                 return true;
             }
             return false;
         }
-        internal bool RemoveTypeId2ComponentTypeMapping(uint typeId,Action<ComponentTypes> sucessCallback)
+        internal bool RemoveTypeId2ComponentTypeMapping(uint typeId, Action<ComponentTypes> sucessCallback)
         {
 
-            if(m_TypeId2ComponentTypeMapping.TryGetValue(typeId,out ComponentTypes outComponentTypes))
+            if (m_TypeId2ComponentTypeMapping.TryGetValue(typeId, out ComponentTypes outComponentTypes))
             {
                 m_TypeId2ComponentTypeMapping.Remove(typeId);
                 sucessCallback(outComponentTypes);
@@ -354,34 +372,34 @@ namespace GDG.ECS
             }
             return false;
         }
-        internal bool AddTypeId2IndexMapping(uint typeId,ulong index,Action sucessCallback)
+        internal bool AddTypeId2IndexMapping(uint typeId, ulong index, Action sucessCallback)
         {
-            if(m_TypeId2IndexMapping.TryGetValue(typeId,out List<ulong> indexList))
+            if (m_TypeId2IndexMapping.TryGetValue(typeId, out List<ulong> indexList))
             {
-                if(!m_TypeId2IndexMapping[typeId].Contains(index))
+                if (!m_TypeId2IndexMapping[typeId].Contains(index))
                 {
                     m_TypeId2IndexMapping[typeId].Add(index);
                     sucessCallback();
                 }
                 else
                 {
-                    LogManager.Instance.ConsoleLogError($"Add index failed ! Index is repeated , Index:{index}");
+                    LogManager.Instance.LogError($"Add index failed ! Index is repeated , Index:{index}");
                     return false;
                 }
                 return true;
             }
             else
             {
-                m_TypeId2IndexMapping.Add(typeId, new List<ulong>(){index});
+                m_TypeId2IndexMapping.Add(typeId, new List<ulong>() { index });
                 sucessCallback();
             }
             return false;
         }
-        internal bool AddTypeId2ComponentTypeMapping(uint typeId,ComponentTypes componentTypes,Action<ComponentTypes> sucessCallback)
+        internal bool AddTypeId2ComponentTypeMapping(uint typeId, ComponentTypes componentTypes, Action<ComponentTypes> sucessCallback)
         {
-            if(!m_TypeId2ComponentTypeMapping.TryGetValue(typeId,out ComponentTypes outComponentTypes))
+            if (!m_TypeId2ComponentTypeMapping.TryGetValue(typeId, out ComponentTypes outComponentTypes))
             {
-                m_TypeId2ComponentTypeMapping.Add(typeId,componentTypes);
+                m_TypeId2ComponentTypeMapping.Add(typeId, componentTypes);
                 sucessCallback(componentTypes);
                 return true;
             }
@@ -390,26 +408,26 @@ namespace GDG.ECS
         //实体组件类型在字典中的引用对实体引用计数-1，只用于对实体组件的修改件之前以及实体的销毁时使用
         private bool EntityRefCountDecrementOne(AbsEntity entity)
         {
-            if(entity.TypeId==0 || entity.Components.Count==0)
+            if (entity.TypeId == 0 || entity.Components.Count == 0)
                 return false;
             ComponentTypes tempComponentTypes;
-            if(m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId,out tempComponentTypes))
+            if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out tempComponentTypes))
             {
                 tempComponentTypes.SetEntityRefCount(tempComponentTypes.EntityRefCount - 1 < 0 ? 0 : tempComponentTypes.EntityRefCount - 1);//引用自减1
                 RemoveTypeId2IndexMapping(entity.TypeId, entity.Index, () => { });
 
                 //引用计数为0，且不存在引用该组件的系统时移除该组件
-                if (tempComponentTypes.EntityRefCount <= 0 )
+                if (tempComponentTypes.EntityRefCount <= 0)
                 {
                     tempComponentTypes.SetTypeId(0);//设置为未申请
-                    if(m_TypeId2IndexMapping.Remove(entity.TypeId))//清空该组件对实体的映射
-                        LogManager.Instance.ConsoleLogError($"Remove entity failed ! Can't Find TypeId to Index Mapping:TypeId:{entity.TypeId},ComponentTypes:{entity.Index}");
+                    if (m_TypeId2IndexMapping.Remove(entity.TypeId))//清空该组件对实体的映射
+                        LogManager.Instance.LogError($"Remove entity failed ! Can't Find TypeId to Index Mapping:TypeId:{entity.TypeId},ComponentTypes:{entity.Index}");
                     m_TypeId2ComponentTypeMapping.Remove(entity.TypeId);//清空该typeId对组件的映射
                 }
                 return true;
             }
             else
-                LogManager.Instance.ConsoleLogError($"Remove component failed ! Can't Find ComponentTypes in World ! TypeId:{entity.TypeId}");
+                LogManager.Instance.LogError($"Remove component failed ! Can't Find ComponentTypes in World ! TypeId:{entity.TypeId}");
             return false;
         }
         private ComponentTypes AddComponentTypes(AbsEntity entity, ComponentTypes componentTypes)
@@ -420,7 +438,7 @@ namespace GDG.ECS
             var typeId = componentTypes.TypeId;
             List<Type> types = new List<Type>();
             //添加组件
-            foreach(var item in componentTypes)
+            foreach (var item in componentTypes)
             {
                 entity.AddComponentToList(Activator.CreateInstance(item) as IComponentData);
             }
@@ -435,18 +453,18 @@ namespace GDG.ECS
             //如果未已向世界申请
             if (!afterTypes.IsRequested)
             {
-                LogManager.Instance.ConsoleLogError($"Add component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
+                LogManager.Instance.LogError($"Add component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
                 return afterTypes;
             }
             entity.SetTypeId(afterTypes.TypeId);
             ComponentTypes outComponentTypes;
             //如果存在映射
-            if(m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId,out outComponentTypes))
+            if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out outComponentTypes))
             {
                 outComponentTypes.SetEntityRefCount(outComponentTypes.EntityRefCount + 1);
                 return outComponentTypes;
             }
-            LogManager.Instance.ConsoleLogError($"Add component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
+            LogManager.Instance.LogError($"Add component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
             return null;
         }
         private bool RemoveComponentTypes(AbsEntity entity, ComponentTypes componentTypes)
@@ -460,15 +478,15 @@ namespace GDG.ECS
             //遍历移除实体组件
             var componentList = entity.Components;
             List<Type> types = new List<Type>();
-            for (int i = componentList.Count-1; i>=0; i--)
+            for (int i = componentList.Count - 1; i >= 0; i--)
             {
-                foreach(var item in componentTypes)
+                foreach (var item in componentTypes)
                 {
-                    if(componentList[i].GetType() == item)
+                    if (componentList[i].GetType() == item)
                     {
-                        if(!entity.RemoveComponentToList(componentList[i]))
+                        if (!entity.RemoveComponentToList(componentList[i]))
                         {
-                            LogManager.Instance.ConsoleLogError($"Remove component failed ! Can't Find Component in Entity !Entity.Index:{index}");
+                            LogManager.Instance.LogError($"Remove component failed ! Can't Find Component in Entity !Entity.Index:{index}");
                             return false;
                         }
                         continue;
@@ -478,22 +496,22 @@ namespace GDG.ECS
             }
             ComponentTypes afterTypes = new ComponentTypes(types.ToArray());
 
-            if(afterTypes.IsRequested)
+            if (afterTypes.IsRequested)
             {
-                LogManager.Instance.ConsoleLogError($"Remove component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
+                LogManager.Instance.LogError($"Remove component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
                 return false;
             }
             entity.SetTypeId(afterTypes.TypeId);
             //如果存在映射
-            if(m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId,out outComponentTypes))
+            if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out outComponentTypes))
             {
                 outComponentTypes.SetEntityRefCount(afterTypes.EntityRefCount + 1);//对之后的组件引用计数+1
                 return true;
             }
-            LogManager.Instance.ConsoleLogError($"Remove component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
+            LogManager.Instance.LogError($"Remove component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
             return true;
         }
-        private T AddComponentTypes<T>(AbsEntity entity) where T:IComponentData
+        private T AddComponentTypes<T>(AbsEntity entity) where T : IComponentData
         {
             //添加之前
             EntityRefCountDecrementOne(entity);
@@ -513,21 +531,21 @@ namespace GDG.ECS
             //如果未已向世界申请
             if (!afterTypes.IsRequested)
             {
-                LogManager.Instance.ConsoleLogError($"Add component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
+                LogManager.Instance.LogError($"Add component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
                 return component;
             }
             entity.SetTypeId(afterTypes.TypeId);
             ComponentTypes outComponentTypes;
             //如果存在映射
-            if(m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId,out outComponentTypes))
+            if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out outComponentTypes))
             {
                 outComponentTypes.SetEntityRefCount(outComponentTypes.EntityRefCount + 1);
                 return component;
             }
-            LogManager.Instance.ConsoleLogError($"Add component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
+            LogManager.Instance.LogError($"Add component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
             return default(T);
         }
-        private bool RemoveComponentTypes<T>(AbsEntity entity)where T:IComponentData
+        private bool RemoveComponentTypes<T>(AbsEntity entity) where T : IComponentData
         {
             var index = entity.Index;
 
@@ -536,13 +554,13 @@ namespace GDG.ECS
             //遍历移除实体组件
             var componentList = entity.Components;
             List<Type> types = new List<Type>();
-            for (int i = componentList.Count-1; i>=0; i--)
+            for (int i = componentList.Count - 1; i >= 0; i--)
             {
                 if (componentList[i] is T item)
                 {
                     if (!entity.RemoveComponentToList(item))
                     {
-                        LogManager.Instance.ConsoleLogError($"Remove component failed ! Can't Find Component in Entity !Entity.Index:{index}");
+                        LogManager.Instance.LogError($"Remove component failed ! Can't Find Component in Entity !Entity.Index:{index}");
                         return false;
                     }
                 }
@@ -550,20 +568,20 @@ namespace GDG.ECS
             }
             ComponentTypes afterTypes = new ComponentTypes(types.ToArray());
 
-            if(afterTypes.IsRequested)
+            if (afterTypes.IsRequested)
             {
-                LogManager.Instance.ConsoleLogError($"Remove component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
+                LogManager.Instance.LogError($"Remove component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
                 return false;
             }
             entity.SetTypeId(afterTypes.TypeId);
             //如果存在映射
             ComponentTypes outComponentTypes;
-            if(m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId,out outComponentTypes))
+            if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out outComponentTypes))
             {
                 outComponentTypes.SetEntityRefCount(afterTypes.EntityRefCount + 1);//对之后的组件引用计数+1
                 return true;
             }
-            LogManager.Instance.ConsoleLogError($"Remove component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
+            LogManager.Instance.LogError($"Remove component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
             return true;
         }
         #endregion

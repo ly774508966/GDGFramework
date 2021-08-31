@@ -14,6 +14,10 @@ namespace GDG.ECS
         {
             get => BaseWorld.Instance.Systems;
         }
+        public static MonoWorld monoWorld
+        {
+            get => BaseWorld.Instance.monoWorld;
+        }
         public static ulong GetEntityMaxIndex()
         {
             return BaseWorld.Instance.GetEntityMaxIndex();

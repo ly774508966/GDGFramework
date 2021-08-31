@@ -20,7 +20,7 @@ namespace GDG.ECS
         }
         void ProxyConvertExcute()
         {
-            entity = World.EntityManager.CreateGameEntity(false);
+            entity = World.EntityManager.CreateGameEntity(0,false);
             entity.gameObject = this.gameObject;
             if (proxyConverts != null)
             {

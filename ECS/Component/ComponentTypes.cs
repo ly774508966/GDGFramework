@@ -14,7 +14,7 @@ namespace GDG.ECS
             foreach(var item in componentTypes)
             {
                 if(!typeof(IComponentData).IsAssignableFrom(item))
-                    throw new Exception($"Try to add a wrong type into ComponentTypes! Type:{item.GetType()}");
+                    LogManager.Instance.LogError($"Try to add a wrong type into ComponentTypes! Type:{item.GetType()}");
                 ComponentTypesList.Add(item);
             }
             ComponentTypesList.Sort();
@@ -34,7 +34,6 @@ namespace GDG.ECS
         public void RequestTypeId()
         {
             var tempTypeId = BaseWorld.Instance.EntityManager.GetTypeId(this);
-            //Debug.Log($"GetTypeId: {tempTypeId} , \"{this.ToString()}\"");
             if(tempTypeId>0)
             {
                  typeId = tempTypeId;
@@ -42,7 +41,6 @@ namespace GDG.ECS
             else
             {
                 typeId = BaseWorld.Instance.EntityManager.RequestTypeId(this);
-                //Debug.Log($"RequestTypeId: {typeId} , \"{this.ToString()}\"");
             }
         }
         public void Add(Type item)

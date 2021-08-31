@@ -43,6 +43,7 @@ namespace GDG.ECS
             {
                 m_SystemTypeMapping.Add(system.GetType(), system);
                 monoWorld.AddOrRemoveListener(system.OnUpdate, "Update");
+                monoWorld.AddOrRemoveListener(system.OnStart, "Start");
             }
         }
         private void SystemSingletonInit()
@@ -83,7 +84,7 @@ namespace GDG.ECS
                 if (system.Entities != null)
                     system.SetEntities(entityList);
                 else
-                    LogManager.Instance.ConsoleLogError($"Update Entities of Systems faield，Systems.Entites is null ! System: {system.GetType()}");
+                    LogManager.Instance.LogError($"Update Entities of Systems faield，Systems.Entites is null ! System: {system.GetType()}");
             }
         }
 
@@ -107,12 +108,12 @@ namespace GDG.ECS
                 {
                     if (system.Entities == null)
                     {
-                        LogManager.Instance.ConsoleLogError($"Remove Entity from Systems faield，Systems.Entites is null ! System: {system.GetType()}");
+                        LogManager.Instance.LogError($"Remove Entity from Systems faield，Systems.Entites is null ! System: {system.GetType()}");
                         return false;
                     }
                     if (!system.Entities.Remove(entity))
                     {
-                        LogManager.Instance.ConsoleLogError($"Remove Entity from Systems faield，cant't find Entity in Systems ! Index: {entity.Index}");
+                        LogManager.Instance.LogError($"Remove Entity from Systems faield，cant't find Entity in Systems ! Index: {entity.Index}");
                         return false;
                     }
                 }
@@ -128,7 +129,7 @@ namespace GDG.ECS
                 {
                     if (system.Entities == null)
                     {
-                        LogManager.Instance.ConsoleLogError($"Add Entity from {typeof(T)} faield !");
+                        LogManager.Instance.LogError($"Add Entity from {typeof(T)} faield !");
                         return false;
                     }
                     system.Entities.Add(entity);
@@ -141,7 +142,7 @@ namespace GDG.ECS
                     {
                         if (!system.Entities.Remove(entity))
                         {
-                            LogManager.Instance.ConsoleLogError($"Remove Entity from Systems faield ! Index: {entity.Index}");
+                            LogManager.Instance.LogError($"Remove Entity from Systems faield ! Index: {entity.Index}");
                             return false;
                         }
                     }
@@ -150,13 +151,13 @@ namespace GDG.ECS
                 }
                 else
                 {
-                    LogManager.Instance.ConsoleLogError($"Remove Entity from Systems faield，Systems.Entites is null ! System: {typeof(T)}");
+                    LogManager.Instance.LogError($"Remove Entity from Systems faield，Systems.Entites is null ! System: {typeof(T)}");
                     return false;
                 }
             }
             else
             {
-                LogManager.Instance.ConsoleLogError($"Remove Entity from Systems faield，Can't find Typeof'{typeof(T)}' in Systems !");
+                LogManager.Instance.LogError($"Remove Entity from Systems faield，Can't find Typeof'{typeof(T)}' in Systems !");
                 return false;
             }
             return true;

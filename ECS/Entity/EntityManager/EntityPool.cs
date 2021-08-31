@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using GDG.Utils;
 using UnityEngine;
 namespace GDG.ECS
 {
@@ -8,14 +9,14 @@ namespace GDG.ECS
     {
         public uint typeId;
         public Stack<AbsEntity> entityStack = new Stack<AbsEntity>();
-        public void PushEntity(AbsEntity entity,Action<AbsEntity> beforeRecycleCallback)
+        public void PushEntity(AbsEntity entity,Action<AbsEntity> beforeRecycleCallback=null)
         {
             if(beforeRecycleCallback!=null)
                 beforeRecycleCallback(entity);
             entity.OnRecycle();
             entityStack.Push(entity);
         }
-        public AbsEntity PopEntity(Action<AbsEntity> beforeInitCallback,Action<AbsEntity> beforeEnableCallback)
+        public AbsEntity PopEntity(Action<AbsEntity> beforeInitCallback=null,Action<AbsEntity> beforeEnableCallback=null)
         {
             if(entityStack.Count!=0)
             {
@@ -33,7 +34,7 @@ namespace GDG.ECS
             entity.OnInit();
             return entity;
         }
-        public T PopEntity<T>(Action<T> beforeInitCallback,Action<T> beforeEnableCallback)where T:AbsEntity,new()
+        public T PopEntity<T>(Action<T> beforeInitCallback=null,Action<T> beforeEnableCallback=null)where T:AbsEntity,new()
         {
             if(entityStack.Count!=0)
             {
@@ -41,6 +42,7 @@ namespace GDG.ECS
                 if(beforeEnableCallback!=null)
                     beforeEnableCallback(tempEntity);
                 EnableEntity(tempEntity);
+
                 return tempEntity;
             }
             var entity = new T();
@@ -49,6 +51,7 @@ namespace GDG.ECS
             if(beforeInitCallback!=null)
                 beforeInitCallback(entity);
             entity.OnInit();
+            
             return entity;
         }
         public void EnableEntity(AbsEntity entity)

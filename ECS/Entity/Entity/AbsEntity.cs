@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using GDG.ModuleManager;
+using GDG.Utils;
 using UnityEngine;
 
 namespace GDG.ECS
@@ -79,8 +80,8 @@ namespace GDG.ECS
         }
         internal void AddComponentToList(IComponentData component)
         {
-            if(components.Contains(component))
-                LogManager.Instance.ConsoleLogError($"AddComponent failed! Add a repeated Component:{component.GetType()}");
+            if(!components.Contains(component))
+                //LogManager.Instance.LogError($"AddComponent failed! Add a repeated Component:{component.GetType()}");
             components.Add(component);
         }
         internal bool RemoveComponentToList(IComponentData component)
