@@ -15,7 +15,7 @@ namespace GDG.ECS
         {
             handle.result =
             from entity in handle.result
-            where entity.IsMatchComponent<T>()
+            where entity.IsExistComponent<T>()
             select entity;
             return handle;
         }
@@ -23,7 +23,7 @@ namespace GDG.ECS
         {
             handle.result =
             from entity in handle.result
-            where entity.IsMatchComponent<T1>() && entity.IsMatchComponent<T2>()
+            where entity.IsExistComponent<T1>() && entity.IsExistComponent<T2>()
             select entity;
             return handle;
         }
@@ -31,7 +31,7 @@ namespace GDG.ECS
         {
             handle.result =
             from entity in handle.result
-            where entity.IsMatchComponent<T1>() && entity.IsMatchComponent<T2>() && entity.IsMatchComponent<T3>()
+            where entity.IsExistComponent<T1>() && entity.IsExistComponent<T2>() && entity.IsExistComponent<T3>()
             select entity;
             return handle;
         }
@@ -39,8 +39,45 @@ namespace GDG.ECS
         {
             handle.result =
             from entity in handle.result
-            where entity.IsMatchComponent<T1>() && entity.IsMatchComponent<T2>() && entity.IsMatchComponent<T3>() && entity.IsMatchComponent<T4>()
+            where entity.IsExistComponent<T1>() && entity.IsExistComponent<T2>() && entity.IsExistComponent<T3>() && entity.IsExistComponent<T4>()
             select entity;
+            return handle;
+        }
+        public static SystemHandle WithNone<T>(this SystemHandle handle) where T : IComponentData
+        {
+            handle.result =
+            from entity in handle.result
+            where !entity.IsExistComponent<T>()
+            select entity;
+            return handle;
+        }
+        public static SystemHandle WithNone<T1, T2>(this SystemHandle handle) where T1 : IComponentData where T2 : IComponentData
+        {
+            handle.result =
+            from entity in handle.result
+            where !entity.IsExistComponent<T1>() && !entity.IsExistComponent<T2>()
+            select entity;
+            return handle;
+        }
+        public static SystemHandle WithNone<T1, T2, T3>(this SystemHandle handle) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData
+        {
+            handle.result =
+            from entity in handle.result
+            where !entity.IsExistComponent<T1>() && !entity.IsExistComponent<T2>() && !entity.IsExistComponent<T3>()
+            select entity;
+            return handle;
+        }
+        public static SystemHandle WithNone<T1, T2, T3, T4>(this SystemHandle handle) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData
+        {
+            handle.result =
+            from entity in handle.result
+            where !entity.IsExistComponent<T1>() && !entity.IsExistComponent<T2>() && !entity.IsExistComponent<T3>() && !entity.IsExistComponent<T4>()
+            select entity;
+            return handle;
+        }
+        public static SystemHandle ReturnQueryResult(this SystemHandle handle,out IEnumerable<AbsEntity> result)
+        {
+            result = handle.result;
             return handle;
         }
         public static void Excute(this SystemHandle handle, float secondTime)
@@ -52,7 +89,7 @@ namespace GDG.ECS
             handle.eventName = eventName;
             return handle;
         }
-        internal static bool IsMatchComponent<T>(this AbsEntity entity)
+        public static bool IsExistComponent<T>(this AbsEntity entity)
         {
             foreach (var item in entity.Components)
             {

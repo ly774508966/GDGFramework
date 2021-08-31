@@ -37,7 +37,15 @@ namespace GDG.ECS
         {
             AddTypeId2EntityPoolMapping(typeId, out EntityPool entityPool, (entityPool) => { }, (entityPool) => { });
             var entity = entityPool.PopEntity((obj) => { }, (obj) => { });
-    
+
+            if(entity.Version==1 && typeId!=0)
+            {
+                if(m_TypeId2ComponentTypeMapping.TryGetValue(typeId,out ComponentTypes types))
+                {
+                    AddComponent(entity, types);
+                }
+            }
+
             if (!m_Index2EnityMapping.ContainsKey(entity.Index))
                 m_Index2EnityMapping.Add(entity.Index, entity);
             if (!m_ActivedEntityList.Contains(entity))
@@ -57,9 +65,15 @@ namespace GDG.ECS
         }
         public GameEntity CreateGameEntity(uint typeId = 0, bool isCreateGameObject = true)
         {
-            AddTypeId2EntityPoolMapping(typeId, out EntityPool entityPool, (entityPool) => { }, (entityPool) => { });
+            AddTypeId2EntityPoolMapping(typeId, out EntityPool entityPool, (entityPool) => { }, (entityPool) => {});
             var entity = entityPool.PopEntity<GameEntity>((gameEntity) => { gameEntity.isCreateGameObject = isCreateGameObject; }, (obj) => { });
-            
+            if(entity.Version==1 && typeId!=0)
+            {
+                if(m_TypeId2ComponentTypeMapping.TryGetValue(typeId,out ComponentTypes types))
+                {
+                    AddComponent(entity, types);
+                }
+            }
             if (!m_Index2EnityMapping.ContainsKey(entity.Index))
                 m_Index2EnityMapping.Add(entity.Index, entity);
             if (!m_ActivedEntityList.Contains(entity))

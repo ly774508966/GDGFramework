@@ -17,7 +17,7 @@ namespace GDG.ECS
                     LogManager.Instance.LogError($"Try to add a wrong type into ComponentTypes! Type:{item.GetType()}");
                 ComponentTypesList.Add(item);
             }
-            ComponentTypesList.Sort();
+
             RequestTypeId();
         }
 
@@ -48,7 +48,7 @@ namespace GDG.ECS
             if(!typeof(IComponentData).IsAssignableFrom(item)|| Contains(item))
                 return;
             ComponentTypesList.Add(item);
-            ComponentTypesList.Sort();
+
             RequestTypeId();
         }
 
@@ -58,7 +58,7 @@ namespace GDG.ECS
             {
                 RequestTypeId();
                 bool isRemove = ComponentTypesList.Remove(item);
-                ComponentTypesList.Sort();
+
                 return isRemove;
             }
             return false;
