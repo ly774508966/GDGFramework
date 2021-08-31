@@ -18,7 +18,7 @@ namespace GDG.ECS
         public UnityAction onDisable=null;
         public UnityAction destroy=null;
         public UnityAction proxyConvertExcute = null;
-        void Awake() { if (awake != null) awake(); }
+        void Awake() { DontDestroyOnLoad(this); if (awake != null) awake(); }
         void Start() { if (start != null) start(); if (proxyConvertExcute != null) proxyConvertExcute(); }
         void OnGUI() { if (ongui != null) ongui(); }
         void Update() { if (update != null) update(); }

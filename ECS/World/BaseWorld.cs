@@ -11,7 +11,8 @@ namespace GDG.ECS
 {
     public class BaseWorld : AbsSingleton<BaseWorld>
     {
-        internal uint WorldID;
+        public uint WorldID = 0;
+        public string WorldName = "World";
         internal readonly EntityManager EntityManager;
         internal readonly List<ISystem> Systems;
         private Dictionary<Type, ISystem> m_SystemTypeMapping;
@@ -32,7 +33,7 @@ namespace GDG.ECS
             Systems = new List<ISystem>();
             m_SystemTypeMapping = new Dictionary<Type, ISystem>();
 
-            var gameObject = new GameObject("World");
+            var gameObject = new GameObject(WorldName);
             monoWorld = gameObject.AddComponent<MonoWorld>();
             monoWorld.AddOrRemoveListener(AfterInit, "Start");
         }

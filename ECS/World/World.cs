@@ -6,6 +6,7 @@ namespace GDG.ECS
 {
     public class World
     {
+        private static uint MaxWorldID;
         public static EntityManager EntityManager
         {
             get => BaseWorld.Instance.EntityManager;
@@ -33,6 +34,11 @@ namespace GDG.ECS
         public static bool AddOrRemoveEntityFromSystems<T>(AbsEntity entity, bool isAdd = true) where T : ISystem, new()
         {
             return BaseWorld.Instance.AddOrRemoveEntityFromSystems<T>(entity, isAdd);
+        }
+        public static BaseWorld CreateWorld(string worldName = "World")
+        {
+            ++MaxWorldID;
+            return new BaseWorld() { WorldID = MaxWorldID,WorldName = worldName};
         }
     }
 }

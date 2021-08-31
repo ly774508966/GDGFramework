@@ -20,7 +20,6 @@ namespace GDG.ECS
         private Dictionary<string, List<ulong>> mapping;
         public Dictionary<string,List<ulong>> m_EventHandle2IndexMapping{ get=>mapping;}
         public List<AbsEntity> Entities { get => this.entities; }
-        
         private bool isActived = true;
         internal void Init()
         {
@@ -104,7 +103,6 @@ namespace GDG.ECS
         {
             return ForEach(callback, null);
         }
-        # pragma warning disable 0170
         protected SystemHandle Select<T>(out T component, UnityAction<AbsEntity> callback) where T : IComponentData
         {
             component = default(T);
