@@ -75,6 +75,30 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
+        public static SystemHandle WithAny<T1, T2>(this SystemHandle handle) where T1 : IComponentData where T2 : IComponentData
+        {
+            handle.result =
+            from entity in handle.result
+            where entity.IsExistComponent<T1>() | entity.IsExistComponent<T2>()
+            select entity;
+            return handle;
+        }
+        public static SystemHandle WithAny<T1, T2, T3>(this SystemHandle handle) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData
+        {
+            handle.result =
+            from entity in handle.result
+            where entity.IsExistComponent<T1>() | entity.IsExistComponent<T2>() | entity.IsExistComponent<T3>()
+            select entity;
+            return handle;
+        }
+        public static SystemHandle WithAny<T1, T2, T3, T4>(this SystemHandle handle) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData
+        {
+            handle.result =
+            from entity in handle.result
+            where entity.IsExistComponent<T1>() | entity.IsExistComponent<T2>() | entity.IsExistComponent<T3>() | entity.IsExistComponent<T4>()
+            select entity;
+            return handle;
+        }
         public static SystemHandle ReturnQueryResult(this SystemHandle handle,out IEnumerable<AbsEntity> result)
         {
             result = handle.result;
