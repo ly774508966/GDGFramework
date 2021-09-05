@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System;
 using GDG.Utils;
-using GDGLogger = GDG.Utils.GDGLogger;
+using Log = GDG.Utils.Log;
 
 namespace GDG.ModuleManager
 {
@@ -118,7 +118,7 @@ namespace GDG.ModuleManager
             {
                 // bf.Serialize(stream, data.ToObject<List<SelectableEnumItem>>());
             }
-            GDGLogger.LogSuccess($"Binary file is completed, path: {filepath}");
+            Log.Sucess($"Binary file is completed, path: {filepath}");
         }
     }
 }

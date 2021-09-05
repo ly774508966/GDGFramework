@@ -264,11 +264,11 @@ namespace GDG.ECS
         }
         public void SetComponentData<T>(Entity entity, T component) where T : IComponentData
         {
-            foreach (var item in entity.Components)
+            for (var i = 0; i < entity.Components.Count; i++)
             {
-                if (item is T tempComponent)
+                if(entity.Components[i] is T)
                 {
-                    tempComponent = component;
+                    entity.Components[i] = component;
                     return;
                 }
             }

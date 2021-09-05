@@ -18,7 +18,7 @@ namespace GDG.ECS
         #endregion
         private List<AbsEntity> entities;
         private Dictionary<string, List<ulong>> mapping;
-        public Dictionary<string,List<ulong>> m_EventHandle2IndexMapping{ get=>mapping;}
+        public Dictionary<string, List<ulong>> m_EventHandle2IndexMapping { get => mapping; }
         public List<AbsEntity> Entities { get => this.entities; }
         private bool isActived = true;
         internal void Init()
@@ -34,14 +34,14 @@ namespace GDG.ECS
         public void SetActive(bool isActived)
         {
             this.isActived = isActived;
-            if(isActived)
+            if (isActived)
             {
                 BaseWorld.Instance.AddOrRemoveSystemFromMonoWorld(this);
                 OnEnable();
             }
             else
             {
-                BaseWorld.Instance.AddOrRemoveSystemFromMonoWorld(this,false);
+                BaseWorld.Instance.AddOrRemoveSystemFromMonoWorld(this, false);
                 OnDisable();
             }
         }
@@ -50,154 +50,246 @@ namespace GDG.ECS
         public virtual void OnEnable() { }
         public abstract void OnUpdate();
         public virtual void OnDisable() { }
-        //组装Handle
-        private SystemHandle AssembleSystemHandle(IEnumerable<AbsEntity> queryResult, UnityAction<AbsEntity> callback)
+        #region E
+        private SystemHandle<E> AssembleSystemHandle<E>(IEnumerable<E> queryResult, SystemCallback<E> callback) where E : AbsEntity
         {
-            SystemHandle handle = new SystemHandle();
+            SystemHandle<E> handle = new SystemHandle<E>();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
             return handle;
         }
-        //组件匹配，如果有该类型的组件则匹配成功
-        private bool IsComponentMatch(AbsEntity entity, IComponentData component)
+        private SystemHandle<E> ForEach<E>(SystemCallback<E> callback) where E : AbsEntity
         {
-            var type = component.GetType();
-            var query =
-                from result in entity.Components
-                where result.GetType() == type
-                select result;
-
-            if (query.Count<IComponentData>() != 0)
-            {
-                return true;
-            }
-            return false;
-        }
-        private SystemHandle ForEach(UnityAction<AbsEntity> callback, params IComponentData[] components)
-        {
-            List<AbsEntity> query = new List<AbsEntity>();
             if (entities == null)
                 return null;
-            foreach (var item in entities)
-            {
-                var isSucced = true;
-                if (components != null)
-                {
-                    foreach (var component in components)
-                    {
-                        if (!IsComponentMatch(item, component))
-                        {
-                            isSucced = false;
-                            break;
-                        }
-                    }
-                }
-                if (isSucced)
-                    query.Add(item);
-            }
-            return AssembleSystemHandle(query, callback);
+            var result =
+            from obj in entities
+            select obj as E;
+            return AssembleSystemHandle<E>(result, callback);
         }
-        #region Select    
-        protected SystemHandle Select(UnityAction<AbsEntity> callback)
+        public SystemHandle<E> Select<E>(SystemCallback<E> callback) where E : AbsEntity
         {
-            return ForEach(callback, null);
-        }
-        protected SystemHandle Select<T>(out T component, UnityAction<AbsEntity> callback) where T : IComponentData
-        {
-            component = default(T);
-            return ForEach(callback, component);
-        }
-        protected SystemHandle Select<T1, T2>(out T1 component1, out T2 component2, UnityAction<AbsEntity> callback) where T1 : IComponentData where T2 : IComponentData
-        {
-            component1 = default(T1);
-            component2 = default(T2);
-            return ForEach(callback, component1, component2);
-        }
-        protected SystemHandle Select<T1, T2, T3>(out T1 component1, out T2 component2, out T3 component3, UnityAction<AbsEntity> callback) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData
-        {
-            component1 = default(T1);
-            component2 = default(T2);
-            component3 = default(T3);
-            return ForEach(callback, component1, component2, component3);
-        }
-        protected SystemHandle Select<T1, T2, T3, T4>(out T1 component1, out T2 component2, out T3 component3, out T4 component4, UnityAction<AbsEntity> callback) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData
-        {
-            component1 = default(T1);
-            component2 = default(T2);
-            component3 = default(T3);
-            component4 = default(T4);
-            return ForEach(callback, component1, component2, component3, component4);
-        }
-        protected SystemHandle Select<T1, T2, T3, T4, T5>(out T1 component1, out T2 component2, out T3 component3, out T4 component4, out T5 component5, UnityAction<AbsEntity> callback) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData where T5 : IComponentData
-        {
-            component1 = default(T1);
-            component2 = default(T2);
-            component3 = default(T3);
-            component4 = default(T4);
-            component5 = default(T5);
-            return ForEach(callback, component1, component2, component3, component4, component5);
-        }
-        protected SystemHandle Select<T1, T2, T3, T4, T5, T6>(out T1 component1, out T2 component2, out T3 component3, out T4 component4, out T5 component5, out T6 component6, UnityAction<AbsEntity> callback) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData where T5 : IComponentData where T6 : IComponentData
-        {
-            component1 = default(T1);
-            component2 = default(T2);
-            component3 = default(T3);
-            component4 = default(T4);
-            component5 = default(T5);
-            component6 = default(T6);
-            return ForEach(callback, component1, component2, component3, component4, component5, component6);
-        }
-        protected SystemHandle Select<T1, T2, T3, T4, T5, T6, T7>(out T1 component1, out T2 component2, out T3 component3, out T4 component4, out T5 component5, out T6 component6, out T7 component7, UnityAction<AbsEntity> callback) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData where T5 : IComponentData where T6 : IComponentData where T7 : IComponentData
-        {
-            component1 = default(T1);
-            component2 = default(T2);
-            component3 = default(T3);
-            component4 = default(T4);
-            component5 = default(T5);
-            component6 = default(T6);
-            component7 = default(T7);
-            return ForEach(callback, component1, component2, component3, component4, component5, component6, component7);
-        }
-        protected SystemHandle Select<T1, T2, T3, T4, T5, T6, T7, T8>(out T1 component1, out T2 component2, out T3 component3, out T4 component4, out T5 component5, out T6 component6, out T7 component7, T8 component8, UnityAction<AbsEntity> callback) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData where T5 : IComponentData where T6 : IComponentData where T7 : IComponentData where T8 : IComponentData
-        {
-            component1 = default(T1);
-            component2 = default(T2);
-            component3 = default(T3);
-            component4 = default(T4);
-            component5 = default(T5);
-            component6 = default(T6);
-            component7 = default(T7);
-            component8 = default(T8);
-            return ForEach(callback, component1, component2, component3, component4, component5, component6, component7, component8);
-        }
-        protected SystemHandle Select<T1, T2, T3, T4, T5, T6, T7, T8, T9>(out T1 component1, out T2 component2, out T3 component3, out T4 component4, out T5 component5, out T6 component6, out T7 component7, T8 component8, T9 component9, UnityAction<AbsEntity> callback) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData where T5 : IComponentData where T6 : IComponentData where T7 : IComponentData where T8 : IComponentData where T9 : IComponentData
-        {
-            component1 = default(T1);
-            component2 = default(T2);
-            component3 = default(T3);
-            component4 = default(T4);
-            component5 = default(T5);
-            component6 = default(T6);
-            component7 = default(T7);
-            component8 = default(T8);
-            component9 = default(T9);
-            return ForEach(callback, component1, component2, component3, component4, component5, component6, component7, component8, component9);
-        }
-        protected SystemHandle Select<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(out T1 component1, out T2 component2, out T3 component3, out T4 component4, out T5 component5, out T6 component6, out T7 component7, T8 component8, T9 component9, T10 component10, UnityAction<AbsEntity> callback) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData where T5 : IComponentData where T6 : IComponentData where T7 : IComponentData where T8 : IComponentData where T9 : IComponentData where T10 : IComponentData
-        {
-            component1 = default(T1);
-            component2 = default(T2);
-            component3 = default(T3);
-            component4 = default(T4);
-            component5 = default(T5);
-            component6 = default(T6);
-            component7 = default(T7);
-            component8 = default(T8);
-            component9 = default(T9);
-            component10 = default(T10);
-            return ForEach(callback, component1, component2, component3, component4, component5, component6, component7, component8, component9, component10);
+            if (entities == null)
+                return null;
+            return ForEach<E>(callback);
         }
         #endregion
+        #region E,T
+        private SystemHandle<E, T> AssembleSystemHandle<E, T>(IEnumerable<E> queryResult, SystemCallback<E, T> callback) where E : AbsEntity where T : class, IComponentData
+        {
+            SystemHandle<E, T> handle = new SystemHandle<E, T>();
+            handle.system = this;
+            handle.result = queryResult;
+            handle.callback = callback;
+            return handle;
+        }
+        private SystemHandle<E, T> ForEach<E, T>(SystemCallback<E, T> callback) where E : AbsEntity where T : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            var result =
+            from obj in entities
+            where obj.IsExistComponent<T>()
+            select obj as E;
+
+            return AssembleSystemHandle<E, T>(result, callback);
+        }
+        public SystemHandle<E, T> Select<E, T>(SystemCallback<E, T> callback) where E : AbsEntity where T : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            return ForEach<E, T>(callback);
+        }
+        #endregion
+        #region E,T1,T2
+        private SystemHandle<E, T1, T2> AssembleSystemHandle<E, T1, T2>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData
+        {
+            SystemHandle<E, T1, T2> handle = new SystemHandle<E, T1, T2>();
+            handle.system = this;
+            handle.result = queryResult;
+            handle.callback = callback;
+            return handle;
+        }
+        private SystemHandle<E, T1, T2> ForEach<E, T1, T2>(SystemCallback<E, T1, T2> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            var result =
+            from obj in entities
+            where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>()
+            select obj as E;
+
+            return AssembleSystemHandle<E, T1, T2>(result, callback);
+        }
+        public SystemHandle<E, T1, T2> Select<E, T1, T2>(SystemCallback<E, T1, T2> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            return ForEach<E, T1, T2>(callback);
+        }
+        #endregion
+        #region E,T1,T2,T3
+        private SystemHandle<E, T1, T2, T3> AssembleSystemHandle<E, T1, T2, T3>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData
+        {
+            SystemHandle<E, T1, T2, T3> handle = new SystemHandle<E, T1, T2, T3>();
+            handle.system = this;
+            handle.result = queryResult;
+            handle.callback = callback;
+            return handle;
+        }
+        private SystemHandle<E, T1, T2, T3> ForEach<E, T1, T2, T3>(SystemCallback<E, T1, T2, T3> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            var result =
+            from obj in entities
+            where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>()
+            select obj as E;
+
+            return AssembleSystemHandle<E, T1, T2, T3>(result, callback);
+        }
+        public SystemHandle<E, T1, T2, T3> Select<E, T1, T2, T3>(SystemCallback<E, T1, T2, T3> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            return ForEach<E, T1, T2, T3>(callback);
+        }
+        #endregion
+        #region E,T1,T2,T3,T4
+        private SystemHandle<E, T1, T2, T3, T4> AssembleSystemHandle<E, T1, T2, T3, T4>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3, T4> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData
+        {
+            SystemHandle<E, T1, T2, T3, T4> handle = new SystemHandle<E, T1, T2, T3, T4>();
+            handle.system = this;
+            handle.result = queryResult;
+            handle.callback = callback;
+            return handle;
+        }
+        private SystemHandle<E, T1, T2, T3, T4> ForEach<E, T1, T2, T3, T4>(SystemCallback<E, T1, T2, T3, T4> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            var result =
+            from obj in entities
+            where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>()
+            select obj as E;
+
+            return AssembleSystemHandle<E, T1, T2, T3, T4>(result, callback);
+        }
+        public SystemHandle<E, T1, T2, T3, T4> Select<E, T1, T2, T3, T4>(SystemCallback<E, T1, T2, T3, T4> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            return ForEach<E, T1, T2, T3, T4>(callback);
+        }
+        #endregion
+        #region E,T1,T2,T3,T4,T5
+        private SystemHandle<E, T1, T2, T3, T4, T5> AssembleSystemHandle<E, T1, T2, T3, T4, T5>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3, T4, T5> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData
+        {
+            SystemHandle<E, T1, T2, T3, T4, T5> handle = new SystemHandle<E, T1, T2, T3, T4, T5>();
+            handle.system = this;
+            handle.result = queryResult;
+            handle.callback = callback;
+            return handle;
+        }
+        private SystemHandle<E, T1, T2, T3, T4, T5> ForEach<E, T1, T2, T3, T4, T5>(SystemCallback<E, T1, T2, T3, T4, T5> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            var result =
+            from obj in entities
+            where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>()
+            select obj as E;
+
+            return AssembleSystemHandle<E, T1, T2, T3, T4, T5>(result, callback);
+        }
+        public SystemHandle<E, T1, T2, T3, T4, T5> Select<E, T1, T2, T3, T4, T5>(SystemCallback<E, T1, T2, T3, T4, T5> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            return ForEach<E, T1, T2, T3, T4, T5>(callback);
+        }
+        #endregion
+        #region E,T1,T2,T3,T4,T5,T6
+        private SystemHandle<E, T1, T2, T3, T4, T5, T6> AssembleSystemHandle<E, T1, T2, T3, T4, T5, T6>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3, T4, T5, T6> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData where T6 : class, IComponentData
+        {
+            SystemHandle<E, T1, T2, T3, T4, T5, T6> handle = new SystemHandle<E, T1, T2, T3, T4, T5, T6>();
+            handle.system = this;
+            handle.result = queryResult;
+            handle.callback = callback;
+            return handle;
+        }
+        private SystemHandle<E, T1, T2, T3, T4, T5, T6> ForEach<E, T1, T2, T3, T4, T5, T6>(SystemCallback<E, T1, T2, T3, T4, T5, T6> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData where T6 : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            var result =
+            from obj in entities
+            where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>() && obj.IsExistComponent<T6>()
+            select obj as E;
+
+            return AssembleSystemHandle<E, T1, T2, T3, T4, T5, T6>(result, callback);
+        }
+        public SystemHandle<E, T1, T2, T3, T4, T5, T6> Select<E, T1, T2, T3, T4, T5, T6>(SystemCallback<E, T1, T2, T3, T4, T5, T6> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData where T6 : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            return ForEach<E, T1, T2, T3, T4, T5, T6>(callback);
+        }
+        #endregion
+        #region E,T1,T2,T3,T4,T5,T6,T7
+        private SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> AssembleSystemHandle<E, T1, T2, T3, T4, T5, T6, T7>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData where T6 : class, IComponentData where T7 : class, IComponentData
+        {
+            SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> handle = new SystemHandle<E, T1, T2, T3, T4, T5, T6, T7>();
+            handle.system = this;
+            handle.result = queryResult;
+            handle.callback = callback;
+            return handle;
+        }
+        private SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> ForEach<E, T1, T2, T3, T4, T5, T6, T7>(SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData where T6 : class, IComponentData where T7 : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            var result =
+            from obj in entities
+            where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>() && obj.IsExistComponent<T6>() && obj.IsExistComponent<T7>()
+            select obj as E;
+
+            return AssembleSystemHandle<E, T1, T2, T3, T4, T5, T6, T7>(result, callback);
+        }
+        public SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> Select<E, T1, T2, T3, T4, T5, T6, T7>(SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData where T6 : class, IComponentData where T7 : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            return ForEach<E, T1, T2, T3, T4, T5, T6, T7>(callback);
+        }
+        #endregion
+        #region E,T1,T2,T3,T4,T5,T6,T7,T8
+        private SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> AssembleSystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData where T6 : class, IComponentData where T7 : class, IComponentData where T8 : class, IComponentData
+        {
+            SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> handle = new SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8>();
+            handle.system = this;
+            handle.result = queryResult;
+            handle.callback = callback;
+            return handle;
+        }
+        private SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> ForEach<E, T1, T2, T3, T4, T5, T6, T7, T8>(SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData where T6 : class, IComponentData where T7 : class, IComponentData where T8 : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            var result =
+            from obj in entities
+            where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>() && obj.IsExistComponent<T6>() && obj.IsExistComponent<T7>() && obj.IsExistComponent<T8>()
+            select obj as E;
+
+            return AssembleSystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8>(result, callback);
+        }
+        public SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> Select<E, T1, T2, T3, T4, T5, T6, T7, T8>(SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData where T6 : class, IComponentData where T7 : class, IComponentData where T8 : class, IComponentData
+        {
+            if (entities == null)
+                return null;
+            return ForEach<E, T1, T2, T3, T4, T5, T6, T7, T8>(callback);
+            #endregion
+        }
     }
 }

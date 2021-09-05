@@ -10,7 +10,7 @@ using System.Xml;
 using System.Collections;
 using Newtonsoft.Json;
 using GDG.Utils;
-using GDGLogger = GDG.Utils.GDGLogger;
+using Log = GDG.Utils.Log;
 /*
 * @Author: 关东关 
 * @Date: 2021-03-16 12:24:25 
@@ -125,7 +125,7 @@ namespace GDG.ModuleManager
             {
                 writer.Write(xmlDoc.OuterXml);
             }
-            GDGLogger.LogSuccess($"Xml file is completed, path: {filepath}");
+            Log.Sucess($"Xml file is completed, path: {filepath}");
         }
     }
 

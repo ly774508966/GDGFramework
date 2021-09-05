@@ -12,7 +12,7 @@ using UnityEngine.Events;
 using GDG.ModuleManager;
 namespace GDG.Utils
 {
-    public class GDGEventCenter
+    public class EventCenter
     {
         #region Action
         public static void AddActionListener(string eventName, UnityAction Event)

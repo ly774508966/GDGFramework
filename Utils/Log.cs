@@ -5,9 +5,9 @@ using GDG.ModuleManager;
 using System.Runtime.CompilerServices;
 namespace GDG.Utils
 {
-    public class GDGLogger
+    public class Log
     {
-        public static void Log(
+        public static void Info(
             object message,
             string tag = "INFO",
             [CallerMemberNameAttribute] string invoker = "unknown",
@@ -16,7 +16,7 @@ namespace GDG.Utils
         {
             LogManager.Instance.LogInfo(message, tag, invoker, callerFilePath, callerLineNumber);
         }
-        public static void LogSuccess(
+        public static void Sucess(
             object message,
             string tag = "SUCCESS",
             [CallerMemberNameAttribute] string invoker = "unknown",
@@ -25,7 +25,7 @@ namespace GDG.Utils
         {
             LogManager.Instance.LogSucess(message, tag, invoker, callerFilePath, callerLineNumber);
         }
-        public static void LogWarning(
+        public static void Warning(
             object message,
             string tag = "WARNING",
             [CallerMemberNameAttribute] string invoker = "unknown",
@@ -34,7 +34,7 @@ namespace GDG.Utils
         {
             LogManager.Instance.LogWarning(message, tag, invoker, callerFilePath, callerLineNumber);
         }
-        public static void LogError(
+        public static void Error(
             object message,
             string tag = "ERROR",
             [CallerMemberNameAttribute] string invoker = "unknown",

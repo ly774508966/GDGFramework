@@ -11,7 +11,7 @@ namespace GDG.ECS
 {
     public static class SystemHandleExtension
     {
-        public static SystemHandle WithAll<T>(this SystemHandle handle) where T : IComponentData
+        public static ISystemHandle<E> WithAll<E,T>(this ISystemHandle<E> handle)where E:AbsEntity where T : IComponentData
         {
             handle.result =
             from entity in handle.result
@@ -19,7 +19,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static SystemHandle WithAll<T1, T2>(this SystemHandle handle) where T1 : IComponentData where T2 : IComponentData
+        public static ISystemHandle<E> WithAll<E,T1, T2>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData
         {
             handle.result =
             from entity in handle.result
@@ -27,7 +27,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static SystemHandle WithAll<T1, T2, T3>(this SystemHandle handle) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData
+        public static ISystemHandle<E> WithAll<E,T1, T2, T3>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData
         {
             handle.result =
             from entity in handle.result
@@ -35,7 +35,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static SystemHandle WithAll<T1, T2, T3, T4>(this SystemHandle handle) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData
+        public static ISystemHandle<E> WithAll<E,T1, T2, T3, T4>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData
         {
             handle.result =
             from entity in handle.result
@@ -43,7 +43,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static SystemHandle WithNone<T>(this SystemHandle handle) where T : IComponentData
+        public static ISystemHandle<E> WithNone<E,T>(this ISystemHandle<E> handle)where E:AbsEntity where T : IComponentData
         {
             handle.result =
             from entity in handle.result
@@ -51,7 +51,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static SystemHandle WithNone<T1, T2>(this SystemHandle handle) where T1 : IComponentData where T2 : IComponentData
+        public static ISystemHandle<E> WithNone<E,T1, T2>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData
         {
             handle.result =
             from entity in handle.result
@@ -59,7 +59,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static SystemHandle WithNone<T1, T2, T3>(this SystemHandle handle) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData
+        public static ISystemHandle<E> WithNone<E,T1, T2, T3>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData
         {
             handle.result =
             from entity in handle.result
@@ -67,7 +67,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static SystemHandle WithNone<T1, T2, T3, T4>(this SystemHandle handle) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData
+        public static ISystemHandle<E> WithNone<E,T1, T2, T3, T4>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData
         {
             handle.result =
             from entity in handle.result
@@ -75,7 +75,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static SystemHandle WithAny<T1, T2>(this SystemHandle handle) where T1 : IComponentData where T2 : IComponentData
+        public static ISystemHandle<E> WithAny<E,T1, T2>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData
         {
             handle.result =
             from entity in handle.result
@@ -83,7 +83,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static SystemHandle WithAny<T1, T2, T3>(this SystemHandle handle) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData
+        public static ISystemHandle<E> WithAny<E,T1, T2, T3>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData
         {
             handle.result =
             from entity in handle.result
@@ -91,7 +91,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static SystemHandle WithAny<T1, T2, T3, T4>(this SystemHandle handle) where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData
+        public static ISystemHandle<E> WithAny<E,T1, T2, T3, T4>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData
         {
             handle.result =
             from entity in handle.result
@@ -99,21 +99,21 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static SystemHandle ReturnQueryResult(this SystemHandle handle,out IEnumerable<AbsEntity> result)
+        public static ISystemHandle<E> ReturnQueryResult<E>(this ISystemHandle<E> handle,out IEnumerable<AbsEntity> result)where E:AbsEntity
         {
             result = handle.result;
             return handle;
         }
-        public static void Excute(this SystemHandle handle, float secondTime)
+        public static void Excute<E>(this ISystemHandle<E> handle, float secondTime)where E:AbsEntity
         {
             BaseWorld.Instance.monoWorld.StartTimer(handle.Excute, secondTime);
         }
-        public static SystemHandle WithEventHandle(this SystemHandle handle, string eventName)
+        public static ISystemHandle<E> WithEventHandle<E>(this ISystemHandle<E> handle, string eventName)where E:AbsEntity
         {
             handle.eventName = eventName;
             return handle;
         }
-        public static bool IsExistComponent<T>(this AbsEntity entity)
+        public static bool IsExistComponent<T>(this AbsEntity entity)where T:IComponentData
         {
             foreach (var item in entity.Components)
             {
@@ -121,18 +121,6 @@ namespace GDG.ECS
                     return true;
             }
             return false;
-        }
-        internal static IComponentData ComponentMatch(this AbsEntity entity, IComponentData component)
-        {
-            foreach (var item in entity.Components)
-            {
-                if (item.GetType() == component.GetType())
-                {
-                    component = item;
-                    return component;
-                }
-            }
-            return null;
         }
     }
 }

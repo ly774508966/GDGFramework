@@ -10,7 +10,7 @@ using System;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Converters;
 using GDG.Utils;
-using GDGLogger = GDG.Utils.GDGLogger;
+using Log = GDG.Utils.Log;
 
 namespace GDG.ModuleManager
 {
@@ -127,7 +127,7 @@ namespace GDG.ModuleManager
                 writer.Write(jsonStr);
             }
 
-            GDGLogger.LogSuccess($"Json file is completed, path: {filepath}");
+            Log.Sucess($"Json file is completed, path: {filepath}");
         }
 
     }

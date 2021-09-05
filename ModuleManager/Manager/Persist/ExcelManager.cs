@@ -8,7 +8,7 @@ using OfficeOpenXml;
 using System.Reflection;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
-using GDGLogger = GDG.Utils.GDGLogger;
+using Log = GDG.Utils.Log;
 
 namespace GDG.ModuleManager
 {
@@ -355,7 +355,7 @@ namespace GDG.ModuleManager
 
                 excelPackage.Save();
             }
-            GDGLogger.LogSuccess($"Excel file is completed, path: {filepath}");
+            Log.Sucess($"Excel file is completed, path: {filepath}");
         }
 
     }
