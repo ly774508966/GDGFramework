@@ -21,7 +21,7 @@ public partial class ProjectSetting
         }
         void OnGUI()
         {
-            using (new GUILayout.VerticalScope(WindowStyles.SectionDark))
+            using (new GUILayout.VerticalScope(WindowStyles.DarkBackground))
             {
                 var keyEvent = Event.current;
 

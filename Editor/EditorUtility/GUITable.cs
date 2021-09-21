@@ -38,7 +38,7 @@ namespace GDG.Editor
                     BooleanConverter booleanConverter = new BooleanConverter();
                     bool result1 = true;
                     if(value is bool temp1)
-                        result1 = EditorGUILayout.Toggle(temp1, WindowStyles.MinWidth30, GUILayout.MaxWidth(maxWidth));
+                        result1 = EditorGUILayout.Toggle(temp1, GUILayout.MinWidth(30), GUILayout.MaxWidth(maxWidth));
 
                     if(result1 is T result)
                     {
@@ -47,7 +47,7 @@ namespace GDG.Editor
                     break;
                 case GUIElementType.TextField:
                     var temp2 = (string)converter.ConvertTo(value, typeof(string));
-                    var result2 = EditorGUILayout.TextField(temp2, EditorStyles.label, WindowStyles.MinWidth30, GUILayout.MaxWidth(maxWidth));
+                    var result2 = EditorGUILayout.TextField(temp2, EditorStyles.label,GUILayout.MinWidth(30), GUILayout.MaxWidth(maxWidth));
                     value = (T)converter.ConvertTo(result2, typeof(T));
                     break;
                 case GUIElementType.Button:
@@ -70,19 +70,19 @@ namespace GDG.Editor
                     break;
                 case GUIElementType.Label:
                     var temp4 = (string)converter.ConvertTo(value, typeof(string));
-                    EditorGUILayout.LabelField(temp4, EditorStyles.boldLabel, WindowStyles.MinWidth30, GUILayout.MaxWidth(maxWidth));
+                    EditorGUILayout.LabelField(temp4, EditorStyles.boldLabel,GUILayout.MinWidth(30), GUILayout.MaxWidth(maxWidth));
                     break;
             }
         }
         public void DrawTitle()
         {
-            using (new EditorGUILayout.HorizontalScope(WindowStyles.SectionGray))
+            using (new EditorGUILayout.HorizontalScope(WindowStyles.GrayBackground))
             {
                 for (int i = 0; i < elements.Length; i++)
                 {
                     if (i == elements.Length - 1)
                         GUILayout.FlexibleSpace();
-                    EditorGUILayout.LabelField(elements[i].Item1, EditorStyles.boldLabel, WindowStyles.MinWidth30, GUILayout.MaxWidth(elements[i].Item3));
+                    EditorGUILayout.LabelField(elements[i].Item1, EditorStyles.boldLabel,GUILayout.MinWidth(30), GUILayout.MaxWidth(elements[i].Item3));
                 }
             }
         }
@@ -98,7 +98,7 @@ namespace GDG.Editor
         /// </summary>
         public void DrawRow<T1, T2>(ref T1 value1, ref T2 value2)
         {
-            using (new EditorGUILayout.HorizontalScope(WindowStyles.SectionLight))
+            using (new EditorGUILayout.HorizontalScope(WindowStyles.LightBackground))
             {
                 GetElementReturn<T1>(elements[0].Item2, ref value1, elements[0].Item3);
                 
@@ -117,7 +117,7 @@ namespace GDG.Editor
         /// </summary>
         public void DrawRow<T1, T2, T3>(ref T1 value1, ref T2 value2, ref T3 value3)
         {
-            using (new EditorGUILayout.HorizontalScope(WindowStyles.SectionLight))
+            using (new EditorGUILayout.HorizontalScope(WindowStyles.LightBackground))
             {
                 GetElementReturn<T1>(elements[0].Item2, ref value1, elements[0].Item3);
                 GetElementReturn<T2>(elements[1].Item2, ref value2, elements[1].Item3);
@@ -137,7 +137,7 @@ namespace GDG.Editor
         /// </summary>
         public void DrawRow<T1, T2, T3, T4>(ref T1 value1, ref T2 value2, ref T3 value3, ref T4 value4)
         {
-            using (new EditorGUILayout.HorizontalScope(WindowStyles.SectionLight))
+            using (new EditorGUILayout.HorizontalScope(WindowStyles.LightBackground))
             {
                 GetElementReturn<T1>(elements[0].Item2, ref value1, elements[0].Item3);
                 GetElementReturn<T2>(elements[1].Item2, ref value2, elements[1].Item3);
@@ -158,7 +158,7 @@ namespace GDG.Editor
         /// </summary>
         public void DrawRow<T1, T2, T3, T4, T5>(ref T1 value1, ref T2 value2, ref T3 value3, ref T4 value4, ref T5 value5)
         {
-            using (new EditorGUILayout.HorizontalScope(WindowStyles.SectionLight))
+            using (new EditorGUILayout.HorizontalScope(WindowStyles.LightBackground))
             {
                 GetElementReturn<T1>(elements[0].Item2, ref value1, elements[0].Item3);
                 GetElementReturn<T2>(elements[1].Item2, ref value2, elements[1].Item3);
@@ -174,15 +174,10 @@ namespace GDG.Editor
     }
     public class WindowStyles
     {
-        public static readonly GUIStyle SectionDark = CreateSolidColorStyle(new Color(0.1f, 0.1f, 0.1f));
-        public static readonly GUIStyle SectionGray = CreateSolidColorStyle(new Color(0.15f, 0.15f, 0.15f));
-        public static readonly GUIStyle SectionLight = CreateSolidColorStyle(new Color(0.2f, 0.2f, 0.2f));
+        public static readonly GUIStyle DarkBackground = CreateSolidColorStyle(new Color(0.1f, 0.1f, 0.1f));
+        public static readonly GUIStyle GrayBackground = CreateSolidColorStyle(new Color(0.15f, 0.15f, 0.15f));
+        public static readonly GUIStyle LightBackground = CreateSolidColorStyle(new Color(0.2f, 0.2f, 0.2f));
         public static readonly GUIStyle None = CreateSolidColorStyle(new Color(0f, 0f, 0f, 0f));
-        public static GUIStyle ErrorMessageStyle = new GUIStyle(GUI.skin.GetStyle("CN StatusError"))
-        {
-            alignment = TextAnchor.MiddleRight
-        };
-
         public static GUIStyle CreateSolidColorStyle(Color color)
         {
             Texture2D texture = new Texture2D(2, 2);
@@ -198,15 +193,5 @@ namespace GDG.Editor
             return new GUIStyle { normal = { background = texture } };
         }
 
-        public static readonly GUILayoutOption MaxWidth25 = GUILayout.MaxWidth(25.0f);
-        public static readonly GUILayoutOption MaxWidth30 = GUILayout.MaxWidth(30.0f);
-        public static readonly GUILayoutOption MaxWidth100 = GUILayout.MaxWidth(100.0f);
-        public static readonly GUILayoutOption MaxWidth400 = GUILayout.MaxWidth(400.0f);
-        public static readonly GUILayoutOption MaxWidth300 = GUILayout.MaxWidth(300.0f);
-        public static readonly GUILayoutOption MaxWidth200 = GUILayout.MaxWidth(200.0f);
-
-        public static readonly GUILayoutOption MinWidth30 = GUILayout.MinWidth(30.0f);
-        public static readonly GUILayoutOption MinWidth100 = GUILayout.MinWidth(100.0f);
-        public static readonly GUILayoutOption MinWidth150 = GUILayout.MinWidth(150.0f);
     }
 }
