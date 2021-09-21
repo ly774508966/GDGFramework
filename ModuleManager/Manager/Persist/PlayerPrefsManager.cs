@@ -14,7 +14,7 @@ namespace GDG.ModuleManager
     /// <summary>
     /// 采用PlayerPrefs的数据持久化管理工具
     /// </summary>
-    public class PlayerPrefsMgr
+    public class PlayerPrefsManager
     {
         private static void SetValue(string tag, object data, bool autocheck = false)
         {

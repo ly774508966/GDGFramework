@@ -6,114 +6,151 @@ using System.Linq;
 using UnityEngine;
 using GDG.ModuleManager;
 using UnityEngine.Events;
+using GDG.Utils;
 
 namespace GDG.ECS
 {
     public static class SystemHandleExtension
     {
-        public static ISystemHandle<E> WithAll<E,T>(this ISystemHandle<E> handle)where E:AbsEntity where T : IComponentData
+        public static AbsSystemHandle<E> WithAll<E,T>(this AbsSystemHandle<E> handle)where E:AbsEntity where T : IComponent
         {
             handle.result =
-            from entity in handle.result
+            from entity in handle.result.AsParallel()
             where entity.IsExistComponent<T>()
             select entity;
             return handle;
         }
-        public static ISystemHandle<E> WithAll<E,T1, T2>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData
+        public static AbsSystemHandle<E> WithAll<E,T1, T2>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent
         {
             handle.result =
-            from entity in handle.result
+            from entity in handle.result.AsParallel()
             where entity.IsExistComponent<T1>() && entity.IsExistComponent<T2>()
             select entity;
             return handle;
         }
-        public static ISystemHandle<E> WithAll<E,T1, T2, T3>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData
+        public static AbsSystemHandle<E> WithAll<E,T1, T2, T3>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent where T3 : IComponent
         {
             handle.result =
-            from entity in handle.result
+            from entity in handle.result.AsParallel()
             where entity.IsExistComponent<T1>() && entity.IsExistComponent<T2>() && entity.IsExistComponent<T3>()
             select entity;
             return handle;
         }
-        public static ISystemHandle<E> WithAll<E,T1, T2, T3, T4>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData
+        public static AbsSystemHandle<E> WithAll<E,T1, T2, T3, T4>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent where T3 : IComponent where T4 : IComponent
         {
             handle.result =
-            from entity in handle.result
+            from entity in handle.result.AsParallel()
             where entity.IsExistComponent<T1>() && entity.IsExistComponent<T2>() && entity.IsExistComponent<T3>() && entity.IsExistComponent<T4>()
             select entity;
             return handle;
         }
-        public static ISystemHandle<E> WithNone<E,T>(this ISystemHandle<E> handle)where E:AbsEntity where T : IComponentData
+        public static AbsSystemHandle<E> WithNone<E,T>(this AbsSystemHandle<E> handle)where E:AbsEntity where T : IComponent
         {
             handle.result =
-            from entity in handle.result
+            from entity in handle.result.AsParallel()
             where !entity.IsExistComponent<T>()
             select entity;
             return handle;
         }
-        public static ISystemHandle<E> WithNone<E,T1, T2>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData
+        public static AbsSystemHandle<E> WithNone<E,T1, T2>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent
         {
             handle.result =
-            from entity in handle.result
+            from entity in handle.result.AsParallel()
             where !entity.IsExistComponent<T1>() && !entity.IsExistComponent<T2>()
             select entity;
             return handle;
         }
-        public static ISystemHandle<E> WithNone<E,T1, T2, T3>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData
+        public static AbsSystemHandle<E> WithNone<E,T1, T2, T3>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent where T3 : IComponent
         {
             handle.result =
-            from entity in handle.result
+            from entity in handle.result.AsParallel()
             where !entity.IsExistComponent<T1>() && !entity.IsExistComponent<T2>() && !entity.IsExistComponent<T3>()
             select entity;
             return handle;
         }
-        public static ISystemHandle<E> WithNone<E,T1, T2, T3, T4>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData
+        public static AbsSystemHandle<E> WithNone<E,T1, T2, T3, T4>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent where T3 : IComponent where T4 : IComponent
         {
             handle.result =
-            from entity in handle.result
+            from entity in handle.result.AsParallel()
             where !entity.IsExistComponent<T1>() && !entity.IsExistComponent<T2>() && !entity.IsExistComponent<T3>() && !entity.IsExistComponent<T4>()
             select entity;
             return handle;
         }
-        public static ISystemHandle<E> WithAny<E,T1, T2>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData
+        public static AbsSystemHandle<E> WithAny<E,T1, T2>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent
         {
             handle.result =
-            from entity in handle.result
+            from entity in handle.result.AsParallel()
             where entity.IsExistComponent<T1>() | entity.IsExistComponent<T2>()
             select entity;
             return handle;
         }
-        public static ISystemHandle<E> WithAny<E,T1, T2, T3>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData
+        public static AbsSystemHandle<E> WithAny<E,T1, T2, T3>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent where T3 : IComponent
         {
             handle.result =
-            from entity in handle.result
+            from entity in handle.result.AsParallel()
             where entity.IsExistComponent<T1>() | entity.IsExistComponent<T2>() | entity.IsExistComponent<T3>()
             select entity;
             return handle;
         }
-        public static ISystemHandle<E> WithAny<E,T1, T2, T3, T4>(this ISystemHandle<E> handle)where E:AbsEntity where T1 : IComponentData where T2 : IComponentData where T3 : IComponentData where T4 : IComponentData
+        public static AbsSystemHandle<E> WithAny<E,T1, T2, T3, T4>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent where T3 : IComponent where T4 : IComponent
         {
             handle.result =
-            from entity in handle.result
+            from entity in handle.result.AsParallel()
             where entity.IsExistComponent<T1>() | entity.IsExistComponent<T2>() | entity.IsExistComponent<T3>() | entity.IsExistComponent<T4>()
             select entity;
             return handle;
         }
-        public static ISystemHandle<E> ReturnQueryResult<E>(this ISystemHandle<E> handle,out IEnumerable<AbsEntity> result)where E:AbsEntity
+        public static AbsSystemHandle<E> ReturnQueryResult<E>(this AbsSystemHandle<E> handle,out IEnumerable<AbsEntity> result)where E:AbsEntity
         {
             result = handle.result;
             return handle;
         }
-        public static void Excute<E>(this ISystemHandle<E> handle, float secondTime)where E:AbsEntity
+        /// <summary>
+        /// 每隔secondTime秒执行
+        /// </summary>
+        public static void ExcuteDelayTime<E>(this AbsSystemHandle<E> handle, float secondTime)where E:AbsEntity
         {
-            BaseWorld.Instance.monoWorld.StartTimer(handle.Excute, secondTime);
+            var excuteTime = GDGTools.Timer.GetCurrentTime() + GDGTools.Timer.TimeUnitToMillisecond(secondTime, TimeUnit.Second);
+
+            foreach(var item in handle.result)
+            {
+                if (!handle.system.m_Index2TimeHandleMapping.TryGetValue(item.Index, out double extime))
+                {
+                    handle.system.m_Index2TimeHandleMapping.Add(item.Index, excuteTime);
+                    GDGTools.Timer.DelayTimeExcute(secondTime, () =>
+                     {
+                         handle.Excute();
+                         handle.system.m_Index2TimeHandleMapping.Remove(item.Index);
+                     });
+                }
+            }
         }
-        public static ISystemHandle<E> WithEventHandle<E>(this ISystemHandle<E> handle, string eventName)where E:AbsEntity
+        /// <summary>
+        /// 每隔frame帧执行
+        /// </summary>
+        public static void ExcuteDelayFrame<E>(this AbsSystemHandle<E> handle, ushort frame)where E:AbsEntity
+        {
+            var excuteFrame = GDGTools.Timer.CurrentFrame + frame;
+
+            foreach(var item in handle.result)
+            {
+                if (!handle.system.m_Index2FrameHandleMapping.TryGetValue(item.Index, out ulong exframe))
+                {
+                    handle.system.m_Index2FrameHandleMapping.Add(item.Index, excuteFrame);
+                    GDGTools.Timer.DelayFrameExcute(frame, () =>
+                     {
+                         handle.Excute();
+                         handle.system.m_Index2TimeHandleMapping.Remove(item.Index);
+                     });
+                }
+            }
+        }
+        public static AbsSystemHandle<E> WithEventHandle<E>(this AbsSystemHandle<E> handle, string eventName)where E:AbsEntity
         {
             handle.eventName = eventName;
             return handle;
         }
-        public static bool IsExistComponent<T>(this AbsEntity entity)where T:IComponentData
+        public static bool IsExistComponent<T>(this AbsEntity entity)where T:IComponent
         {
             foreach (var item in entity.Components)
             {

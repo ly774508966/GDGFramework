@@ -1,0 +1,22 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using GDG.ECS;
+using GDG.Utils;
+
+public class #SCRIPTNAME# : AbsSystem<#SCRIPTNAME#>
+{
+    public override void OnStart()
+    {
+        
+    }
+
+    public override void OnUpdate()
+    {
+        Select((GameEntity entity) =>
+        {
+
+        })
+        .Excute();
+    }
+}

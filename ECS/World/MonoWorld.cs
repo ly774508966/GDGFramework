@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using GDG.ModuleManager;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -8,20 +9,20 @@ namespace GDG.ECS
 {
     public class MonoWorld : MonoBehaviour
     {
-        public UnityAction awake=null;
-        public UnityAction start=null;
-        public UnityAction ongui = null;
-        public UnityAction update=null;
-        public UnityAction fixedUpdate=null;
-        public UnityAction lateUpdate=null;
-        public UnityAction onEnable=null;
-        public UnityAction onDisable=null;
-        public UnityAction destroy=null;
-        public UnityAction proxyConvertExcute = null;
-        void Awake() { DontDestroyOnLoad(this); if (awake != null) awake(); }
-        void Start() { if (start != null) start(); if (proxyConvertExcute != null) proxyConvertExcute(); }
+        private UnityAction TimerUpdate;
+        private UnityAction awake=null;
+        private UnityAction start=null;
+        private UnityAction ongui = null;
+        private UnityAction update=null;
+        private UnityAction fixedUpdate=null;
+        private UnityAction lateUpdate=null;
+        private UnityAction onEnable=null;
+        private UnityAction onDisable=null;
+        private UnityAction destroy=null;
+        void Awake() { TimerUpdate += TimerManager.Instance.OnUpdate; DontDestroyOnLoad(this); if (awake != null) awake(); }
+        void Start() { if (start != null) start(); }
         void OnGUI() { if (ongui != null) ongui(); }
-        void Update() { if (update != null) update(); }
+        void Update() { if (update != null) update(); TimerUpdate?.Invoke(); }
         void FixedUpdate() { if (fixedUpdate != null) fixedUpdate(); }
         void LateUpdate() { if (lateUpdate != null) lateUpdate(); }
         void OnEnable() { if (onEnable != null) onEnable(); }
@@ -42,10 +43,6 @@ namespace GDG.ECS
                 case "Start":
                     if (isAdd) start += fun;
                     else start -= fun;
-                    break;
-                case "ProxyConvertExcute":
-                    if (isAdd) proxyConvertExcute += fun;
-                    else proxyConvertExcute -= fun;
                     break;
                 case "OnGUI":
                     if (isAdd) ongui += fun;

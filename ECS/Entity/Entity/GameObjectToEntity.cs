@@ -11,21 +11,22 @@ namespace GDG.ECS
         private UnityAction<GameEntity, EntityManager> proxyConverts;//在所有System初始结束后才会执行
         private void Awake()
         {
+           
             proxyConverts = null;
             foreach (var item in this.gameObject.GetComponents<IEntityProxy>())
             {
                 proxyConverts += item.Convert;
             }
-            BaseWorld.Instance.monoWorld.AddOrRemoveListener(ProxyConvertExcute, "ProxyConvertExcute");
+            BaseWorld.Instance.monoWorld.AddOrRemoveListener(ProxyConvertExcute, "LateUpdate");
         }
         void ProxyConvertExcute()
         {
-            entity = World.EntityManager.CreateGameEntity(0,false);
-            entity.gameObject = this.gameObject;
+            entity = World.EntityManager.CreateGameEntity(0,(entity) => { entity.gameObject = this.gameObject; });
             if (proxyConverts != null)
             {
                 proxyConverts(entity, World.EntityManager);
             }
+            BaseWorld.Instance.monoWorld.AddOrRemoveListener(ProxyConvertExcute, "LateUpdate",false);
         }
     }
 }

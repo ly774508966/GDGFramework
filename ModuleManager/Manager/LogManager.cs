@@ -11,7 +11,7 @@ namespace GDG.ModuleManager
 {
     public class LogManager : AbsSingleton<LogManager>
     {
-        private string FilePath { get => $"{ UserFileManager.Path}/Logger/UnityLogger.txt"; }
+        private static string FilePath { get => $"{ UserFileManager.Path}/Logger/UnityLogger.txt"; }
         DataSet ds;
         DataTable dt;
         Texture circle;
@@ -76,33 +76,34 @@ namespace GDG.ModuleManager
             btnstyle.alignment = TextAnchor.MiddleCenter;
             btnstyle.padding = new RectOffset(0, 0, 0, 2);
 
-            UserFileManager.BuildFile("Logger", "UnityLogger.txt");
+            UserFileManager.BuildFile_Async("Logger", "UnityLogger.txt");
             World.monoWorld.AddOrRemoveListener(OnGUI, "OnGUI");
         }
-        public bool EnableConsoleLog = true;
-        public bool EnableRuntimeLog = true;
-        public bool EnableWriteIntoLogFile = false;
-        public bool EnableTime = true;
-        public bool EnableFilePath = true;
-        public bool EnableLog = true;
-        public bool LogErrorOrThrowException = true;
+        public static bool EnableConsoleLog = true;
+        public static bool EnableRuntimeLog = true;
+        public static bool EnableEditorLog = true;
+        public static bool EnableWriteIntoLogFile = true;
+        public static bool EnableTime = true;
+        public static bool EnableFilePath = true;
+        public static bool EnableLog = true;
+        public static bool LogErrorOrThrowException = true;
 
         /// <summary>
         /// 日志文件最大容量(MB)，超过会自动清空
         /// </summary>
-        public int LoggerMaxMBSize = 50;
+        public static float LoggerMaxMBSize = 50;
         private static void LoggerWriteIN(string info)
         {
-            if (LogManager.Instance.EnableWriteIntoLogFile)
+            if (!EnableWriteIntoLogFile)
                 return;
 
-            if (new FileInfo(LogManager.Instance.FilePath)?.Length > LogManager.Instance.LoggerMaxMBSize * 1024 * 1024)
+            if (new FileInfo(FilePath)?.Length > LogManager.LoggerMaxMBSize * 1024 * 1024)
             {
                 UserFileManager.ClearFile("Logger/UnityLogger.txt");
                 LogManager.Instance.LogWarning("清空了一次日志");
             }
 
-            if (!LogManager.Instance.EnableTime)
+            if (!LogManager.EnableTime)
                 UserFileManager.Append("/Logger/UnityLogger.txt", $"[{DateTime.Now.ToString("HH:mm:ss")}]{info}");
             else
                 UserFileManager.Append("/Logger/UnityLogger.txt", info);
@@ -131,10 +132,15 @@ namespace GDG.ModuleManager
 
             if (EnableFilePath)
                 info = $"{info}From：{invoker}( )  |   line:{callerLineNumber}   |   {callerFilePath}";
-            
-            if(File.Exists(FilePath))
-                LoggerWriteIN($"[{tag}] [{DateTime.Now.ToString("HH:mm:ss")}] [File: {callerFilePath}，Method：{invoker}( )，Line：{callerLineNumber}] -{message.ToString()}");
 
+            if (File.Exists(FilePath))
+            {
+                LoggerWriteIN($"[{tag}] [{DateTime.Now.ToString("HH:mm:ss")}] [File: {callerFilePath}，Method：{invoker}( )，Line：{callerLineNumber}] -{message.ToString()}");
+            }
+            else
+            {
+                UserFileManager.BuildFile("Logger", "UnityLogger.txt");
+            }
             return info;
         }
         public void LogCustom(object message,
@@ -144,9 +150,10 @@ namespace GDG.ModuleManager
             [CallerFilePath] string callerFilePath = "unknown",
             [CallerLineNumber] int callerLineNumber = -1)
         {
+            if (!EnableConsoleLog || !EnableLog)
+                return;
             var info = MessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
-            if (EnableConsoleLog)
-                Debug.LogFormat(string.Format($"<color=#{ColorToHex(color)}>" + "{0}</color>", info));
+            Debug.LogFormat(string.Format($"<color=#{ColorToHex(color)}>" + "{0}</color>", info));
         }
         public void LogSucess(object message,
             string tag = "SUCESS",
@@ -154,9 +161,10 @@ namespace GDG.ModuleManager
             [CallerFilePath] string callerFilePath = "unknown",
             [CallerLineNumber] int callerLineNumber = -1)
         {
+            if (!EnableConsoleLog || !EnableLog)
+                return;
             var info = MessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
-            if (EnableConsoleLog)
-                Debug.LogFormat(string.Format("<color=#8BBF41>{0}</color>", info));
+            Debug.LogFormat(string.Format("<color=#8BBF41>{0}</color>", info));
         }
         public void LogInfo(
             object message,
@@ -165,10 +173,10 @@ namespace GDG.ModuleManager
             [CallerFilePath] string callerFilePath = "unknown",
             [CallerLineNumber] int callerLineNumber = -1)
         {
-
+            if (!EnableConsoleLog || !EnableLog)
+                return;
             var info = MessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
-            if (EnableConsoleLog)
-                Debug.Log(info);
+            Debug.Log(info);
         }
         public void LogWarning(
             object message,
@@ -177,9 +185,10 @@ namespace GDG.ModuleManager
             [CallerFilePath] string callerFilePath = "unknown",
             [CallerLineNumber] int callerLineNumber = -1)
         {
+            if (!EnableConsoleLog || !EnableLog)
+                return;
             var info = MessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
-            if (EnableConsoleLog)
-                Debug.Log(string.Format("<color=#E2B652>{0}</color>", info));
+            Debug.Log(string.Format("<color=#E2B652>{0}</color>", info));
         }
         public void LogError(
             object message,
@@ -189,14 +198,11 @@ namespace GDG.ModuleManager
             [CallerLineNumber] int callerLineNumber = -1)
         {
             var info = MessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
-            if (EnableConsoleLog)
-            {
-                if (LogErrorOrThrowException)
-                    Debug.Log(string.Format("<color=#C52252>{0}</color>", info));
-                else
-                    throw new CustomErrorException(info.ToString(), tag, invoker, callerFilePath, callerLineNumber);
-            }
 
+            if (LogErrorOrThrowException && EnableLog && EnableConsoleLog)
+                Debug.Log(string.Format("<color=#C52252>{0}</color>", info));
+            else
+                throw new CustomErrorException(info.ToString(), tag, invoker, callerFilePath, callerLineNumber);
         }
         #endregion
         #region Runtime日志
@@ -222,7 +228,7 @@ namespace GDG.ModuleManager
         Vector2 maxscrollView = Vector2.zero;
         void OnGUI()
         {
-            if (!EnableRuntimeLog)
+            if (!EnableRuntimeLog || !EnableLog)
                 return;
 
             if (!isClose)
@@ -372,9 +378,14 @@ namespace GDG.ModuleManager
                 else
                     info = $"\n{message.ToString()}\n";
             }
-            if(File.Exists(FilePath))
+            if (File.Exists(FilePath))
+            {
                 LoggerWriteIN($"[{DateTime.Now.ToString("HH:mm:ss")}] [File: {callerFilePath}，Method：{invoker}( )，Line：{callerLineNumber}] -{message.ToString()}");
-
+            }
+            else
+            {
+                UserFileManager.BuildFile("Logger", "UnityLogger.txt");
+            }
             return info;
         }
         public void RuntimeLogSuccess(
@@ -383,6 +394,8 @@ namespace GDG.ModuleManager
             [CallerFilePath] string callerFilePath = "unknown",
             [CallerLineNumber] int callerLineNumber = -1)
         {
+            if (!EnableRuntimeLog || !EnableLog)
+                return;
             var info = RuntimeMessageFormat(message, invoker, callerFilePath, callerLineNumber);
             DataRow row = dt.NewRow();
             row["type"] = "success";
@@ -396,8 +409,9 @@ namespace GDG.ModuleManager
             [CallerFilePath] string callerFilePath = "unknown",
             [CallerLineNumber] int callerLineNumber = -1)
         {
+            if (!EnableRuntimeLog || !EnableLog)
+                return;
             var info = RuntimeMessageFormat(message, invoker, callerFilePath, callerLineNumber);
-
             DataRow row = dt.NewRow();
             row["type"] = "info";
             row["info"] = info;
@@ -410,8 +424,10 @@ namespace GDG.ModuleManager
             [CallerFilePath] string callerFilePath = "unknown",
             [CallerLineNumber] int callerLineNumber = -1)
         {
-            var info = RuntimeMessageFormat(message, invoker, callerFilePath, callerLineNumber);
+            if (!EnableRuntimeLog || !EnableLog)
+                return;
 
+            var info = RuntimeMessageFormat(message, invoker, callerFilePath, callerLineNumber);
             DataRow row = dt.NewRow();
             row["type"] = "warning";
             row["info"] = info;
@@ -424,6 +440,9 @@ namespace GDG.ModuleManager
             [CallerFilePath] string callerFilePath = "unknown",
             [CallerLineNumber] int callerLineNumber = -1)
         {
+            if (!EnableRuntimeLog || !EnableLog)
+                return;
+
             if (!LogErrorOrThrowException)
                 throw new CustomErrorException(message.ToString(), "ERROR", invoker, callerFilePath, callerLineNumber);
 
@@ -437,60 +456,43 @@ namespace GDG.ModuleManager
         }
         #endregion
         #region Editor下日志
-        // private static string EditorMessageFormat(object message, string tag, string invoker, string callerFilePath, int callerLineNumber)
-        // {
-        //     string info;
+        private static string EditorMessageFormat(object message, string tag, string invoker, string callerFilePath, int callerLineNumber)
+        {
+            if (!EnableLog)
+                return "";
 
-        //     info = $"<b>[{tag}]</b>[{DateTime.Now.ToString("HH:mm:ss")}]   <b>{message.ToString()}</b>\n";
+            string info;
+            if (EnableTime)
+                info = $"<b>[{tag}]</b>[{DateTime.Now.ToString("HH:mm:ss")}]   <b>{message.ToString()}</b>\n";
+            else
+                info = $"<b>[{tag}]</b>   {message.ToString()}\n";
 
-        //     info = $"{info}From：{invoker}( )  |   line:{callerLineNumber}   |   {callerFilePath}";
+            if (EnableFilePath)
+                info = $"{info}From：{invoker}( )  |   line:{callerLineNumber}   |   {callerFilePath}";
 
-        //     return info;
-        // }
-        // public static void EditorLogSuccess(
-        //     object message,
-        //     string tag = "SUCCESS",
-        //     [CallerMemberNameAttribute] string invoker = "unknown",
-        //     [CallerFilePath] string callerFilePath = "unknown",
-        //     [CallerLineNumber] int callerLineNumber = -1)
-        // {
-        //     var info = EditorMessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
-        //     Debug.LogFormat(string.Format("<color=#8BBF41>{0}</color>", info));
-        // }
+            if (File.Exists(FilePath))
+            {
+                LoggerWriteIN($"[{tag}] [{DateTime.Now.ToString("HH:mm:ss")}] [File: {callerFilePath}，Method：{invoker}( )，Line：{callerLineNumber}] -{message.ToString()}");
+            }
+            else
+            {
+                UserFileManager.BuildFile("Logger", "UnityLogger.txt");
+            }
 
-        // public static void EditorLogInfo(
-        //     object message,
-        //     string tag = "INFO",
-        //     [CallerMemberNameAttribute] string invoker = "unknown",
-        //     [CallerFilePath] string callerFilePath = "unknown",
-        //     [CallerLineNumber] int callerLineNumber = -1)
-        // {
-
-        //     var info = EditorMessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
-        //     Debug.Log(info);
-        // }
-        // public static void EditorLogWarning(
-        //     object message,
-        //     string tag = "WARNING",
-        //     [CallerMemberNameAttribute] string invoker = "unknown",
-        //     [CallerFilePath] string callerFilePath = "unknown",
-        //     [CallerLineNumber] int callerLineNumber = -1)
-        // {
-        //     var info = EditorMessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
-        //     Debug.Log(string.Format("<color=#E2B652>{0}</color>", info));
-        // }
-        // public static void EditorLogError(
-        //     object message,
-        //     string tag = "ERROR",
-        //     [CallerMemberNameAttribute] string invoker = "unknown",
-        //     [CallerFilePath] string callerFilePath = "unknown",
-        //     [CallerLineNumber] int callerLineNumber = -1)
-        // {
-        //     if (!LogManager.Instance.LogErrorOrThrowException)
-        //         throw new CustomErrorException(message.ToString(), tag, invoker, callerFilePath, callerLineNumber);
-        //     var info = EditorMessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
-        //     Debug.Log(string.Format("<color=#C52252>{0}</color>", info));
-        // }
+            return info;
+        }
+        public static void EditorLog(
+            object message,
+            string tag = "EDITOR",
+            [CallerMemberNameAttribute] string invoker = "unknown",
+            [CallerFilePath] string callerFilePath = "unknown",
+            [CallerLineNumber] int callerLineNumber = -1)
+        {
+            if (!EnableEditorLog || !EnableLog)
+                return;
+            var info = EditorMessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
+            Debug.LogFormat(string.Format("<color=#4E6EF2>{0}</color>", info));
+        }
         #endregion
     }
 }

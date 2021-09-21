@@ -64,7 +64,7 @@ namespace GDG.ModuleManager
 
             if (!File.Exists(filepath))
             {
-                return Activator.CreateInstance<T>();
+                return default(T);
             }
 
             string jsonStr = string.Empty;
@@ -80,7 +80,7 @@ namespace GDG.ModuleManager
                 case JsonType.LitJson: return JsonMapper.ToObject<T>(jsonStr);
                 case JsonType.JsonNet: return JsonConvert.DeserializeObject<T>(jsonStr);
             }
-            return Activator.CreateInstance<T>();
+            return default(T);
         }
 
         public static List<Dictionary<string, object>> JsonReader(string filepath)

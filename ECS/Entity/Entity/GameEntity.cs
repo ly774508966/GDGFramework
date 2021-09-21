@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using GDG.Utils;
@@ -9,15 +10,10 @@ namespace GDG.ECS
     public class GameEntity:Entity
     {
         public GameObject gameObject;
-        internal bool isCreateGameObject = false;
+
         public override void OnInit()
-        {
+        {   
             base.OnInit();
-            if(isCreateGameObject)
-            {
-                gameObject = new GameObject();
-                gameObject.name = $"Entity {this.Index}";                
-            }
         }
         public override void OnEnable()
         {
@@ -32,7 +28,7 @@ namespace GDG.ECS
         public override void OnDestroy()
         {
             base.OnDestroy();
-            Object.Destroy(gameObject);
+            UnityEngine.Object.Destroy(gameObject);
 
         }
 

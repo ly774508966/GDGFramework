@@ -97,15 +97,13 @@ namespace GDG.ModuleManager
         public EventManager()
         {
 #if UNITY_EDITOR
-            UserFileManager.BuildFile("User", "EventTable.txt");
+            UserFileManager.BuildFile_Async("User", "EventTable.txt");
 #endif
         }
         //事件字典
-        private Dictionary<string, IEventHandle> EventDic = new Dictionary<string, IEventHandle>();
+        private readonly Dictionary<string, IEventHandle> EventDic = new Dictionary<string, IEventHandle>();
 
-        public bool EnableEventLog = false;
-
-
+        public static bool EnableEventLog = false;
 
         #region 注册监听
         public void AddActionListener(string eventName, UnityAction Event)

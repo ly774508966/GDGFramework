@@ -13,8 +13,8 @@ namespace GDG.ECS
         private int version;
         private uint typeId;
         private bool isActived;
-        private List<IComponentData> components;
-        internal List<IComponentData> Components { get => components; }
+        private List<IComponent> components;
+        internal List<IComponent> Components { get => components; }
         public ulong Index { get => index; }
         public int Version { get => version; }
         public uint TypeId{ get => typeId; }
@@ -59,7 +59,7 @@ namespace GDG.ECS
         }
         public virtual void OnInit()
         {
-            components = new List<IComponentData>();
+            components = new List<IComponent>();
             version = 1;
             isActived = true;
         }
@@ -78,13 +78,13 @@ namespace GDG.ECS
         {
             isActived = true;
         }
-        internal void AddComponentToList(IComponentData component)
+        internal void AddComponentToList(IComponent component)
         {
             if(!components.Contains(component))
                 //LogManager.Instance.LogError($"AddComponent failed! Add a repeated Component:{component.GetType()}");
             components.Add(component);
         }
-        internal bool RemoveComponentToList(IComponentData component)
+        internal bool RemoveComponentToList(IComponent component)
         {
             return components.Remove(component);
         }

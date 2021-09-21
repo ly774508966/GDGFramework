@@ -10,18 +10,20 @@ using GDG.Utils;
 namespace GDG.ECS
 {
     public delegate void SystemCallback<E>(E entity) where E : AbsEntity;
-    public delegate void SystemCallback<E, T>(E entity, T c) where E : AbsEntity where T : class, IComponentData;
-    public delegate void SystemCallback<E, T1, T2>(E entity, T1 c1, T2 c2) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData;
-    public delegate void SystemCallback<E, T1, T2, T3>(E entity, T1 c1, T2 c2, T3 c3) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData;
-    public delegate void SystemCallback<E, T1, T2, T3, T4>(E entity, T1 c1, T2 c2, T3 c3, T4 c4) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData;
-    public delegate void SystemCallback<E, T1, T2, T3, T4, T5>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData;
-    public delegate void SystemCallback<E, T1, T2, T3, T4, T5, T6>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData where T6 : class, IComponentData;
-    public delegate void SystemCallback<E, T1, T2, T3, T4, T5, T6, T7>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6, T7 c7) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData where T6 : class, IComponentData where T7 : class, IComponentData;
-    public delegate void SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6, T7 c7,T8 c8) where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData where T6 : class, IComponentData where T7 : class, IComponentData where T8 : class, IComponentData;
-    public interface ISystemHandle<E>: IExcutable where E:AbsEntity
+    public delegate void SystemCallback<E, T>(E entity, T c) where E : AbsEntity where T : class, IComponent;
+    public delegate void SystemCallback<E, T1, T2>(E entity, T1 c1, T2 c2) where E : AbsEntity where T1 : class, IComponent where T2 : class, IComponent;
+    public delegate void SystemCallback<E, T1, T2, T3>(E entity, T1 c1, T2 c2, T3 c3) where E : AbsEntity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent;
+    public delegate void SystemCallback<E, T1, T2, T3, T4>(E entity, T1 c1, T2 c2, T3 c3, T4 c4) where E : AbsEntity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent;
+    public delegate void SystemCallback<E, T1, T2, T3, T4, T5>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5) where E : AbsEntity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent;
+    public delegate void SystemCallback<E, T1, T2, T3, T4, T5, T6>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6) where E : AbsEntity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent;
+    public delegate void SystemCallback<E, T1, T2, T3, T4, T5, T6, T7>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6, T7 c7) where E : AbsEntity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent;
+    public delegate void SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6, T7 c7,T8 c8) where E : AbsEntity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent;
+    public abstract class AbsSystemHandle<E>: IExcutable where E:AbsEntity
     {
-        IEnumerable<E> result{ get; set; }
-        string eventName{ get; set; }
+        internal IEnumerable<E> result;
+        internal string eventName;
+        internal ISystem system;
+        public abstract void Excute();
     }
     internal static class EntityCallbackExcuteExtension
     {
@@ -29,32 +31,34 @@ namespace GDG.ECS
         {
             if (eventName != null)
             {
-                if (system.m_EventHandle2IndexMapping.TryGetValue(eventName, out List<ulong> indexList))
+                if (system.m_Event2IndexListMapping.TryGetValue(eventName, out List<ulong> indexList))
                 {
                     if (indexList.Contains(entity.Index))
                         return false;
 
-                    system.m_EventHandle2IndexMapping[eventName].Add(entity.Index);
+                    system.m_Event2IndexListMapping[eventName].Add(entity.Index);
 
                     UnityAction cb = null;
                     cb = () =>
                     {
                         callback();
                         EventManager.Instance.RemoveActionListener(eventName,cb);
-                        system.m_EventHandle2IndexMapping[eventName].Remove(entity.Index);
+                        system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
+                        system.m_Index2EventMapping.Remove(entity.Index);
                         cb = null;
                     };
                     EventManager.Instance.AddActionListener(eventName, cb);
                 }
                 else
                 {
-                    system.m_EventHandle2IndexMapping.Add(eventName, new List<ulong>() { entity.Index });
+                    system.m_Event2IndexListMapping.Add(eventName, new List<ulong>() { entity.Index });
                     UnityAction cb = null;
                     cb = () =>
                     {
                         callback();
                         EventManager.Instance.RemoveActionListener(eventName, cb);
-                        system.m_EventHandle2IndexMapping[eventName].Remove(entity.Index);
+                        system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
+                        system.m_Index2EventMapping.Remove(entity.Index);
                         cb = null;
                     };
                     EventManager.Instance.AddActionListener(eventName, cb);
@@ -65,13 +69,10 @@ namespace GDG.ECS
             return true;
         }
     }
-    public class SystemHandle<E> : ISystemHandle<E> where E : AbsEntity
+    public class SystemHandle<E> : AbsSystemHandle<E> where E : AbsEntity
     {
-        public IEnumerable<E> result{ get; set; }
-        public ISystem system;
-        public string eventName { get; set; }
         public SystemCallback<E> callback;
-        public void Excute()
+        public override void Excute()
         {
             if (result == null || callback == null)
                 return;
@@ -82,13 +83,10 @@ namespace GDG.ECS
             }
         }
     }
-    public class SystemHandle<E, T> : ISystemHandle<E> where E : AbsEntity where T : class, IComponentData
+    public class SystemHandle<E, T> : AbsSystemHandle<E> where E : AbsEntity where T : class, IComponent
     {
-        public IEnumerable<E> result{ get; set; }
-        public ISystem system;
-        public string eventName { get; set; }
         public SystemCallback<E, T> callback;
-        public void Excute()
+        public override void Excute()
         {
             if (result == null || callback == null)
                 return;
@@ -106,13 +104,10 @@ namespace GDG.ECS
             }
         }
     }
-    public class SystemHandle<E, T1, T2> : ISystemHandle<E> where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData
+    public class SystemHandle<E, T1, T2> : AbsSystemHandle<E> where E : AbsEntity where T1 : class, IComponent where T2 : class, IComponent
     {
-        public IEnumerable<E> result{ get; set; }
-        public ISystem system;
-        public string eventName { get; set; }
         public SystemCallback<E, T1, T2> callback;
-        public void Excute()
+        public override void Excute()
         {
             if (result == null || callback == null)
                 return;
@@ -130,13 +125,10 @@ namespace GDG.ECS
             }
         }
     }
-    public class SystemHandle<E, T1, T2, T3> : ISystemHandle<E> where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData
+    public class SystemHandle<E, T1, T2, T3> : AbsSystemHandle<E> where E : AbsEntity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
     {
-        public IEnumerable<E> result{ get; set; }
-        public ISystem system;
-        public string eventName { get; set; }
         public SystemCallback<E, T1, T2, T3> callback;
-        public void Excute()
+        public override void Excute()
         {
             T1 t1 = null;
             T2 t2 = null;
@@ -153,13 +145,10 @@ namespace GDG.ECS
             }
         }
     }
-    public class SystemHandle<E, T1, T2, T3, T4> : ISystemHandle<E> where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData
+    public class SystemHandle<E, T1, T2, T3, T4> : AbsSystemHandle<E> where E : AbsEntity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
     {
-        public IEnumerable<E> result{ get; set; }
-        public ISystem system;
-        public string eventName { get; set; }
         public SystemCallback<E, T1, T2, T3, T4> callback;
-        public void Excute()
+        public override void Excute()
         {
             T1 t1 = null;
             T2 t2 = null;
@@ -178,13 +167,10 @@ namespace GDG.ECS
             }
         }
     }
-    public class SystemHandle<E, T1, T2, T3, T4, T5> : ISystemHandle<E> where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData
+    public class SystemHandle<E, T1, T2, T3, T4, T5> : AbsSystemHandle<E> where E : AbsEntity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
     {
-        public IEnumerable<E> result{ get; set; }
-        public ISystem system;
-        public string eventName { get; set; }
         public SystemCallback<E, T1, T2, T3, T4, T5> callback;
-        public void Excute()
+        public override void Excute()
         {
             T1 t1 = null;
             T2 t2 = null;
@@ -205,13 +191,10 @@ namespace GDG.ECS
             }
         }
     }
-    public class SystemHandle<E, T1, T2, T3, T4, T5, T6> : ISystemHandle<E> where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData where T6 : class, IComponentData
+    public class SystemHandle<E, T1, T2, T3, T4, T5, T6> : AbsSystemHandle<E> where E : AbsEntity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
     {
-        public IEnumerable<E> result{ get; set; }
-        public ISystem system;
-        public string eventName { get; set; }
         public SystemCallback<E, T1, T2, T3, T4, T5, T6> callback;
-        public void Excute()
+        public override void Excute()
         {
             T1 t1 = null;
             T2 t2 = null;
@@ -234,13 +217,10 @@ namespace GDG.ECS
             }
         }
     }
-    public class SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> : ISystemHandle<E> where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData where T6 : class, IComponentData where T7 : class, IComponentData
+    public class SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> : AbsSystemHandle<E> where E : AbsEntity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
     {
-        public IEnumerable<E> result{ get; set; }
-        public ISystem system;
-        public string eventName { get; set; }
         public SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback;
-        public void Excute()
+        public override void Excute()
         {
             T1 t1 = null;
             T2 t2 = null;
@@ -265,13 +245,10 @@ namespace GDG.ECS
             }
         }
     }
-    public class SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> : ISystemHandle<E> where E : AbsEntity where T1 : class, IComponentData where T2 : class, IComponentData where T3 : class, IComponentData where T4 : class, IComponentData where T5 : class, IComponentData where T6 : class, IComponentData where T7 : class, IComponentData where T8 : class, IComponentData
+    public class SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> : AbsSystemHandle<E> where E : AbsEntity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
     {
-        public IEnumerable<E> result{ get; set; }
-        public ISystem system;
-        public string eventName { get; set; }
         public SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback;
-        public void Excute()
+        public override void Excute()
         {
             T1 t1 = null;
             T2 t2 = null;

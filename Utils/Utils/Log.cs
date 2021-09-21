@@ -43,42 +43,15 @@ namespace GDG.Utils
         {
             LogManager.Instance.LogError(message, tag, invoker, callerFilePath, callerLineNumber);
         }
-        // public static void EditorLog(
-        //     object message,
-        //     string tag = "INFO",
-        //     [CallerMemberNameAttribute] string invoker = "unknown",
-        //     [CallerFilePath] string callerFilePath = "unknown",
-        //     [CallerLineNumber] int callerLineNumber = -1)
-        // {
+        public static void Editor(
+            object message,
+            string tag = "EDITOR",
+            [CallerMemberNameAttribute] string invoker = "unknown",
+            [CallerFilePath] string callerFilePath = "unknown",
+            [CallerLineNumber] int callerLineNumber = -1)
+        {
 
-        //     LogManager.EditorLogInfo(message, tag, invoker, callerFilePath, callerLineNumber);
-        // }
-        // public static void EditorLogSuccess(
-        //     object message,
-        //     string tag = "SUCCESS",
-        //     [CallerMemberNameAttribute] string invoker = "unknown",
-        //     [CallerFilePath] string callerFilePath = "unknown",
-        //     [CallerLineNumber] int callerLineNumber = -1)
-        // {
-        //     LogManager.EditorLogSuccess(message, tag, invoker, callerFilePath, callerLineNumber);
-        // }
-        // public static void EditorLogWarning(
-        //     object message,
-        //     string tag = "WARNING",
-        //     [CallerMemberNameAttribute] string invoker = "unknown",
-        //     [CallerFilePath] string callerFilePath = "unknown",
-        //     [CallerLineNumber] int callerLineNumber = -1)
-        // {
-        //     LogManager.EditorLogWarning(message, tag, invoker, callerFilePath, callerLineNumber);
-        // }
-        // public static void EditorLogError(
-        //     object message,
-        //     string tag = "ERROR",
-        //     [CallerMemberNameAttribute] string invoker = "unknown",
-        //     [CallerFilePath] string callerFilePath = "unknown",
-        //     [CallerLineNumber] int callerLineNumber = -1)
-        // {
-        //     LogManager.EditorLogError(message, tag, invoker, callerFilePath, callerLineNumber);
-        // }
+            LogManager.EditorLog(message, tag, invoker, callerFilePath, callerLineNumber);
+        }
     }
 }

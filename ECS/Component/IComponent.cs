@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace GDG.ECS
 {
-    public interface IComponentData
+    public interface IComponent
     {
 
     }

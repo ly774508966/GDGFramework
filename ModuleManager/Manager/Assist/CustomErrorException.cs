@@ -19,7 +19,7 @@ namespace GDG.ModuleManager
             var logMgr = LogManager.Instance;
 
             var info = logMgr.MessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
-            if (logMgr.EnableConsoleLog)
+            if (LogManager.EnableConsoleLog)
                 throw new Exception(info);
         }
     }

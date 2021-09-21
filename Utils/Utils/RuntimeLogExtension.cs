@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using GDG.ModuleManager;
 using UnityEngine;
-namespace GDG.ECS
+namespace GDG.Utils
 {
-    public static class SystemLogExtension
+    public static class RuntimeLogExtension
     {
         public static void log(
-            this ISystem system,
+            this object obj,
             object message,
             [CallerMemberNameAttribute] string invoker = "unknown",
             [CallerFilePath] string callerFilePath = "unknown",
@@ -17,7 +17,7 @@ namespace GDG.ECS
             LogManager.Instance.RuntimeLogInfo(message, invoker, callerFilePath, callerLineNumber);
         }
         public static void logsuccess(
-            this ISystem system,
+            this object obj,
             object message,
             [CallerMemberNameAttribute] string invoker = "unknown",
             [CallerFilePath] string callerFilePath = "unknown",
@@ -26,7 +26,7 @@ namespace GDG.ECS
             LogManager.Instance.RuntimeLogSuccess(message, invoker, callerFilePath, callerLineNumber);
         }
         public static void logwarning(
-            this ISystem system,
+            this object obj,
             object message,
             [CallerMemberNameAttribute] string invoker = "unknown",
             [CallerFilePath] string callerFilePath = "unknown",
@@ -35,7 +35,7 @@ namespace GDG.ECS
             LogManager.Instance.RuntimeLogWarning(message, invoker, callerFilePath, callerLineNumber);
         }
         public static void Logerror(
-            this ISystem system,
+            this object obj,
             object message,
             [CallerMemberNameAttribute] string invoker = "unknown",
             [CallerFilePath] string callerFilePath = "unknown",

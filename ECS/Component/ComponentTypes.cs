@@ -13,7 +13,10 @@ namespace GDG.ECS
             ComponentTypesList = new List<Type>();
             foreach(var item in componentTypes)
             {
-                if(!typeof(IComponentData).IsAssignableFrom(item))
+                if(ComponentTypesList.Contains(item))
+                    continue;
+
+                if(!typeof(IComponent).IsAssignableFrom(item))
                     LogManager.Instance.LogError($"Try to add a wrong type into ComponentTypes! Type:{item.GetType()}");
                 ComponentTypesList.Add(item);
             }
@@ -21,7 +24,7 @@ namespace GDG.ECS
             RequestTypeId();
         }
 
-        public List<Type> ComponentTypesList{ get; }
+        public List<Type> ComponentTypesList{ get; private set; }
         private int entityRefCount;//实体对组件的引用计数
         private uint typeId;
         public int EntityRefCount{ get => entityRefCount; }
@@ -45,28 +48,23 @@ namespace GDG.ECS
         }
         public void Add(Type item)
         {
-            if(!typeof(IComponentData).IsAssignableFrom(item)|| Contains(item))
+            if(!typeof(IComponent).IsAssignableFrom(item)|| Contains(item))
                 return;
             ComponentTypesList.Add(item);
 
             RequestTypeId();
         }
-
         public bool Remove(Type item)
         {
             if(Contains(item))
             {
-                RequestTypeId();
-                bool isRemove = ComponentTypesList.Remove(item);
-
-                return isRemove;
+                return  ComponentTypesList.Remove(item);
             }
             return false;
         }
         /// <summary>
         /// 使用此方法将会导致组件变成未申请状态
         /// </summary>
-        /// <param name="item"></param>
         public void Clear()
         {
             ComponentTypesList.Clear();
@@ -95,14 +93,12 @@ namespace GDG.ECS
 
         public bool Equals(ComponentTypes other)
         {
-            
             var otherList = other.ComponentTypesList;
             if (otherList.Count != ComponentTypesList.Count)
                 return false;
-
-            for (int i = 0; i < other.ComponentTypesList.Count;i++)
+            foreach(var item in other.ComponentTypesList)
             {
-                if(otherList[i]!=ComponentTypesList[i])
+                if(!ComponentTypesList.Contains(item))
                     return false;
             }
             return true;

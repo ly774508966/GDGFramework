@@ -27,34 +27,32 @@ public class PersistTools : EditorWindow
     {
         EditorGUILayout.Space(15f);
         
-        EditorGUILayout.BeginHorizontal();
+        using(new EditorGUILayout.HorizontalScope())
         {
             EditorGUILayout.Space();
 
-            EditorGUILayout.BeginHorizontal();
+            using(new EditorGUILayout.HorizontalScope())
             {
                 firstIndex = EditorGUILayout.Popup(firstIndex, firstOption);
 
                 GUILayout.Label("To");
 
                 secondIndex = EditorGUILayout.Popup(secondIndex, firstOption);
-
-            }EditorGUILayout.EndHorizontal();
-                
+            }
             EditorGUILayout.Space();
-        }EditorGUILayout.EndHorizontal();
+        }
 
         EditorGUILayout.Space(30f);
 
-        EditorGUILayout.BeginHorizontal();
+        using(new EditorGUILayout.HorizontalScope())
         {
-            EditorGUILayout.BeginVertical();
+            using(new EditorGUILayout.VerticalScope())
             {
                 if (firstOption[firstIndex] == "Excel" || secondOption[secondIndex] == "Excel")
                 {
                     int a = 1;
                     int b = 0;
-                    EditorGUILayout.BeginHorizontal();
+                    using(new EditorGUILayout.HorizontalScope())
                     {
                         EditorGUILayout.Space(5f);
 
@@ -71,57 +69,57 @@ public class PersistTools : EditorWindow
                         width = 35f;
 
                     }
-                    EditorGUILayout.EndHorizontal();
                 }
                 else
                     width = 53f;
 
                 EditorGUILayout.Space(10f);
 
-                EditorGUILayout.BeginHorizontal();
+                using(new EditorGUILayout.HorizontalScope())
                 {
                     EditorGUILayout.Space(10f,false);
                     GUILayout.Label($"{firstOption[firstIndex]} Path:", GUILayout.ExpandWidth(false),GUILayout.MinWidth(80));
                     firstPath = GUILayout.TextField(firstPath);
                     EditorGUILayout.Space(10f,false);
-                }EditorGUILayout.EndHorizontal();
+                }
 
                 EditorGUILayout.Space(5f,false);
 
-                EditorGUILayout.BeginHorizontal();
+                using(new EditorGUILayout.HorizontalScope())
                 {
                     EditorGUILayout.Space(10f,false);
                     GUILayout.Label($"{secondOption[secondIndex]} Path:", GUILayout.ExpandWidth(false),GUILayout.MinWidth(80));
                     secondPath = GUILayout.TextField(secondPath);
                     EditorGUILayout.Space(10f,false);
-                }EditorGUILayout.EndHorizontal();
+                }
 
-            }EditorGUILayout.EndVertical();
+            }
 
-        }EditorGUILayout.EndHorizontal();
+        }
 
         EditorGUILayout.Space(width);
 
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.Space(50f,false);
-        if (GUILayout.Button("Generate"))
+        using (new EditorGUILayout.HorizontalScope())
         {
-            List<Dictionary<string, object>> data = new List<Dictionary<string, object>>();
-            switch (firstOption[firstIndex])
+            EditorGUILayout.Space(50f, false);
+            if (GUILayout.Button("Generate"))
             {
-                case "Json":data = JsonManager.JsonReader(firstPath);break;
-                case "Xml":data = XmlManager.XmlReader(firstPath);break;
-                case "Excel":data = ExcelManager.ExcelReader(firstPath,startline,sheetIndex);break;
+                List<Dictionary<string, object>> data = new List<Dictionary<string, object>>();
+                switch (firstOption[firstIndex])
+                {
+                    case "Json": data = JsonManager.JsonReader(firstPath); break;
+                    case "Xml": data = XmlManager.XmlReader(firstPath); break;
+                    case "Excel": data = ExcelManager.ExcelReader(firstPath, startline, sheetIndex); break;
+                }
+
+                switch (secondOption[secondIndex])
+                {
+                    case "Json": JsonManager.JsonWriter(data, secondPath); break;
+                    case "Xml": XmlManager.XmlWriter(data, secondPath); break;
+                    case "Excel": ExcelManager.ExcelWriter(data, secondPath, startline, sheetIndex); break;
+                }
             }
-            
-            switch (secondOption[secondIndex])
-            {
-                case "Json":JsonManager.JsonWriter(data,secondPath);break;
-                case "Xml":XmlManager.XmlWriter(data,secondPath);break;
-                case "Excel":ExcelManager.ExcelWriter(data,secondPath,startline,sheetIndex);break;
-            }
+            EditorGUILayout.Space(50f, false);
         }
-        EditorGUILayout.Space(50f,false);
-        EditorGUILayout.EndHorizontal();
     }
 }

@@ -14,8 +14,7 @@ namespace GDG.ECS
         public uint WorldID = 0;
         public string WorldName = "World";
         internal readonly EntityManager EntityManager;
-        internal readonly List<ISystem> Systems;
-        private Dictionary<Type, ISystem> m_SystemTypeMapping;
+        internal readonly Dictionary<Type, ISystem> Systems;
         internal MonoWorld monoWorld;
         private ulong entityMaxIndex;
         private uint maxTypeId;
@@ -30,20 +29,22 @@ namespace GDG.ECS
         public BaseWorld()
         {
             EntityManager = new EntityManager();
-            Systems = new List<ISystem>();
-            m_SystemTypeMapping = new Dictionary<Type, ISystem>();
+            Systems = new Dictionary<Type, ISystem>();
 
             var gameObject = new GameObject(WorldName);
+            gameObject.transform.position = Vector3.zero;
             monoWorld = gameObject.AddComponent<MonoWorld>();
             monoWorld.AddOrRemoveListener(AfterInit, "Start");
         }
         private void AfterInit()
         {
             SystemSingletonInit();
-            foreach (var system in Systems)
+            foreach (var system in Systems.Values)
             {
-                m_SystemTypeMapping.Add(system.GetType(), system);
+                // IOCSystems.Add(system.GetType(), system);
                 monoWorld.AddOrRemoveListener(system.OnUpdate, "Update");
+                monoWorld.AddOrRemoveListener(system.OnLateUpdate, "LateUpdate");
+                monoWorld.AddOrRemoveListener(system.OnFixedUpdate, "FixedUpdate");
                 monoWorld.AddOrRemoveListener(system.OnStart, "Start");
             }
         }
@@ -63,7 +64,7 @@ namespace GDG.ECS
                 }
             }
         }
-        public bool IsExistSystem<T>() where T : ISystem,new() => m_SystemTypeMapping.ContainsKey(typeof(T));
+        public bool IsExistSystem<T>() where T : ISystem,new() => Systems.ContainsKey(typeof(T));
         internal void AddOrRemoveSystemFromMonoWorld(ISystem system, bool isAdd = true)
         {
             if (isAdd)
@@ -80,7 +81,7 @@ namespace GDG.ECS
         }
         internal void UpdateEntitiesOfSystems(List<AbsEntity> entityList)
         {
-            foreach (var system in Systems)
+            foreach (var system in Systems.Values)
             {
                 if (system.Entities != null)
                     system.SetEntities(entityList);
@@ -88,31 +89,30 @@ namespace GDG.ECS
                     LogManager.Instance.LogError($"Update Entities of Systems faield，Systems.Entites is null ! System: {system.GetType()}");
             }
         }
-
         public bool AddOrRemoveEntityFromSystems(AbsEntity entity, bool isAdd = true)
         {
             //添加
             if (isAdd)
             {
-                foreach (var system in Systems)
+                foreach (var system in Systems.Values)
                 {
-                    system.Entities.Add(entity);
+                    system.AddEntity(entity);
                 }
                 return true;
             }
             //删除
-            if (Systems.Count < 1)
+            if (Systems.Values.Count < 1)
                 return false;
-            if (Systems[0].Entities.Contains(entity))
+            if (Systems.Values.First().Entities.Contains(entity))
             {
-                foreach (var system in Systems)
+                foreach (var system in Systems.Values)
                 {
                     if (system.Entities == null)
                     {
                         LogManager.Instance.LogError($"Remove Entity from Systems faield，Systems.Entites is null ! System: {system.GetType()}");
                         return false;
                     }
-                    if (!system.Entities.Remove(entity))
+                    if (!system.RemoveEntity(entity))
                     {
                         LogManager.Instance.LogError($"Remove Entity from Systems faield，cant't find Entity in Systems ! Index: {entity.Index}");
                         return false;
@@ -121,9 +121,9 @@ namespace GDG.ECS
             }
             return true;
         }
-        public bool AddOrRemoveEntityFromSystems<T>(AbsEntity entity, bool isAdd = true) where T : ISystem, new()
+        public bool AddOrRemoveEntityFromSystem<T>(AbsEntity entity, bool isAdd = true) where T : ISystem, new()
         {
-            if (m_SystemTypeMapping.TryGetValue(typeof(T), out ISystem system))
+            if (Systems.TryGetValue(typeof(T), out ISystem system))
             {
                 //添加
                 if (isAdd)
