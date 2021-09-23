@@ -79,7 +79,7 @@ namespace GDG.ECS
             }
                 
         }
-        internal void UpdateEntitiesOfSystems(List<AbsEntity> entityList)
+        internal void UpdateEntitiesOfSystems(List<Entity> entityList)
         {
             foreach (var system in Systems.Values)
             {
@@ -89,7 +89,7 @@ namespace GDG.ECS
                     LogManager.Instance.LogError($"Update Entities of Systems faield，Systems.Entites is null ! System: {system.GetType()}");
             }
         }
-        public bool AddOrRemoveEntityFromSystems(AbsEntity entity, bool isAdd = true)
+        public bool AddOrRemoveEntityFromSystems(Entity entity, bool isAdd = true)
         {
             //添加
             if (isAdd)
@@ -121,7 +121,7 @@ namespace GDG.ECS
             }
             return true;
         }
-        public bool AddOrRemoveEntityFromSystem<T>(AbsEntity entity, bool isAdd = true) where T : ISystem, new()
+        public bool AddOrRemoveEntityFromSystem<T>(Entity entity, bool isAdd = true) where T : ISystem, new()
         {
             if (Systems.TryGetValue(typeof(T), out ISystem system))
             {

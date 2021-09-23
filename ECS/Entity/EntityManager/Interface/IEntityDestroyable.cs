@@ -6,6 +6,6 @@ namespace GDG.ECS
 {
     public interface IEntityDestoryable
     {
-        void DestroyEntity(AbsEntity entity);
+        void DestroyEntity(Entity entity);
     }
 }

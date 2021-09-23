@@ -89,6 +89,12 @@ namespace GDG.Editor
         {
             CreateCshapScriptFromTemplate("EntityProxy.cs", TemplatePath + "/ProxyTemplate.txt");
         }
+        
+        [MenuItem("Assets/Create/Interface", false, 80)]
+        private static void CreateInterface()
+        {
+            CreateCshapScriptFromTemplate("New Interface.cs", TemplatePath + "/InterfaceTemplate.txt");
+        }
         #endregion
     }
 }

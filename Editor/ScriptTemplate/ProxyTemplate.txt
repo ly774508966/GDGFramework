@@ -6,7 +6,7 @@ using GDG.Utils;
 
 public class #SCRIPTNAME# : MonoBehaviour, IEntityProxy
 {
-    public void Convert(GameEntity entity, EntityManager entityManager)
+    public void Convert(Entity entity, EntityManager entityManager)
     {
 
     }

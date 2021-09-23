@@ -6,6 +6,6 @@ namespace GDG.ECS
 {
     public interface IEntityEnable
     {
-        void EnableEntity(AbsEntity entity);
+        void EnableEntity(Entity entity);
     }
 }

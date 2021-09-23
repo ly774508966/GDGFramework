@@ -8,6 +8,6 @@ namespace GDG.ECS
     
     public interface IEntityProxy
     {
-        void Convert(GameEntity entity, EntityManager entityManager);
+        void Convert(Entity entity, EntityManager entityManager);
     }
 }

@@ -12,19 +12,19 @@ namespace GDG.ECS
     public class EntityManager : IEntityCreateable, IEntityDestoryable, IEntityRecyclable
     {
         private readonly Dictionary<uint, EntityPool> m_TypeId2EntityPoolMapping;
-        private readonly Dictionary<ulong, AbsEntity> m_Index2EnityMapping;
+        private readonly Dictionary<ulong, Entity> m_Index2EnityMapping;
         private readonly Dictionary<uint, ComponentTypes> m_TypeId2ComponentTypeMapping;
         private readonly Dictionary<uint, List<ulong>> m_TypeId2IndexMapping;
-        public readonly List<AbsEntity> m_ActivedEntityList;
+        public readonly List<Entity> m_ActivedEntityList;
         private ulong entityMaxIndex;
         private uint maxTypeId;
         internal EntityManager()
         {
             m_TypeId2EntityPoolMapping = new Dictionary<uint, EntityPool>();
-            m_Index2EnityMapping = new Dictionary<ulong, AbsEntity>();
+            m_Index2EnityMapping = new Dictionary<ulong, Entity>();
             m_TypeId2ComponentTypeMapping = new Dictionary<uint, ComponentTypes>();
             m_TypeId2IndexMapping = new Dictionary<uint, List<ulong>>();
-            m_ActivedEntityList = new List<AbsEntity>();//活跃实体列表，供世界使用
+            m_ActivedEntityList = new List<Entity>();//活跃实体列表，供世界使用
         }
         internal void EntityMaxIndexIncrease()
         {
@@ -56,7 +56,36 @@ namespace GDG.ECS
             m_TypeId2ComponentTypeMapping.Add(componentTypes.TypeId, componentTypes);
             return componentTypes.TypeId;
         }        
-        public AbsEntity CreateEntity(uint typeId = 0, Action<AbsEntity> initCallback = null, Action<AbsEntity> enableCallback = null)
+        public void RecycleEntity(Entity entity)
+        {
+            AddTypeId2EntityPoolMapping(entity.TypeId, out EntityPool entityPool, (pool) => { pool.PushEntity(entity); }, (pool) => { pool.PushEntity(entity); });
+            m_ActivedEntityList.Remove(entity);
+            BaseWorld.Instance.UpdateEntitiesOfSystems(m_ActivedEntityList);
+        }
+        public void DestroyEntity(Entity entity)
+        {
+            EntityRefCountDecrementOne(entity);
+            RemoveTypeId2IndexMapping(entity.TypeId, entity.Index, () => { });
+            RemoveIndex2EnityMapping(entity.Index, () => { });
+            m_ActivedEntityList.Remove(entity);
+            BaseWorld.Instance.UpdateEntitiesOfSystems(m_ActivedEntityList);
+            entity.OnDestroy();
+        }
+      
+        #region CreateEntity
+        public Entity CreateEntity()
+        {
+            return CreateEntity(0, null);
+        }
+        public Entity CreateEntity(uint typeId)
+        {
+            return CreateEntity(typeId, null);
+        }
+        public Entity CreateEntity(ComponentTypes componentTypes)
+        {
+            return CreateEntity(componentTypes);
+        }
+        public Entity CreateEntity(uint typeId, Action<Entity> enableCallback)
         {
             AddTypeId2EntityPoolMapping(typeId, out EntityPool entityPool, (entityPool) => { }, (entityPool) => { });
             var entity = entityPool.PopEntity(
@@ -80,60 +109,22 @@ namespace GDG.ECS
 
             return entity;
         }
-        public AbsEntity CreateEntity(ComponentTypes componentType, Action<AbsEntity> initCallback = null, Action<AbsEntity> enableCallback = null)
+        public Entity CreateEntity(ComponentTypes componentTypes , Action<Entity> enableCallback)
         {
-            return CreateEntity(componentType.TypeId, initCallback, enableCallback);
-        }
-        public void RecycleEntity(AbsEntity entity)
-        {
-            AddTypeId2EntityPoolMapping(entity.TypeId, out EntityPool entityPool, (pool) => { pool.PushEntity(entity); }, (pool) => { pool.PushEntity(entity); });
-            m_ActivedEntityList.Remove(entity);
-            BaseWorld.Instance.UpdateEntitiesOfSystems(m_ActivedEntityList);
-        }
-        public void DestroyEntity(AbsEntity entity)
-        {
-            EntityRefCountDecrementOne(entity);
-            RemoveTypeId2IndexMapping(entity.TypeId, entity.Index, () => { });
-            RemoveIndex2EnityMapping(entity.Index, () => { });
-            m_ActivedEntityList.Remove(entity);
-
-            BaseWorld.Instance.UpdateEntitiesOfSystems(m_ActivedEntityList);
-
-            entity.OnDestroy();
-            UnityEngine.Object.Destroy(entity);
-        }
-      
-        #region CreateEntity
-        public T CreateEntity<T>() where T : AbsEntity
-        {
-            return CreateEntity<T>(0, null);
+            return CreateEntity(componentTypes.TypeId, enableCallback);
         }
 
-        public T CreateEntity<T>(Action<AbsEntity> enableCallback) where T : AbsEntity
+
+        public Entity CreateEntity<T>() where T: IComponent
         {
-            return CreateEntity<T>(0, enableCallback);
+            return CreateEntity<T>(null);
         }
-        public T CreateEntity<T>(uint typeId) where T : AbsEntity
+        public Entity CreateEntity<T>(Action<Entity> enableCallback)where T: IComponent
         {
-            return CreateEntity<T>(typeId, null);
-        }
-        public T CreateEntity<T>(uint typeId, Action<AbsEntity> enableCallback) where T : AbsEntity
-        {
-            if (typeof(T) == typeof(GameEntity))
-            {
-                return CreateGameEntity(typeId, enableCallback) as T;
-            }
-            return CreateEntity(typeId, enableCallback) as T;
-        }
-        public T CreateEntity<T>(ComponentTypes componentTypes)where T : AbsEntity
-        {
-            return CreateEntity<T>(componentTypes, null);
+            ComponentTypes componentTypes = new ComponentTypes(typeof(T));
+            return CreateEntity(componentTypes, enableCallback);
         }
 
-        public T CreateEntity<T>(ComponentTypes componentTypes, Action<AbsEntity> enableCallback) where T : AbsEntity
-        {
-            return CreateEntity<T>(componentTypes.TypeId, enableCallback);
-        }
         #endregion
         #region CreateGameEntity
         public GameEntity CreateGameEntity()
@@ -179,9 +170,9 @@ namespace GDG.ECS
         }        
         #endregion 
         #region SelectEntity
-        public bool TrySelectEntityWithIndex<T>(ulong index, out T result) where T : AbsEntity
+        public bool TrySelectEntityWithIndex<T>(ulong index, out T result) where T : Entity
         {
-            if (m_Index2EnityMapping.TryGetValue(index, out AbsEntity absEntity))
+            if (m_Index2EnityMapping.TryGetValue(index, out Entity absEntity))
             {
                 result = absEntity as T;
                 return true;
@@ -189,9 +180,9 @@ namespace GDG.ECS
             result = null;
             return false;
         }
-        public bool TrySelectActivedEntityWithIndex<T>(ulong index, out T result) where T : AbsEntity
+        public bool TrySelectActivedEntityWithIndex<T>(ulong index, out T result) where T : Entity
         {
-            if (m_Index2EnityMapping.TryGetValue(index, out AbsEntity absEntity))
+            if (m_Index2EnityMapping.TryGetValue(index, out Entity absEntity))
             {
                 if (!absEntity.IsActived)
                 {
@@ -204,13 +195,13 @@ namespace GDG.ECS
             result = null;
             return false;
         }
-        public bool TrySelectEntitiesWithTypeId<T>(uint typeId, out List<T> resultList) where T : AbsEntity
+        public bool TrySelectEntitiesWithTypeId<T>(uint typeId, out List<T> resultList) where T : Entity
         {
             var indexList = GetEntityIndexesWithTypeId(typeId);
             List<T> entityList = new List<T>();
             foreach (var index in indexList)
             {
-                AbsEntity entity;
+                Entity entity;
                 if (m_Index2EnityMapping.TryGetValue(index, out entity))
                 {
                     if (entity is T tempEntity)
@@ -222,13 +213,13 @@ namespace GDG.ECS
             resultList = entityList.Count > 0 ? null : entityList;
             return true;
         }
-        public bool TrySelectActivedEntitiesWithTypeId<T>(uint typeId, out List<T> resultList) where T : AbsEntity
+        public bool TrySelectActivedEntitiesWithTypeId<T>(uint typeId, out List<T> resultList) where T : Entity
         {
             var indexList = GetEntityIndexesWithTypeId(typeId);
             List<T> entityList = new List<T>();
             foreach (var index in indexList)
             {
-                AbsEntity entity;
+                Entity entity;
                 if (m_Index2EnityMapping.TryGetValue(index, out entity))
                 {
                     if (entity is T tempEntity && entity.IsActived)
@@ -240,17 +231,17 @@ namespace GDG.ECS
             resultList = entityList.Count > 0 ? null : entityList;
             return true;
         }
-        public AbsEntity SelectEntityWithIndex(ulong index)
+        public Entity SelectEntityWithIndex(ulong index)
         {
-            if (m_Index2EnityMapping.TryGetValue(index, out ECS.AbsEntity absEntity))
+            if (m_Index2EnityMapping.TryGetValue(index, out ECS.Entity absEntity))
             {
                 return absEntity;
             }
             return null;
         }
-        public AbsEntity SelectActivedEntityWithIndex(ulong index)
+        public Entity SelectActivedEntityWithIndex(ulong index)
         {
-            if (m_Index2EnityMapping.TryGetValue(index, out AbsEntity absEntity))
+            if (m_Index2EnityMapping.TryGetValue(index, out Entity absEntity))
             {
                 if (!absEntity.IsActived)
                 {
@@ -260,16 +251,16 @@ namespace GDG.ECS
             }
             return null;
         }
-        public List<AbsEntity> SelectEntitiesWithTypeId(uint typeId)
+        public List<Entity> SelectEntitiesWithTypeId(uint typeId)
         {
             var indexList = GetEntityIndexesWithTypeId(typeId);
-            List<AbsEntity> entityList = new List<AbsEntity>();
+            List<Entity> entityList = new List<Entity>();
             foreach (var index in indexList)
             {
-                ECS.AbsEntity entity;
+                ECS.Entity entity;
                 if (m_Index2EnityMapping.TryGetValue(index, out entity))
                 {
-                    if (entity is AbsEntity tempEntity)
+                    if (entity is Entity tempEntity)
                     {
                         entityList.Add(tempEntity);
                     }
@@ -277,15 +268,15 @@ namespace GDG.ECS
             }
             return entityList.Count > 0 ? null : entityList;
         }
-        public List<AbsEntity> SelectActivedEntitiesWithTypeId(uint typeId)
+        public List<Entity> SelectActivedEntitiesWithTypeId(uint typeId)
         {
             var indexList = GetEntityIndexesWithTypeId(typeId);
             if (indexList == null)
                 return null;
-            List<AbsEntity> entityList = new List<AbsEntity>();
+            List<Entity> entityList = new List<Entity>();
             foreach (var index in indexList)
             {
-                AbsEntity entity;
+                Entity entity;
                 if (m_Index2EnityMapping.TryGetValue(index, out entity))
                 {
                     if (entity.IsActived)
@@ -298,7 +289,7 @@ namespace GDG.ECS
         }
         #endregion
         #region Component
-        public List<IComponent> AddComponent(AbsEntity entity, ComponentTypes componentTypes)
+        public List<IComponent> AddComponent(Entity entity, ComponentTypes componentTypes)
         {
             if (!entity.IsActived)
             {
@@ -309,7 +300,7 @@ namespace GDG.ECS
             AddComponentTypes(entity, componentTypes);
             return entity.Components;
         }
-        public T AddComponent<T>(AbsEntity entity) where T : IComponent, new()
+        public T AddComponent<T>(Entity entity) where T : IComponent, new()
         {
             if (!entity.IsActived)
             {
@@ -318,7 +309,7 @@ namespace GDG.ECS
             }
             return AddComponentTypes<T>(entity);
         }
-        public bool RemoveComponet(AbsEntity entity, ComponentTypes componentTypes)
+        public bool RemoveComponet(Entity entity, ComponentTypes componentTypes)
         {
             if (!entity.IsActived)
             {
@@ -327,7 +318,7 @@ namespace GDG.ECS
             }
             return RemoveComponentTypes(entity, componentTypes);
         }
-        public bool RemoveComponet<T>(AbsEntity entity) where T : IComponent
+        public bool RemoveComponet<T>(Entity entity) where T : IComponent
         {
             if (!entity.IsActived)
             {
@@ -350,7 +341,7 @@ namespace GDG.ECS
         }
             #region Details
             //实体组件类型在字典中的引用对实体引用计数-1，只用于对实体组件的修改件之前以及实体的销毁时使用
-            private bool EntityRefCountDecrementOne(AbsEntity entity)
+            private bool EntityRefCountDecrementOne(Entity entity)
             {
                 if (entity.TypeId == 0 || entity.Components.Count == 0)
                     return false;
@@ -374,7 +365,7 @@ namespace GDG.ECS
                     LogManager.Instance.LogError($"Remove component failed ! Can't Find ComponentTypes in World ! TypeId:{entity.TypeId}");
                 return false;
             }
-            private ComponentTypes AddComponentTypes(AbsEntity entity, ComponentTypes componentTypes)
+            private ComponentTypes AddComponentTypes(Entity entity, ComponentTypes componentTypes)
             {
                 //添加之前
                 EntityRefCountDecrementOne(entity);
@@ -411,7 +402,7 @@ namespace GDG.ECS
                 LogManager.Instance.LogError($"Add component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
                 return null;
             }
-            private bool RemoveComponentTypes(AbsEntity entity, ComponentTypes componentTypes)
+            private bool RemoveComponentTypes(Entity entity, ComponentTypes componentTypes)
             {
                 var index = entity.Index;
 
@@ -455,7 +446,7 @@ namespace GDG.ECS
                 LogManager.Instance.LogError($"Remove component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
                 return true;
             }
-            private T AddComponentTypes<T>(AbsEntity entity) where T : IComponent
+            private T AddComponentTypes<T>(Entity entity) where T : IComponent
             {
                 //添加之前
                 EntityRefCountDecrementOne(entity);
@@ -489,7 +480,7 @@ namespace GDG.ECS
                 LogManager.Instance.LogError($"Add component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
                 return default(T);
             }
-            private bool RemoveComponentTypes<T>(AbsEntity entity) where T : IComponent
+            private bool RemoveComponentTypes<T>(Entity entity) where T : IComponent
             {
                 var index = entity.Index;
 
@@ -555,9 +546,9 @@ namespace GDG.ECS
             }
             return false;
         }
-        internal bool AddIndex2EnityMapping(ulong typeId, AbsEntity entity, Action<AbsEntity> sucessCallback)
+        internal bool AddIndex2EnityMapping(ulong typeId, Entity entity, Action<Entity> sucessCallback)
         {
-            if (!m_Index2EnityMapping.TryGetValue(typeId, out AbsEntity outEntity))
+            if (!m_Index2EnityMapping.TryGetValue(typeId, out Entity outEntity))
             {
                 m_Index2EnityMapping.Add(typeId, entity);
                 sucessCallback(entity);
@@ -567,7 +558,7 @@ namespace GDG.ECS
         }
         internal bool RemoveIndex2EnityMapping(ulong typeId, Action sucessCallback)
         {
-            if (m_Index2EnityMapping.TryGetValue(typeId, out AbsEntity outentity))
+            if (m_Index2EnityMapping.TryGetValue(typeId, out Entity outentity))
             {
                 m_Index2EnityMapping.Remove(typeId);
                 sucessCallback();

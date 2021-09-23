@@ -11,26 +11,38 @@ namespace GDG.ECS
     {
         public GameObject gameObject;
 
-        public override void OnInit()
+        internal override void OnInit()
         {   
             base.OnInit();
         }
-        public override void OnEnable()
+        internal override void OnEnable()
         {
             base.OnEnable();
             gameObject.SetActive(true);
         }
-        public override void OnRecycle()
+        internal override void OnRecycle()
         {
             base.OnRecycle();
             gameObject.SetActive(false);
         }
-        public override void OnDestroy()
+        internal override void OnDestroy()
         {
             base.OnDestroy();
             UnityEngine.Object.Destroy(gameObject);
 
         }
+        internal override void AddComponentToList(IComponent component)
+        {
+            if(component is GameObjectComponent)
+                return;
+            base.AddComponentToList(component);
+        }
+        internal override bool RemoveComponentToList(IComponent component)
+        {
+            if(component is GameObjectComponent)
+                return false;
+            return base.RemoveComponentToList(component);
 
+        }
     }
 }

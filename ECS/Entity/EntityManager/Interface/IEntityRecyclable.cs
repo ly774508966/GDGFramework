@@ -6,6 +6,6 @@ namespace GDG.ECS
 {
     public interface IEntityRecyclable
     {
-        void RecycleEntity(AbsEntity entity);
+        void RecycleEntity(Entity entity);
     }
 }

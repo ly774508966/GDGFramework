@@ -7,11 +7,10 @@ namespace GDG.ECS
 {
     public class GameObjectToEntity : MonoBehaviour
     {
-        private GameEntity entity;
-        private UnityAction<GameEntity, EntityManager> proxyConverts;//在所有System初始结束后才会执行
+        private Entity entity;
+        private UnityAction<Entity, EntityManager> proxyConverts;//在 LateUpdate 中执行一次
         private void Awake()
         {
-           
             proxyConverts = null;
             foreach (var item in this.gameObject.GetComponents<IEntityProxy>())
             {
@@ -21,7 +20,9 @@ namespace GDG.ECS
         }
         void ProxyConvertExcute()
         {
-            entity = World.EntityManager.CreateGameEntity(0,(entity) => { entity.gameObject = this.gameObject; });
+            entity = World.EntityManager.CreateEntity<GameObjectComponent>();
+            World.EntityManager.SetComponentData<GameObjectComponent>(entity, new GameObjectComponent() { gameObject = this.gameObject });
+
             if (proxyConverts != null)
             {
                 proxyConverts(entity, World.EntityManager);

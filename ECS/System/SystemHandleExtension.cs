@@ -12,7 +12,7 @@ namespace GDG.ECS
 {
     public static class SystemHandleExtension
     {
-        public static AbsSystemHandle<E> WithAll<E,T>(this AbsSystemHandle<E> handle)where E:AbsEntity where T : IComponent
+        public static AbsSystemHandle<E> WithAll<E,T>(this AbsSystemHandle<E> handle)where E:Entity where T : IComponent
         {
             handle.result =
             from entity in handle.result.AsParallel()
@@ -20,7 +20,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static AbsSystemHandle<E> WithAll<E,T1, T2>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent
+        public static AbsSystemHandle<E> WithAll<E,T1, T2>(this AbsSystemHandle<E> handle)where E:Entity where T1 : IComponent where T2 : IComponent
         {
             handle.result =
             from entity in handle.result.AsParallel()
@@ -28,7 +28,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static AbsSystemHandle<E> WithAll<E,T1, T2, T3>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent where T3 : IComponent
+        public static AbsSystemHandle<E> WithAll<E,T1, T2, T3>(this AbsSystemHandle<E> handle)where E:Entity where T1 : IComponent where T2 : IComponent where T3 : IComponent
         {
             handle.result =
             from entity in handle.result.AsParallel()
@@ -36,7 +36,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static AbsSystemHandle<E> WithAll<E,T1, T2, T3, T4>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent where T3 : IComponent where T4 : IComponent
+        public static AbsSystemHandle<E> WithAll<E,T1, T2, T3, T4>(this AbsSystemHandle<E> handle)where E:Entity where T1 : IComponent where T2 : IComponent where T3 : IComponent where T4 : IComponent
         {
             handle.result =
             from entity in handle.result.AsParallel()
@@ -44,7 +44,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static AbsSystemHandle<E> WithNone<E,T>(this AbsSystemHandle<E> handle)where E:AbsEntity where T : IComponent
+        public static AbsSystemHandle<E> WithNone<E,T>(this AbsSystemHandle<E> handle)where E:Entity where T : IComponent
         {
             handle.result =
             from entity in handle.result.AsParallel()
@@ -52,7 +52,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static AbsSystemHandle<E> WithNone<E,T1, T2>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent
+        public static AbsSystemHandle<E> WithNone<E,T1, T2>(this AbsSystemHandle<E> handle)where E:Entity where T1 : IComponent where T2 : IComponent
         {
             handle.result =
             from entity in handle.result.AsParallel()
@@ -60,7 +60,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static AbsSystemHandle<E> WithNone<E,T1, T2, T3>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent where T3 : IComponent
+        public static AbsSystemHandle<E> WithNone<E,T1, T2, T3>(this AbsSystemHandle<E> handle)where E:Entity where T1 : IComponent where T2 : IComponent where T3 : IComponent
         {
             handle.result =
             from entity in handle.result.AsParallel()
@@ -68,7 +68,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static AbsSystemHandle<E> WithNone<E,T1, T2, T3, T4>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent where T3 : IComponent where T4 : IComponent
+        public static AbsSystemHandle<E> WithNone<E,T1, T2, T3, T4>(this AbsSystemHandle<E> handle)where E:Entity where T1 : IComponent where T2 : IComponent where T3 : IComponent where T4 : IComponent
         {
             handle.result =
             from entity in handle.result.AsParallel()
@@ -76,7 +76,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static AbsSystemHandle<E> WithAny<E,T1, T2>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent
+        public static AbsSystemHandle<E> WithAny<E,T1, T2>(this AbsSystemHandle<E> handle)where E:Entity where T1 : IComponent where T2 : IComponent
         {
             handle.result =
             from entity in handle.result.AsParallel()
@@ -84,7 +84,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static AbsSystemHandle<E> WithAny<E,T1, T2, T3>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent where T3 : IComponent
+        public static AbsSystemHandle<E> WithAny<E,T1, T2, T3>(this AbsSystemHandle<E> handle)where E:Entity where T1 : IComponent where T2 : IComponent where T3 : IComponent
         {
             handle.result =
             from entity in handle.result.AsParallel()
@@ -92,7 +92,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static AbsSystemHandle<E> WithAny<E,T1, T2, T3, T4>(this AbsSystemHandle<E> handle)where E:AbsEntity where T1 : IComponent where T2 : IComponent where T3 : IComponent where T4 : IComponent
+        public static AbsSystemHandle<E> WithAny<E,T1, T2, T3, T4>(this AbsSystemHandle<E> handle)where E:Entity where T1 : IComponent where T2 : IComponent where T3 : IComponent where T4 : IComponent
         {
             handle.result =
             from entity in handle.result.AsParallel()
@@ -100,7 +100,7 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
-        public static AbsSystemHandle<E> ReturnQueryResult<E>(this AbsSystemHandle<E> handle,out IEnumerable<AbsEntity> result)where E:AbsEntity
+        public static AbsSystemHandle<E> ReturnQueryResult<E>(this AbsSystemHandle<E> handle,out IEnumerable<Entity> result)where E:Entity
         {
             result = handle.result;
             return handle;
@@ -108,7 +108,7 @@ namespace GDG.ECS
         /// <summary>
         /// 每隔secondTime秒执行
         /// </summary>
-        public static void ExcuteDelayTime<E>(this AbsSystemHandle<E> handle, float secondTime)where E:AbsEntity
+        public static void ExcuteDelayTime<E>(this AbsSystemHandle<E> handle, float secondTime)where E:Entity
         {
             var excuteTime = GDGTools.Timer.GetCurrentTime() + GDGTools.Timer.TimeUnitToMillisecond(secondTime, TimeUnit.Second);
 
@@ -128,7 +128,7 @@ namespace GDG.ECS
         /// <summary>
         /// 每隔frame帧执行
         /// </summary>
-        public static void ExcuteDelayFrame<E>(this AbsSystemHandle<E> handle, ushort frame)where E:AbsEntity
+        public static void ExcuteDelayFrame<E>(this AbsSystemHandle<E> handle, ushort frame)where E:Entity
         {
             var excuteFrame = GDGTools.Timer.CurrentFrame + frame;
 
@@ -145,12 +145,12 @@ namespace GDG.ECS
                 }
             }
         }
-        public static AbsSystemHandle<E> WithEventHandle<E>(this AbsSystemHandle<E> handle, string eventName)where E:AbsEntity
+        public static AbsSystemHandle<E> WithEventHandle<E>(this AbsSystemHandle<E> handle, string eventName)where E:Entity
         {
             handle.eventName = eventName;
             return handle;
         }
-        public static bool IsExistComponent<T>(this AbsEntity entity)where T:IComponent
+        public static bool IsExistComponent<T>(this Entity entity)where T:IComponent
         {
             foreach (var item in entity.Components)
             {

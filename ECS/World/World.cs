@@ -45,11 +45,11 @@ namespace GDG.ECS
         {
             return BaseWorld.Instance.IsExistSystem<T>();
         }
-        public static bool AddOrRemoveEntityFromSystems(AbsEntity entity, bool isAdd = true)
+        public static bool AddOrRemoveEntityFromSystems(Entity entity, bool isAdd = true)
         {
             return BaseWorld.Instance.AddOrRemoveEntityFromSystems(entity, isAdd);
         }
-        public static bool AddOrRemoveEntityFromSystem<T>(AbsEntity entity, bool isAdd = true) where T : ISystem, new()
+        public static bool AddOrRemoveEntityFromSystem<T>(Entity entity, bool isAdd = true) where T : ISystem, new()
         {
             return BaseWorld.Instance.AddOrRemoveEntityFromSystem<T>(entity, isAdd);
         }
