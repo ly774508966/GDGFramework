@@ -14,7 +14,6 @@ namespace GDG.ModuleManager
         private bool enableSmartClean = true;
         private double GCtime = -1;
         private ulong currentTaskIndex;
-        private Coroutine smartGCCoroutine;
         #region 取obj
         /// <summary>
         /// 从对象池中获得一个GameObject，若对象池中不存在该Object则返回一个新的实例

@@ -120,8 +120,8 @@ namespace GDG.ECS
 
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
-                    item.CallbackExcute(eventName, system, () => { callback(item, t1, t2); });
                 }
+                item.CallbackExcute(eventName, system, () => { callback(item, t1, t2); });
             }
         }
     }
@@ -140,8 +140,8 @@ namespace GDG.ECS
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
                     if (component is T3 c3) t3 = c3;
-                    item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3); });
                 }
+                item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3); });
             }
         }
     }
@@ -162,8 +162,8 @@ namespace GDG.ECS
                     if (component is T2 c2) t2 = c2;
                     if (component is T3 c3) t3 = c3;
                     if (component is T4 c4) t4 = c4;
-                    item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3, t4); });
                 }
+                item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3, t4); });
             }
         }
     }
@@ -186,8 +186,8 @@ namespace GDG.ECS
                     if (component is T3 c3) t3 = c3;
                     if (component is T4 c4) t4 = c4;
                     if (component is T5 c5) t5 = c5;
-                    item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3, t4, t5); });
                 }
+                item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3, t4, t5); });
             }
         }
     }
@@ -212,8 +212,8 @@ namespace GDG.ECS
                     if (component is T4 c4) t4 = c4;
                     if (component is T5 c5) t5 = c5;
                     if (component is T6 c6) t6 = c6;
-                    item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3, t4, t5, t6); });
                 }
+                item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3, t4, t5, t6); });
             }
         }
     }
@@ -240,8 +240,8 @@ namespace GDG.ECS
                     if (component is T5 c5) t5 = c5;
                     if (component is T6 c6) t6 = c6;
                     if (component is T7 c7) t7 = c7;
-                    item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3, t4, t5, t6, t7); });
                 }
+                item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3, t4, t5, t6, t7); });
             }
         }
     }
@@ -270,8 +270,8 @@ namespace GDG.ECS
                     if (component is T6 c6) t6 = c6;
                     if (component is T7 c7) t7 = c7;
                     if (component is T8 c8) t8 = c8;
-                    item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3, t4, t5, t6, t7, t8); });
                 }
+                item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3, t4, t5, t6, t7, t8); });
             }
         }
     }

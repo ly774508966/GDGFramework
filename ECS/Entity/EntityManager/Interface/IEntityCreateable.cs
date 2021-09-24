@@ -7,6 +7,6 @@ namespace GDG.ECS
 {
     public interface IEntityCreateable
     {
-        Entity CreateEntity(uint typeID, Action<Entity> enableCallback = null);
+        Entity CreateEntity(uint typeID);
     }
 }

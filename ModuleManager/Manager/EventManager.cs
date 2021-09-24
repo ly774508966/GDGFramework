@@ -8,8 +8,6 @@ namespace GDG.ModuleManager
 {
     public class EventManager : AbsLazySingleton<EventManager>
     {
-        public bool isAutoRefreshEventTable = true;
-
         #region EventHandle
         private interface IEventHandle { }
         private class VLArgEventHandle : IEventHandle
@@ -102,7 +100,6 @@ namespace GDG.ModuleManager
         }
         //事件字典
         private readonly Dictionary<string, IEventHandle> EventDic = new Dictionary<string, IEventHandle>();
-
         public static bool EnableEventLog = false;
 
         #region 注册监听
@@ -330,31 +327,46 @@ namespace GDG.ModuleManager
             return callback();
         }
         public void ActionTrigger(string eventName)
-        => ActionTriggerCallback(eventName, (eventName) => { (EventDic[eventName] as EventHandle).actions?.Invoke(); });
+        => ActionTriggerCallback(eventName, (eventName) => { (EventDic[eventName] as EventHandle)?.actions?.Invoke(); });
         public void ActionTrigger<T>(string eventName, T info)
-        => ActionTriggerCallback(eventName, (eventName) => { (EventDic[eventName] as EventHandle<T>).actions?.Invoke(info); });
+        => ActionTriggerCallback(eventName, (eventName) => { (EventDic[eventName] as EventHandle<T>)?.actions?.Invoke(info); });
         public void ActionTrigger<T1, T2>(string eventName, T1 info1, T2 info2)
-        => ActionTriggerCallback(eventName, (eventName) => { (EventDic[eventName] as EventHandle<T1, T2>).actions?.Invoke(info1, info2); });
+        => ActionTriggerCallback(eventName, (eventName) => { (EventDic[eventName] as EventHandle<T1, T2>)?.actions?.Invoke(info1, info2); });
         public void ActionTrigger<T1, T2, T3>(string eventName, T1 info1, T2 info2, T3 info3)
-        => ActionTriggerCallback(eventName, (eventName) => { (EventDic[eventName] as EventHandle<T1, T2, T3>).actions?.Invoke(info1, info2, info3); });
+        => ActionTriggerCallback(eventName, (eventName) => { (EventDic[eventName] as EventHandle<T1, T2, T3>)?.actions?.Invoke(info1, info2, info3); });
         public void ActionTrigger<T1, T2, T3, T4>(string eventName, T1 info1, T2 info2, T3 info3, T4 info4)
-        => ActionTriggerCallback(eventName, (eventName) => { (EventDic[eventName] as EventHandle<T1, T2, T3, T4>).actions?.Invoke(info1, info2, info3, info4); });
+        => ActionTriggerCallback(eventName, (eventName) => { (EventDic[eventName] as EventHandle<T1, T2, T3, T4>)?.actions?.Invoke(info1, info2, info3, info4); });
 
         public R FuncTrigger<R>(string eventName)
-        => FuncTriggerCallback<R>(eventName, () => { var func = (EventDic[eventName] as EventHandle<R>).funcs; 
-        return func == null ? default(R) : (EventDic[eventName] as EventHandle<R>).funcs.Invoke(); });
+        => FuncTriggerCallback<R>(eventName, () =>
+        {
+            var func = (EventDic[eventName] as EventHandle<R>).funcs;
+            return func == null ? default(R) : (EventDic[eventName] as EventHandle<R>).funcs.Invoke();
+        });
         public R FuncTrigger<T1, R>(string eventName, T1 info)
-        => FuncTriggerCallback<R>(eventName, () => { var func = (EventDic[eventName] as EventHandle<T1, R>).funcs; 
-        return func == null ? default(R) : (EventDic[eventName] as EventHandle<T1, R>).funcs.Invoke(info); });
+        => FuncTriggerCallback<R>(eventName, () =>
+        {
+            var func = (EventDic[eventName] as EventHandle<T1, R>).funcs;
+            return func == null ? default(R) : (EventDic[eventName] as EventHandle<T1, R>).funcs.Invoke(info);
+        });
         public R FuncTrigger<T1, T2, R>(string eventName, T1 info1, T2 info2)
-        => FuncTriggerCallback<R>(eventName, () => { var func = (EventDic[eventName] as EventHandle<T1, T2, R>).funcs; 
-        return func == null ? default(R) : (EventDic[eventName] as EventHandle<T1, T2, R>).funcs.Invoke(info1, info2); });
+        => FuncTriggerCallback<R>(eventName, () =>
+        {
+            var func = (EventDic[eventName] as EventHandle<T1, T2, R>).funcs;
+            return func == null ? default(R) : (EventDic[eventName] as EventHandle<T1, T2, R>).funcs.Invoke(info1, info2);
+        });
         public R FuncTrigger<T1, T2, T3, R>(string eventName, T1 info1, T2 info2, T3 info3)
-        => FuncTriggerCallback<R>(eventName, () => { var func = (EventDic[eventName] as EventHandle<T1, T2, T3, R>).funcs; 
-        return func == null ? default(R) : (EventDic[eventName] as EventHandle<T1, T2, T3, R>).funcs.Invoke(info1, info2, info3); });
+        => FuncTriggerCallback<R>(eventName, () =>
+        {
+            var func = (EventDic[eventName] as EventHandle<T1, T2, T3, R>).funcs;
+            return func == null ? default(R) : (EventDic[eventName] as EventHandle<T1, T2, T3, R>).funcs.Invoke(info1, info2, info3);
+        });
         public R FuncTrigger<T1, T2, T3, T4, R>(string eventName, T1 info1, T2 info2, T3 info3, T4 info4)
-        => FuncTriggerCallback<R>(eventName, () => { var func = (EventDic[eventName] as EventHandle<T1, T2, T3, T4, R>); 
-        return func == null ? default(R) : (EventDic[eventName] as EventHandle<T1, T2, T3, T4, R>).funcs.Invoke(info1, info2, info3, info4); });
+        => FuncTriggerCallback<R>(eventName, () =>
+        {
+            var func = (EventDic[eventName] as EventHandle<T1, T2, T3, T4, R>);
+            return func == null ? default(R) : (EventDic[eventName] as EventHandle<T1, T2, T3, T4, R>).funcs.Invoke(info1, info2, info3, info4);
+        });
 
         #endregion
         #region 可变长方案
@@ -378,7 +390,7 @@ namespace GDG.ModuleManager
         }
         public void RemoveActionListener_VLArgs(string eventName, UnityAction<object[]> Event)
         {
-            if (!EventDic.ContainsKey(eventName)|| EventDic[eventName] == null)
+            if (!EventDic.ContainsKey(eventName) || EventDic[eventName] == null)
             {
                 if (EnableEventLog)
                     LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
@@ -388,7 +400,7 @@ namespace GDG.ModuleManager
         }
         public void RemoveFuncListener_VLArgs(string eventName, Func<object[], object> Event)
         {
-            if (!EventDic.ContainsKey(eventName)|| EventDic[eventName] == null)
+            if (!EventDic.ContainsKey(eventName) || EventDic[eventName] == null)
             {
                 if (EnableEventLog)
                     LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
@@ -408,13 +420,13 @@ namespace GDG.ModuleManager
                 if (EnableEventLog)
                     LogManager.Instance.LogWarning($"Excute event :  {eventName}", "Event");
 
-                return (EventDic[eventName] as VLArgEventHandle).funcs.Invoke(args);
+                return (EventDic[eventName] as VLArgEventHandle)?.funcs?.Invoke(args);
             }
             return default(object);
         }
         public void ActionTrigger_VLArgs(string eventName, params object[] args)
         {
-            if (!EventDic.ContainsKey(eventName)|| EventDic[eventName] == null)
+            if (!EventDic.ContainsKey(eventName) || EventDic[eventName] == null)
             {
                 if (EnableEventLog)
                     LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
@@ -424,25 +436,25 @@ namespace GDG.ModuleManager
                 if (EnableEventLog)
                     LogManager.Instance.LogWarning($"Excute event :  {eventName}", "Event");
 
-                (EventDic[eventName] as VLArgEventHandle).actions.Invoke(args);
+                (EventDic[eventName] as VLArgEventHandle)?.actions?.Invoke(args);
             }
         }
         #endregion
-#if UNITY_EDITOR
-        public void RefreshEventTable()
+
+        public void GenerateEventTableFile()
         {
-            if (isAutoRefreshEventTable)
-                using (FileStream fs = new FileStream($"{UserFileManager.Path}/EventDictionary.txt", FileMode.Create, FileAccess.ReadWrite))
+            #if UNITY_EDITOR
+            using (FileStream fs = new FileStream($"{UserFileManager.Path}/EventDictionary.txt", FileMode.Create, FileAccess.ReadWrite))
+            {
+                using (StreamWriter sw = new StreamWriter(fs))
                 {
-                    using (StreamWriter sw = new StreamWriter(fs))
+                    foreach (var dic in EventDic)
                     {
-                        foreach (var dic in EventDic)
-                        {
-                            sw.WriteLine($"{dic.Key}");
-                        }
+                        sw.WriteLine($"{dic.Key}");
                     }
                 }
+            }
+            #endif
         }
-#endif
     }
 }

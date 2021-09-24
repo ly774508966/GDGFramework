@@ -8,7 +8,7 @@ namespace GDG.ECS
     public class GameObjectToEntity : MonoBehaviour
     {
         private Entity entity;
-        private UnityAction<Entity, EntityManager> proxyConverts;//在 LateUpdate 中执行一次
+        private UnityAction<Entity, EntityManager> proxyConverts;//在所有System初始结束后才会执行
         private void Awake()
         {
             proxyConverts = null;
@@ -16,18 +16,17 @@ namespace GDG.ECS
             {
                 proxyConverts += item.Convert;
             }
-            BaseWorld.Instance.monoWorld.AddOrRemoveListener(ProxyConvertExcute, "LateUpdate");
+            BaseWorld.Instance.monoWorld.AddOrRemoveListener(ProxyConvertExcute, "AfterUpdate");
         }
         void ProxyConvertExcute()
         {
-            entity = World.EntityManager.CreateEntity<GameObjectComponent>();
-            World.EntityManager.SetComponentData<GameObjectComponent>(entity, new GameObjectComponent() { gameObject = this.gameObject });
+            entity = World.EntityManager.CreateGameEntity(this.gameObject);
 
             if (proxyConverts != null)
             {
                 proxyConverts(entity, World.EntityManager);
             }
-            BaseWorld.Instance.monoWorld.AddOrRemoveListener(ProxyConvertExcute, "LateUpdate",false);
+            BaseWorld.Instance.monoWorld.AddOrRemoveListener(ProxyConvertExcute, "AfterUpdate", false);
         }
     }
 }

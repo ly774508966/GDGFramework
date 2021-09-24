@@ -16,12 +16,14 @@ namespace GDG.Utils
             if(GDGTools.FlowFieldController.FlowFieldCount==0)
                 return;
 
-            Select((GameEntity entity, AgentComponent agent) =>
+            Select((Entity entity,GameObjectComponent goc,AgentComponent agent) =>
                 {
+                    if(agent == null)
+                        return;
                     if (agent.isAgent)
                     {
-                        var rig = entity.gameObject.GetComponent<Rigidbody>();
-                        var trans = entity.gameObject.transform;
+                        var rig = goc.gameObject.GetComponent<Rigidbody>();
+                        var trans = goc.gameObject.transform;
                         var flowField = GDGTools.FlowFieldController.GetFlowField(agent.flowFieldName);
                         if (flowField != null && rig !=null)
                             rig.velocity = flowField.GetFieldDirection(trans.position) * agent.speed;

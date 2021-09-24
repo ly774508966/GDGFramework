@@ -5,7 +5,7 @@ using GDG.Utils;
 using UnityEngine;
 namespace GDG.ECS
 {
-    public class EntityPool:IEntityEnable
+    public class EntityPool
     {
         public uint typeId;
         public readonly Stack<Entity> entityStack = new Stack<Entity>();
@@ -21,16 +21,19 @@ namespace GDG.ECS
             if(entityStack.Count!=0)
             {
                 var tempEntity = entityStack.Pop();
-                if(beforeEnableCallback!=null)
-                    beforeEnableCallback(tempEntity);
-                EnableEntity(tempEntity);
+
+                beforeEnableCallback?.Invoke(tempEntity);
+                tempEntity.OnEnable();
                 return tempEntity;
             }
+            
             var entity = new Entity();
-            BaseWorld.Instance.EntityMaxIndexIncrease();
-            entity.SetIndex(World.GetEntityMaxIndex());
-            if(beforeEnableCallback!=null)
-                beforeEnableCallback(entity);
+            BaseWorld.Instance.EntityManager.EntityMaxIndexIncrease();
+            entity.SetIndex(World.EntityManager.GetEntityMaxIndex());
+            if(entity == null)
+            
+            beforeEnableCallback?.Invoke(entity);
+
             entity.OnInit();
             entity.OnEnable();
             return entity;
@@ -47,8 +50,8 @@ namespace GDG.ECS
                 return tempEntity;
             }
             var entity = new T();
-            BaseWorld.Instance.EntityMaxIndexIncrease();
-            entity.SetIndex(World.GetEntityMaxIndex());
+            BaseWorld.Instance.EntityManager.EntityMaxIndexIncrease();
+            entity.SetIndex(World.EntityManager.GetEntityMaxIndex());
             if(beforeEnableCallback!=null)
                 beforeEnableCallback(entity);            
             entity.OnInit();

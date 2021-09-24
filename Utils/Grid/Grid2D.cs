@@ -11,9 +11,13 @@ namespace GDG.Utils
     {
         public Grid2D(int width, int height, float cellSize, T defaultValue = default(T), Vector3 localPosition = default(Vector3), UnityAction<T,int,int,Vector3> i_j_localPos_Callback = null) : base(width, height, cellSize, defaultValue, localPosition,i_j_localPos_Callback)
         {
-            var grid = World.EntityManager.CreateGameEntity(0, (gameEntity) => { gameEntity.gameObject = new GameObject("Grid"); });
-            grid.gameObject.transform.SetParent(ECS.World.monoWorld.transform);
-            //grid.transform.localPosition = localPosition;
+            var grid = World.EntityManager.CreateEntity<GameObjectComponent>((gameObjectComponent) =>
+             {
+                 gameObjectComponent.gameObject = new GameObject("Grid");
+             });
+            var gameObject = grid.GetComponent<GameObjectComponent>().gameObject;
+            gameObject.transform.SetParent(ECS.World.monoWorld.transform);
+
             bool isClass = typeof(T).IsClass;
             for (int i = 0; i < gridArray.GetLength(0); i++)
                 for (int j = 0; j < gridArray.GetLength(1); j++)
@@ -30,7 +34,7 @@ namespace GDG.Utils
                         gridArray[i, j].ToString(), 
                         35, 
                         GetWorldPositionXY(i, j) + new Vector3(cellSize, cellSize) * 0.5f,
-                        grid.gameObject.transform,
+                        gameObject.transform,
                         (entity)=>{
                             this.textEntityList.Add(entity);
                         });

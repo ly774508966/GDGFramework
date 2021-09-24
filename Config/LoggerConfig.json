@@ -1,1 +1,1 @@
-{"EnableLog":true,"EnableConsoleLog":true,"EnableRuntimeLog":true,"EnableEditorLog":true,"EnableEventLog":false,"EnableWriteIntoLogFile":false,"EnableTime":true,"EnableFilePath":true,"LogErrorOrThrowException":true,"LoggerMaxMBSize":5.0}
+{"EnableLog":true,"EnableConsoleLog":true,"EnableRuntimeLog":false,"EnableEditorLog":true,"EnableEventLog":false,"EnableWriteIntoLogFile":false,"EnableTime":true,"EnableFilePath":true,"LogErrorOrThrowException":true,"LoggerMaxMBSize":5.0}

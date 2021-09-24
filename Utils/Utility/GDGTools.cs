@@ -22,23 +22,28 @@ namespace GDG.Utils
         #endregion
 
         #region 静态方法
-        public static TextMesh CreateWorldText(out GameObject gameObject,string text,int fontSize = 40,Vector3 localPosition = default(Vector3),Transform parent = null,Action<GameEntity> callback = null,Color color = default(Color),TextAnchor textAnchor = TextAnchor.MiddleCenter,TextAlignment textAlignment = TextAlignment.Left)
+        public static TextMesh CreateWorldText(out GameObject gameobject,string text,int fontSize = 40,Vector3 localPosition = default(Vector3),Transform parent = null,Action<Entity> callback = null,Color color = default(Color),TextAnchor textAnchor = TextAnchor.MiddleCenter,TextAlignment textAlignment = TextAlignment.Left)
         {
             ComponentTypes componentTypes = new ComponentTypes(typeof(GridComponent));
-            var entity = World.EntityManager.CreateGameEntity(componentTypes.TypeId, (gameEntity) => { if(gameEntity.gameObject==null) gameEntity.gameObject = new GameObject("WorldText", typeof(TextMesh));});
+
+            var entity = World.EntityManager.CreateEntity<GameObjectComponent>((gameObjectComponent) =>
+            {
+                gameObjectComponent.gameObject = new GameObject("WorldText", typeof(TextMesh));
+            });
+
 
             if(callback!=null)
             {
                 callback(entity);
             }
 
-            gameObject = entity.gameObject;
+            gameobject = entity.GetComponent<GameObjectComponent>().gameObject;
 
-            Transform trans = gameObject.transform;
+            Transform trans = gameobject.transform;
             trans.SetParent(parent, false);
             trans.localPosition = localPosition;
 
-            TextMesh textMesh = gameObject.GetComponent<TextMesh>();
+            TextMesh textMesh = gameobject.GetComponent<TextMesh>();
             textMesh.text = text;
             textMesh.anchor = textAnchor;
             textMesh.alignment = textAlignment;

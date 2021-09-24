@@ -9,20 +9,22 @@ namespace GDG.ECS
 {
     public class MonoWorld : MonoBehaviour
     {
-        private UnityAction TimerUpdate;
+        private UnityAction timerUpdate;
         private UnityAction awake=null;
         private UnityAction start=null;
         private UnityAction ongui = null;
+        private UnityAction beforeUpdate=null;
+        private UnityAction afterUpdate=null;
         private UnityAction update=null;
         private UnityAction fixedUpdate=null;
         private UnityAction lateUpdate=null;
         private UnityAction onEnable=null;
         private UnityAction onDisable=null;
         private UnityAction destroy=null;
-        void Awake() { TimerUpdate += TimerManager.Instance.OnUpdate; DontDestroyOnLoad(this); if (awake != null) awake(); }
+        void Awake() { timerUpdate += TimerManager.Instance.OnUpdate; DontDestroyOnLoad(this); if (awake != null) awake(); }
         void Start() { if (start != null) start(); }
         void OnGUI() { if (ongui != null) ongui(); }
-        void Update() { if (update != null) update(); TimerUpdate?.Invoke(); }
+        void Update() { beforeUpdate?.Invoke(); update?.Invoke(); timerUpdate?.Invoke(); afterUpdate?.Invoke(); }
         void FixedUpdate() { if (fixedUpdate != null) fixedUpdate(); }
         void LateUpdate() { if (lateUpdate != null) lateUpdate(); }
         void OnEnable() { if (onEnable != null) onEnable(); }
@@ -48,9 +50,17 @@ namespace GDG.ECS
                     if (isAdd) ongui += fun;
                     else ongui -= fun;
                     break;
+                case "BeforeUpdate":
+                    if (isAdd) beforeUpdate += fun;
+                    else beforeUpdate -= fun;
+                    break;
                 case "Update":
                     if (isAdd) update += fun;
                     else update -= fun;
+                    break;
+                case "AfterUpdate":
+                    if (isAdd) afterUpdate += fun;
+                    else afterUpdate -= fun;
                     break;
                 case "FixedUpdate":
                     if (isAdd) fixedUpdate += fun;

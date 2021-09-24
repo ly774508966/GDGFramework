@@ -17,29 +17,29 @@ namespace GDG.Editor
         {
             var obj = new GameObject("Entity");
             obj.AddComponent<GameObjectToEntity>();
-        }
-        [MenuItem("GameObject/3D Entity/Cube", false)]
+        }      
+        [MenuItem("GameObject/3D Entity/Cube", false,1)]
         private static void CreateCube()
         {
             var obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
             obj.name = "Cube";
             obj.AddComponent<GameObjectToEntity>();
         }
-        [MenuItem("GameObject/3D Entity/Sphere", false)]
+        [MenuItem("GameObject/3D Entity/Sphere", false,1)]
         private static void CreateSphere()
         {
             var obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            obj.name = "Cube";
+            obj.name = "Sphere";
             obj.AddComponent<GameObjectToEntity>();
         }
-        [MenuItem("GameObject/3D Entity/Capsule", false)]
+        [MenuItem("GameObject/3D Entity/Capsule", false,1)]
         private static void CreateCapsule()
         {
             var obj = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             obj.name = "Capsule";
             obj.AddComponent<GameObjectToEntity>();
         }
-        [MenuItem("GameObject/3D Entity/Cylinder", false)]
+        [MenuItem("GameObject/3D Entity/Cylinder", false,1)]
         private static void CreateCylinder()
         {
             var obj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);

@@ -96,8 +96,8 @@ namespace GDG.ECS
             return tempHash;
         }
         public override string ToString() => $"Index:{this.Index}，Version:{this.Version}";
-        public static bool operator ==(Entity lhs, Entity rhs) => lhs.Index == rhs.Index && lhs.Version == rhs.Version;
-        public static bool operator !=(Entity lhs, Entity rhs) => lhs.Index != rhs.Index || lhs.Version != rhs.Version;
+        public static bool operator ==(Entity lhs, Entity rhs) => lhs?.Index == rhs?.Index && lhs?.Version == rhs?.Version;
+        public static bool operator !=(Entity lhs, Entity rhs) => lhs?.Index != rhs?.Index || lhs?.Version != rhs?.Version;
         public static Entity operator ++(Entity entity)
         {
             entity.SetVersion(entity.Version + 1);
@@ -112,6 +112,54 @@ namespace GDG.ECS
     }
     public static class EntityExtension
     {
+        public static bool TryGetComponent<T>(this Entity entity,out T component)where T:class,IComponent
+        {
+            component = null;
+            foreach (var item in entity.Components)
+            {
+                if(item is T t)
+                {
+                    component = t;
+                    return true;
+                }
+            }
+            return false;
+        }
+        public static T GetComponent<T>(this Entity entity)where T:class,IComponent
+        {
+            foreach (var item in entity.Components)
+            {
+                if(item is T t)
+                {
+                    return t;
+                }
+            }
+            return null;
+        }
+        public static void SetComponentData<T>(this Entity entity, T component) where T :class,IComponent
+        {
+            BaseWorld.Instance.EntityManager.SetComponentData(entity,component);
+        }
+        public static void SetComponentData<T>(this Entity entity,Action<T> action)where T:class,IComponent
+        {
+            BaseWorld.Instance.EntityManager.SetComponentData(entity,action);
+        }
+        public static bool RemoveComponet(this Entity entity, ComponentTypes componentTypes)
+        {
+            return BaseWorld.Instance.EntityManager.RemoveComponet(entity, componentTypes);
+        }
+        public static bool RemoveComponet<T>(this Entity entity) where T : class,IComponent
+        {
+            return BaseWorld.Instance.EntityManager.RemoveComponet<T>(entity);
+        }
+        public static T AddComponent<T>(this Entity entity) where T : class,IComponent, new()
+        {
+            return BaseWorld.Instance.EntityManager.AddComponent<T>(entity);
+        }
+        public static List<IComponent> AddComponent(this Entity entity, ComponentTypes componentTypes)
+        {
+            return BaseWorld.Instance.EntityManager.AddComponent(entity,componentTypes);
+        }
         public static void Recycle(this Entity entity)
         {
             BaseWorld.Instance.EntityManager.RecycleEntity(entity);
@@ -120,5 +168,6 @@ namespace GDG.ECS
         {
             BaseWorld.Instance.EntityManager.DestroyEntity(entity);
         }
+
     }
 }

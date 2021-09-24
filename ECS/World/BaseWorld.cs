@@ -6,6 +6,7 @@ using GDG.ModuleManager;
 using System;
 using System.Reflection;
 using System.Threading;
+using UnityEditor.Compilation;
 
 namespace GDG.ECS
 {
@@ -16,16 +17,6 @@ namespace GDG.ECS
         internal readonly EntityManager EntityManager;
         internal readonly Dictionary<Type, ISystem> Systems;
         internal MonoWorld monoWorld;
-        private ulong entityMaxIndex;
-        private uint maxTypeId;
-        internal void EntityMaxIndexIncrease()
-        {
-            entityMaxIndex++;
-        }
-        internal ulong GetEntityMaxIndex()
-        {
-            return entityMaxIndex;
-        }
         public BaseWorld()
         {
             EntityManager = new EntityManager();
@@ -50,9 +41,20 @@ namespace GDG.ECS
         }
         private void SystemSingletonInit()
         {
-
-            List<Type> types = new List<Type>(Assembly.GetCallingAssembly().GetTypes().ToArray());
-
+            UnityEditor.Compilation.Assembly assembly = null;
+            foreach(var item in CompilationPipeline.GetAssemblies(AssembliesType.Player))
+            {
+                Utils.Log.Info(item.name);
+                if(item.name.Equals("Assembly-CSharp"))
+                {
+                    assembly = item;
+                    break;
+                }
+            }
+            if(assembly == null)
+                return;
+            
+            List<Type> types = new List<Type>(System.Reflection.Assembly.LoadFrom(assembly.outputPath).GetTypes().ToArray());
             foreach (var item in types)
             {
                 var baseType = item.BaseType;

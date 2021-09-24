@@ -37,10 +37,6 @@ namespace GDG.ECS
             }
             return null;
         }
-        public static ulong GetEntityMaxIndex()
-        {
-            return BaseWorld.Instance.GetEntityMaxIndex();
-        }
         public static bool IsExistSystem<T>() where T : ISystem, new()
         {
             return BaseWorld.Instance.IsExistSystem<T>();

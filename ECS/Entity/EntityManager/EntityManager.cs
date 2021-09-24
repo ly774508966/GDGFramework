@@ -55,7 +55,7 @@ namespace GDG.ECS
             componentTypes.SetTypeId(++maxTypeId);
             m_TypeId2ComponentTypeMapping.Add(componentTypes.TypeId, componentTypes);
             return componentTypes.TypeId;
-        }        
+        }
         public void RecycleEntity(Entity entity)
         {
             AddTypeId2EntityPoolMapping(entity.TypeId, out EntityPool entityPool, (pool) => { pool.PushEntity(entity); }, (pool) => { pool.PushEntity(entity); });
@@ -71,26 +71,24 @@ namespace GDG.ECS
             BaseWorld.Instance.UpdateEntitiesOfSystems(m_ActivedEntityList);
             entity.OnDestroy();
         }
-      
+
         #region CreateEntity
+        /// <summary>
+        /// 创建实体
+        /// </summary>
         public Entity CreateEntity()
         {
-            return CreateEntity(0, null);
-        }
-        public Entity CreateEntity(uint typeId)
-        {
-            return CreateEntity(typeId, null);
+            return CreateEntity(0);
         }
         public Entity CreateEntity(ComponentTypes componentTypes)
         {
-            return CreateEntity(componentTypes);
+            return CreateEntity(componentTypes.TypeId);
         }
-        public Entity CreateEntity(uint typeId, Action<Entity> enableCallback)
+        public Entity CreateEntity(uint typeId)
         {
-            AddTypeId2EntityPoolMapping(typeId, out EntityPool entityPool, (entityPool) => { }, (entityPool) => { });
-            var entity = entityPool.PopEntity(
-                (gameEntity) => { if (enableCallback != null) enableCallback(gameEntity); }
-                );
+            AddTypeId2EntityPoolMapping(typeId, out EntityPool entityPool, null, null);
+
+            var entity = entityPool.PopEntity();
 
             if (entity.Version == 1 && typeId != 0)
             {
@@ -109,66 +107,49 @@ namespace GDG.ECS
 
             return entity;
         }
-        public Entity CreateEntity(ComponentTypes componentTypes , Action<Entity> enableCallback)
-        {
-            return CreateEntity(componentTypes.TypeId, enableCallback);
-        }
-
-
-        public Entity CreateEntity<T>() where T: IComponent
+        public Entity CreateEntity<T>() where T : class, IComponent
         {
             return CreateEntity<T>(null);
         }
-        public Entity CreateEntity<T>(Action<Entity> enableCallback)where T: IComponent
+        public Entity CreateEntity<T>(Action<T> initCallback) where T : class, IComponent
         {
             ComponentTypes componentTypes = new ComponentTypes(typeof(T));
-            return CreateEntity(componentTypes, enableCallback);
+            var entity = CreateEntity(componentTypes);
+            if (!entity.TryGetComponent<T>(out T gameObjectComponent))
+            {
+                Log.Error($"Create Entity failed ! Can't find component after create it , Component Type : {typeof(T)}");
+            }
+            initCallback?.Invoke(gameObjectComponent);
+            return entity;
         }
 
         #endregion
         #region CreateGameEntity
-        public GameEntity CreateGameEntity()
+        public Entity CreateGameEntity(GameObject gameObject)
         {
-            return CreateGameEntity(0, null);
+            return CreateGameEntity(0, gameObject);
         }
-        public GameEntity CreateGameEntity(Action<GameEntity> enableCallback)
+        public Entity CreateGameEntity(uint typeId, GameObject gameObject)
         {
-            return CreateGameEntity(0,enableCallback);
-        }        
-        public GameEntity CreateGameEntity(uint typeId)
-        {
-            return CreateGameEntity(typeId, null);
-        }
-        public GameEntity CreateGameEntity(uint typeId, Action<GameEntity> enableCallback)
-        {
-            AddTypeId2EntityPoolMapping(typeId, out EntityPool entityPool, (entityPool) => { }, (entityPool) => { });
-            var entity = entityPool.PopEntity<GameEntity>(
-                (gameEntity) => { if (enableCallback != null ) enableCallback(gameEntity); }
-                );
-            if (entity.Version == 1 && typeId != 0)
+            var entity = CreateEntity<GameObjectComponent>();
+            World.EntityManager.SetComponentData<GameObjectComponent>(entity, new GameObjectComponent()
             {
-                if (m_TypeId2ComponentTypeMapping.TryGetValue(typeId, out ComponentTypes types))
-                {
-                    AddComponent(entity, types);
-                }
-            }
-            if (!m_Index2EnityMapping.ContainsKey(entity.Index))
-                m_Index2EnityMapping.Add(entity.Index, entity);
-            if (!m_ActivedEntityList.Contains(entity))
-                m_ActivedEntityList.Add(entity);
-
-            BaseWorld.Instance.UpdateEntitiesOfSystems(m_ActivedEntityList);
+                gameObject = gameObject
+            });
             return entity;
         }
-        public GameEntity CreateGameEntity(ComponentTypes componentTypes)
+        public Entity CreateGameEntity(ComponentTypes componentTypes, GameObject gameObject)
         {
-            return CreateGameEntity(componentTypes, null);
+            return CreateGameEntity(componentTypes.TypeId, gameObject);
         }
-        public GameEntity CreateGameEntity(ComponentTypes componentTypes,Action<GameEntity> enableCallback)
+        public Entity CreateGameEntity<T>(GameObject gameObject) where T : IComponent
         {
-            return CreateGameEntity(componentTypes.TypeId, enableCallback);
-        }        
-        #endregion 
+            ComponentTypes componentTypes = new ComponentTypes(typeof(T));
+            return CreateGameEntity(componentTypes, gameObject);
+        }
+
+        #endregion
+
         #region SelectEntity
         public bool TrySelectEntityWithIndex<T>(ulong index, out T result) where T : Entity
         {
@@ -293,18 +274,18 @@ namespace GDG.ECS
         {
             if (!entity.IsActived)
             {
-                LogManager.Instance.LogError("Illegal Operation! Entity is IsActived");
+                LogManager.Instance.LogError("Illegal Operation! Entity is not actived");
                 return null;
             }
 
             AddComponentTypes(entity, componentTypes);
             return entity.Components;
         }
-        public T AddComponent<T>(Entity entity) where T : IComponent, new()
+        public T AddComponent<T>(Entity entity) where T : class,IComponent, new()
         {
             if (!entity.IsActived)
             {
-                LogManager.Instance.LogError("Illegal Operation! Entity is IsActived");
+                LogManager.Instance.LogError("Illegal Operation! Entity is not actived");
                 return default(T);
             }
             return AddComponentTypes<T>(entity);
@@ -318,7 +299,7 @@ namespace GDG.ECS
             }
             return RemoveComponentTypes(entity, componentTypes);
         }
-        public bool RemoveComponet<T>(Entity entity) where T : IComponent
+        public bool RemoveComponet<T>(Entity entity) where T : class,IComponent
         {
             if (!entity.IsActived)
             {
@@ -327,7 +308,7 @@ namespace GDG.ECS
             }
             return RemoveComponentTypes<T>(entity);
         }
-        public void SetComponentData<T>(Entity entity, T component) where T : IComponent
+        public void SetComponentData<T>(Entity entity, T component) where T :class,IComponent
         {
             for (var i = 0; i < entity.Components.Count; i++)
             {
@@ -339,229 +320,237 @@ namespace GDG.ECS
             }
             LogManager.Instance.LogError($"Entity doesn't exist Component!Index:{entity.Index}, Component:{typeof(T)}");
         }
-            #region Details
-            //实体组件类型在字典中的引用对实体引用计数-1，只用于对实体组件的修改件之前以及实体的销毁时使用
-            private bool EntityRefCountDecrementOne(Entity entity)
+        public void SetComponentData<T>(Entity entity,Action<T> action)where T:class,IComponent
+        {
+            if(entity.TryGetComponent<T>(out T component))
             {
-                if (entity.TypeId == 0 || entity.Components.Count == 0)
-                    return false;
-                ComponentTypes tempComponentTypes;
-                if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out tempComponentTypes))
-                {
-                    tempComponentTypes.SetEntityRefCount(tempComponentTypes.EntityRefCount - 1 < 0 ? 0 : tempComponentTypes.EntityRefCount - 1);//引用自减1
-                    RemoveTypeId2IndexMapping(entity.TypeId, entity.Index, () => { });
-
-                    //引用计数为0，且不存在引用该组件的系统时移除该组件
-                    if (tempComponentTypes.EntityRefCount <= 0)
-                    {
-                        tempComponentTypes.SetTypeId(0);//设置为未申请
-                        if (m_TypeId2IndexMapping.Remove(entity.TypeId))//清空该组件对实体的映射
-                            LogManager.Instance.LogError($"Remove entity failed ! Can't Find TypeId to Index Mapping:TypeId:{entity.TypeId},ComponentTypes:{entity.Index}");
-                        m_TypeId2ComponentTypeMapping.Remove(entity.TypeId);//清空该typeId对组件的映射
-                    }
-                    return true;
-                }
-                else
-                    LogManager.Instance.LogError($"Remove component failed ! Can't Find ComponentTypes in World ! TypeId:{entity.TypeId}");
+                action?.Invoke(component);
+            }
+            LogManager.Instance.LogError($"Entity doesn't exist Component!Index:{entity.Index}, Component:{typeof(T)}");
+        }
+        #region Details
+        //实体组件类型在字典中的引用对实体引用计数-1，只用于对实体组件的修改件之前以及实体的销毁时使用
+        private bool EntityRefCountDecrementOne(Entity entity)
+        {
+            if (entity.TypeId == 0 || entity.Components.Count == 0)
                 return false;
-            }
-            private ComponentTypes AddComponentTypes(Entity entity, ComponentTypes componentTypes)
+            ComponentTypes tempComponentTypes;
+            if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out tempComponentTypes))
             {
-                //添加之前
-                EntityRefCountDecrementOne(entity);
-                //添加之后
-                var typeId = componentTypes.TypeId;
-                List<Type> types = new List<Type>();
-                //添加组件
-                foreach (var item in componentTypes)
-                {
-                    entity.AddComponentToList(Activator.CreateInstance(item) as IComponent);
-                }
-                //获取添加之后的组件类型
-                foreach (var item in entity.Components)
-                {
-                    types.Add(item.GetType());
-                }
-                //组装成ComponentTypes,并向世界申请
-                ComponentTypes afterTypes = new ComponentTypes(types.ToArray());
+                tempComponentTypes.SetEntityRefCount(tempComponentTypes.EntityRefCount - 1 < 0 ? 0 : tempComponentTypes.EntityRefCount - 1);//引用自减1
+                RemoveTypeId2IndexMapping(entity.TypeId, entity.Index, () => { });
 
-                //如果未已向世界申请
-                if (!afterTypes.IsRequested)
+                //引用计数为0，且不存在引用该组件的系统时移除该组件
+                if (tempComponentTypes.EntityRefCount <= 0)
                 {
-                    LogManager.Instance.LogError($"Add component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
-                    return afterTypes;
+                    tempComponentTypes.SetTypeId(0);//设置为未申请
+                    if (m_TypeId2IndexMapping.Remove(entity.TypeId))//清空该组件对实体的映射
+                        LogManager.Instance.LogError($"Remove entity failed ! Can't Find TypeId to Index Mapping:TypeId:{entity.TypeId},ComponentTypes:{entity.Index}");
+                    m_TypeId2ComponentTypeMapping.Remove(entity.TypeId);//清空该typeId对组件的映射
                 }
-                entity.SetTypeId(afterTypes.TypeId);
-                ComponentTypes outComponentTypes;
-                //如果存在映射
-                if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out outComponentTypes))
-                {
-                    outComponentTypes.SetEntityRefCount(outComponentTypes.EntityRefCount + 1);
-                    return outComponentTypes;
-                }
-                LogManager.Instance.LogError($"Add component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
-                return null;
-            }
-            private bool RemoveComponentTypes(Entity entity, ComponentTypes componentTypes)
-            {
-                var index = entity.Index;
-
-                ComponentTypes outComponentTypes;
-                //删除之前        
-                EntityRefCountDecrementOne(entity);
-
-                //遍历移除实体组件
-                var componentList = entity.Components;
-                List<Type> types = new List<Type>();
-                for (int i = componentList.Count - 1; i >= 0; i--)
-                {
-                    foreach (var item in componentTypes)
-                    {
-                        if (componentList[i].GetType() == item)
-                        {
-                            if (!entity.RemoveComponentToList(componentList[i]))
-                            {
-                                LogManager.Instance.LogError($"Remove component failed ! Can't Find Component in Entity !Entity.Index:{index}");
-                                return false;
-                            }
-                            continue;
-                        }
-                        types.Add(componentList[i].GetType());//没有被移除的组件
-                    }
-                }
-                ComponentTypes afterTypes = new ComponentTypes(types.ToArray());
-
-                if (afterTypes.IsRequested)
-                {
-                    LogManager.Instance.LogError($"Remove component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
-                    return false;
-                }
-                entity.SetTypeId(afterTypes.TypeId);
-                //如果存在映射
-                if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out outComponentTypes))
-                {
-                    outComponentTypes.SetEntityRefCount(afterTypes.EntityRefCount + 1);//对之后的组件引用计数+1
-                    return true;
-                }
-                LogManager.Instance.LogError($"Remove component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
                 return true;
             }
-            private T AddComponentTypes<T>(Entity entity) where T : IComponent
+            else
+                LogManager.Instance.LogError($"Remove component failed ! Can't Find ComponentTypes in World ! TypeId:{entity.TypeId}");
+            return false;
+        }
+        private ComponentTypes AddComponentTypes(Entity entity, ComponentTypes componentTypes)
+        {
+            //添加之前
+            EntityRefCountDecrementOne(entity);
+            //添加之后
+            var typeId = componentTypes.TypeId;
+            List<Type> types = new List<Type>();
+            //添加组件
+            foreach (var item in componentTypes)
             {
-                //添加之前
-                EntityRefCountDecrementOne(entity);
-                //添加之后
-                List<Type> types = new List<Type>();
-                //添加组件
-                var component = Activator.CreateInstance<T>();
-                entity.AddComponentToList(Activator.CreateInstance<T>());
-                //获取添加之后的组件类型
-                foreach (var item in entity.Components)
-                {
-                    types.Add(item.GetType());
-                }
-                //组装成ComponentTypes,并向世界申请
-                ComponentTypes afterTypes = new ComponentTypes(types.ToArray());
-
-                //如果未已向世界申请
-                if (!afterTypes.IsRequested)
-                {
-                    LogManager.Instance.LogError($"Add component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
-                    return component;
-                }
-                entity.SetTypeId(afterTypes.TypeId);
-                ComponentTypes outComponentTypes;
-                //如果存在映射
-                if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out outComponentTypes))
-                {
-                    outComponentTypes.SetEntityRefCount(outComponentTypes.EntityRefCount + 1);
-                    return component;
-                }
-                LogManager.Instance.LogError($"Add component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
-                return default(T);
+                entity.AddComponentToList(Activator.CreateInstance(item) as IComponent);
             }
-            private bool RemoveComponentTypes<T>(Entity entity) where T : IComponent
+            //获取添加之后的组件类型
+            foreach (var item in entity.Components)
             {
-                var index = entity.Index;
+                types.Add(item.GetType());
+            }
+            //组装成ComponentTypes,并向世界申请
+            ComponentTypes afterTypes = new ComponentTypes(types.ToArray());
 
-                //删除之前        
-                EntityRefCountDecrementOne(entity);
-                //遍历移除实体组件
-                var componentList = entity.Components;
-                List<Type> types = new List<Type>();
-                for (int i = componentList.Count - 1; i >= 0; i--)
+            //如果未已向世界申请
+            if (!afterTypes.IsRequested)
+            {
+                LogManager.Instance.LogError($"Add component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
+                return afterTypes;
+            }
+            entity.SetTypeId(afterTypes.TypeId);
+            ComponentTypes outComponentTypes;
+            //如果存在映射
+            if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out outComponentTypes))
+            {
+                outComponentTypes.SetEntityRefCount(outComponentTypes.EntityRefCount + 1);
+                return outComponentTypes;
+            }
+            LogManager.Instance.LogError($"Add component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
+            return null;
+        }
+        private bool RemoveComponentTypes(Entity entity, ComponentTypes componentTypes)
+        {
+            var index = entity.Index;
+
+            ComponentTypes outComponentTypes;
+            //删除之前        
+            EntityRefCountDecrementOne(entity);
+
+            //遍历移除实体组件
+            var componentList = entity.Components;
+            List<Type> types = new List<Type>();
+            for (int i = componentList.Count - 1; i >= 0; i--)
+            {
+                foreach (var item in componentTypes)
                 {
-                    if (componentList[i] is T item)
+                    if (componentList[i].GetType() == item)
                     {
-                        if (!entity.RemoveComponentToList(item))
+                        if (!entity.RemoveComponentToList(componentList[i]))
                         {
                             LogManager.Instance.LogError($"Remove component failed ! Can't Find Component in Entity !Entity.Index:{index}");
                             return false;
                         }
+                        continue;
                     }
                     types.Add(componentList[i].GetType());//没有被移除的组件
                 }
-                ComponentTypes afterTypes = new ComponentTypes(types.ToArray());
+            }
+            ComponentTypes afterTypes = new ComponentTypes(types.ToArray());
 
-                if (afterTypes.IsRequested)
-                {
-                    LogManager.Instance.LogError($"Remove component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
-                    return false;
-                }
-                entity.SetTypeId(afterTypes.TypeId);
-                //如果存在映射
-                ComponentTypes outComponentTypes;
-                if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out outComponentTypes))
-                {
-                    outComponentTypes.SetEntityRefCount(afterTypes.EntityRefCount + 1);//对之后的组件引用计数+1
-                    return true;
-                }
-                LogManager.Instance.LogError($"Remove component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
+            if (afterTypes.IsRequested)
+            {
+                LogManager.Instance.LogError($"Remove component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
+                return false;
+            }
+            entity.SetTypeId(afterTypes.TypeId);
+            //如果存在映射
+            if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out outComponentTypes))
+            {
+                outComponentTypes.SetEntityRefCount(afterTypes.EntityRefCount + 1);//对之后的组件引用计数+1
                 return true;
             }
-            #endregion
+            LogManager.Instance.LogError($"Remove component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
+            return true;
+        }
+        private T AddComponentTypes<T>(Entity entity) where T : IComponent
+        {
+            //添加之前
+            EntityRefCountDecrementOne(entity);
+            //添加之后
+            List<Type> types = new List<Type>();
+            //添加组件
+            var component = Activator.CreateInstance<T>();
+            entity.AddComponentToList(Activator.CreateInstance<T>());
+            //获取添加之后的组件类型
+            foreach (var item in entity.Components)
+            {
+                types.Add(item.GetType());
+            }
+            //组装成ComponentTypes,并向世界申请
+            ComponentTypes afterTypes = new ComponentTypes(types.ToArray());
+
+            //如果未已向世界申请
+            if (!afterTypes.IsRequested)
+            {
+                LogManager.Instance.LogError($"Add component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
+                return component;
+            }
+            entity.SetTypeId(afterTypes.TypeId);
+            ComponentTypes outComponentTypes;
+            //如果存在映射
+            if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out outComponentTypes))
+            {
+                outComponentTypes.SetEntityRefCount(outComponentTypes.EntityRefCount + 1);
+                return component;
+            }
+            LogManager.Instance.LogError($"Add component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
+            return default(T);
+        }
+        private bool RemoveComponentTypes<T>(Entity entity) where T : IComponent
+        {
+            var index = entity.Index;
+
+            //删除之前        
+            EntityRefCountDecrementOne(entity);
+            //遍历移除实体组件
+            var componentList = entity.Components;
+            List<Type> types = new List<Type>();
+            for (int i = componentList.Count - 1; i >= 0; i--)
+            {
+                if (componentList[i] is T item)
+                {
+                    if (!entity.RemoveComponentToList(item))
+                    {
+                        LogManager.Instance.LogError($"Remove component failed ! Can't Find Component in Entity !Entity.Index:{index}");
+                        return false;
+                    }
+                }
+                types.Add(componentList[i].GetType());//没有被移除的组件
+            }
+            ComponentTypes afterTypes = new ComponentTypes(types.ToArray());
+
+            if (afterTypes.IsRequested)
+            {
+                LogManager.Instance.LogError($"Remove component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
+                return false;
+            }
+            entity.SetTypeId(afterTypes.TypeId);
+            //如果存在映射
+            ComponentTypes outComponentTypes;
+            if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out outComponentTypes))
+            {
+                outComponentTypes.SetEntityRefCount(afterTypes.EntityRefCount + 1);//对之后的组件引用计数+1
+                return true;
+            }
+            LogManager.Instance.LogError($"Remove component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
+            return true;
+        }
+        #endregion
         #endregion
         #region Mapping
-        internal bool AddTypeId2EntityPoolMapping(uint typeId, out EntityPool entityPool, Action<EntityPool> sucessCallback, Action<EntityPool> failedCallback)
+        internal bool AddTypeId2EntityPoolMapping(uint typeId, out EntityPool entityPool, Action<EntityPool> sucessCallback = null, Action<EntityPool> failedCallback = null)
         {
             if (!m_TypeId2EntityPoolMapping.TryGetValue(typeId, out EntityPool outEntityPool))
             {
                 entityPool = new EntityPool();
                 entityPool.typeId = typeId;
                 m_TypeId2EntityPoolMapping.Add(typeId, entityPool);
-                sucessCallback(entityPool);
+                sucessCallback?.Invoke(entityPool);
                 return true;
             }
             entityPool = outEntityPool;
-            failedCallback(entityPool);
+            failedCallback?.Invoke(entityPool);
             return false;
         }
-        internal bool RemoveTypeId2EntityPoolMapping(uint typeId, Action sucessCallback)
+        internal bool RemoveTypeId2EntityPoolMapping(uint typeId, Action sucessCallback = null)
         {
             if (m_TypeId2EntityPoolMapping.TryGetValue(typeId, out EntityPool outEntityPool))
             {
                 m_TypeId2EntityPoolMapping.Remove(typeId);
-                sucessCallback();
+                sucessCallback?.Invoke();
                 return true;
             }
             return false;
         }
-        internal bool AddIndex2EnityMapping(ulong typeId, Entity entity, Action<Entity> sucessCallback)
+        internal bool AddIndex2EnityMapping(ulong typeId, Entity entity, Action<Entity> sucessCallback = null)
         {
             if (!m_Index2EnityMapping.TryGetValue(typeId, out Entity outEntity))
             {
                 m_Index2EnityMapping.Add(typeId, entity);
-                sucessCallback(entity);
+                sucessCallback?.Invoke(entity);
                 return true;
             }
             return false;
         }
-        internal bool RemoveIndex2EnityMapping(ulong typeId, Action sucessCallback)
+        internal bool RemoveIndex2EnityMapping(ulong typeId, Action sucessCallback = null)
         {
             if (m_Index2EnityMapping.TryGetValue(typeId, out Entity outentity))
             {
                 m_Index2EnityMapping.Remove(typeId);
-                sucessCallback();
+                sucessCallback?.Invoke();
                 return true;
             }
             return false;
@@ -582,14 +571,14 @@ namespace GDG.ECS
             }
             return indexList;
         }
-        internal bool RemoveTypeId2IndexMapping(uint typeId, ulong index, Action sucessCallback)
+        internal bool RemoveTypeId2IndexMapping(uint typeId, ulong index, Action sucessCallback = null)
         {
             if (m_TypeId2IndexMapping.TryGetValue(typeId, out List<ulong> indexList))
             {
                 if (m_TypeId2IndexMapping[typeId].Contains(index))
                 {
                     m_TypeId2IndexMapping[typeId].Remove(index);
-                    sucessCallback();
+                    sucessCallback?.Invoke();
                 }
                 else
                 {
@@ -600,25 +589,25 @@ namespace GDG.ECS
             }
             return false;
         }
-        internal bool RemoveTypeId2ComponentTypeMapping(uint typeId, Action<ComponentTypes> sucessCallback)
+        internal bool RemoveTypeId2ComponentTypeMapping(uint typeId, Action<ComponentTypes> sucessCallback = null)
         {
 
             if (m_TypeId2ComponentTypeMapping.TryGetValue(typeId, out ComponentTypes outComponentTypes))
             {
                 m_TypeId2ComponentTypeMapping.Remove(typeId);
-                sucessCallback(outComponentTypes);
+                sucessCallback?.Invoke(outComponentTypes);
                 return true;
             }
             return false;
         }
-        internal bool AddTypeId2IndexMapping(uint typeId, ulong index, Action sucessCallback)
+        internal bool AddTypeId2IndexMapping(uint typeId, ulong index, Action sucessCallback = null)
         {
             if (m_TypeId2IndexMapping.TryGetValue(typeId, out List<ulong> indexList))
             {
                 if (!m_TypeId2IndexMapping[typeId].Contains(index))
                 {
                     m_TypeId2IndexMapping[typeId].Add(index);
-                    sucessCallback();
+                    sucessCallback?.Invoke();
                 }
                 else
                 {
@@ -630,16 +619,16 @@ namespace GDG.ECS
             else
             {
                 m_TypeId2IndexMapping.Add(typeId, new List<ulong>() { index });
-                sucessCallback();
+                sucessCallback?.Invoke();
             }
             return false;
         }
-        internal bool AddTypeId2ComponentTypeMapping(uint typeId, ComponentTypes componentTypes, Action<ComponentTypes> sucessCallback)
+        internal bool AddTypeId2ComponentTypeMapping(uint typeId, ComponentTypes componentTypes, Action<ComponentTypes> sucessCallback = null)
         {
             if (!m_TypeId2ComponentTypeMapping.TryGetValue(typeId, out ComponentTypes outComponentTypes))
             {
                 m_TypeId2ComponentTypeMapping.Add(typeId, componentTypes);
-                sucessCallback(componentTypes);
+                sucessCallback?.Invoke(componentTypes);
                 return true;
             }
             return false;

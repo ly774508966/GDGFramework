@@ -15,7 +15,7 @@ namespace GDG.Utils
         public TextMesh[,] gridTextArray;
         public float cellSize;
         public Vector3 localPosition;
-        public List<GameEntity> textEntityList = new List<GameEntity>();
+        public List<Entity> textEntityList = new List<Entity>();
 
         public Grid(int width, int height, float cellSize,T defaultValue,Vector3 localPosition,UnityAction<T,int,int,Vector3> i_j_localPos_Callback)
         {
@@ -61,7 +61,8 @@ namespace GDG.Utils
             gridArray = new T[width, height];
 # if DEBUG
             gridTextArray = new TextMesh[width, height];
-            textEntityList = new List<GameEntity>();
+            //textEntityList = new List<Entity>();
+            textEntityList.Clear();
 # endif
         }
     }
