@@ -21,7 +21,7 @@ public partial class ProjectSetting
     private Dictionary<string, List<Macro>> m_Categories2MarcoesMapping = new Dictionary<string, List<Macro>>()
     { { "Default", new List<Macro>()
         {
-            new Macro(){name = "Debug" , description = "Used in the project testing phase"}
+            new Macro(){name = "EDITOR_DEBUG" , description = "Used in the project testing phase"}
         }} 
     };
     private int m_CurrentCategoriesIndex = 0;

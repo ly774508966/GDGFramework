@@ -24,7 +24,7 @@ namespace GDG.Utils
             this.cellSize = cellSize;
             this.localPosition = localPosition;
             gridArray = new T[this.width, this.height];
-#if DEBUG
+#if EDITOR_DEBUG
             gridTextArray = new TextMesh[width, height];
 #endif
         }
@@ -45,7 +45,7 @@ namespace GDG.Utils
             if (gridX < 0 || gridX >= width || gridY < 0 || gridY >= height)
                 return;
             gridArray[gridX, gridY] = value;
-# if DEBUG
+# if EDITOR_DEBUG
             gridTextArray[gridX, gridY].text = value.ToString();
 # endif
         }
@@ -59,7 +59,7 @@ namespace GDG.Utils
         public void Clear()
         {
             gridArray = new T[width, height];
-# if DEBUG
+# if EDITOR_DEBUG
             gridTextArray = new TextMesh[width, height];
             //textEntityList = new List<Entity>();
             textEntityList.Clear();

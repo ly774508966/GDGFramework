@@ -44,7 +44,6 @@ namespace GDG.ECS
             UnityEditor.Compilation.Assembly assembly = null;
             foreach(var item in CompilationPipeline.GetAssemblies(AssembliesType.Player))
             {
-                Utils.Log.Info(item.name);
                 if(item.name.Equals("Assembly-CSharp"))
                 {
                     assembly = item;

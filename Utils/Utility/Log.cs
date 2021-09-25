@@ -43,6 +43,15 @@ namespace GDG.Utils
         {
             LogManager.Instance.LogError(message, tag, invoker, callerFilePath, callerLineNumber);
         }
+        public void Custom(object message,
+        string tag,
+        Color color,
+        [CallerMemberNameAttribute] string invoker = "unknown",
+        [CallerFilePath] string callerFilePath = "unknown",
+        [CallerLineNumber] int callerLineNumber = -1)
+        {
+            LogManager.Instance.LogCustom(message,tag,color,invoker, callerFilePath, callerLineNumber);
+        }
         public static void Editor(
             object message,
             string tag = "EDITOR",

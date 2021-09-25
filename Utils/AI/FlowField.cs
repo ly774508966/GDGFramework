@@ -76,6 +76,8 @@ namespace GDG.Utils
         private float cellSize;
         private Cell destinationCell;
         private GridType gridType;
+        private int impasableCellCount;
+        internal bool EnableSmartPathFinding = true;
         public FlowField(Vector3 startPos, Vector3 endPos, float cellSize, GridType gridType = GridType.Grid3D)
         {
             this.cellSize = cellSize;
@@ -131,13 +133,20 @@ namespace GDG.Utils
                  });
         }
 
-        private List<Cell> GetNeighborCells_4Directions(Vector2Int index)
+        private Cell[] GetNeighborCells_4Directions(Vector2Int index)
         {
-            List<Cell> cells = new List<Cell>();
-            cells.Add(grid.GetValue(index.x - 1, index.y));
-            cells.Add(grid.GetValue(index.x + 1, index.y));
-            cells.Add(grid.GetValue(index.x, index.y - 1));
-            cells.Add(grid.GetValue(index.x, index.y + 1));
+            Cell[] cells = new Cell[4]
+            {
+                grid.GetValue(index.x - 1, index.y),
+                grid.GetValue(index.x + 1, index.y),
+                grid.GetValue(index.x, index.y - 1),
+                grid.GetValue(index.x, index.y + 1),
+            };
+            // List<Cell> cells = new List<Cell>();
+            // cells.Add(grid.GetValue(index.x - 1, index.y));//左
+            // cells.Add(grid.GetValue(index.x + 1, index.y));//右
+            // cells.Add(grid.GetValue(index.x, index.y - 1));//上
+            //cells.Add(grid.GetValue(index.x, index.y + 1));//下
             return cells;
         }
         private Cell GetMinCellFromNeighbor_8Directions(Vector2Int index)
@@ -194,6 +203,7 @@ namespace GDG.Utils
         //生成成本场
         internal void GenarateCostField(string impassibleLayerName, int firstRoughTerrainLayer = 0, int lastRoughTerrainLayer = 0, params (string, byte)[] roughTerrainLayerName_Cost)
         {
+            impasableCellCount = 0;
             Collider[] colliders;
             var halfExtents = Vector3.one * cellSize / 2;
             var hasIncrease = false;
@@ -214,6 +224,7 @@ namespace GDG.Utils
                     {
                         hasIncrease = true;
                         cell.IncreaseCost(255);
+                        impasableCellCount++;
                         grid.SetValue(cell.index.x, cell.index.y, cell);
                     }
                     else
@@ -237,8 +248,10 @@ namespace GDG.Utils
             }
         }
         //生成积分场
-        internal void GenerateIntegrationField(Vector3 destinationWorldPos)
+        internal bool GenerateIntegrationField(Vector3 destinationWorldPos ,out bool isEnclosedArea)
         {
+            isEnclosedArea = false;
+            bool canReach = true;
             foreach (var cell in grid.gridArray)
             {
                 cell.integration = ushort.MaxValue;
@@ -252,7 +265,42 @@ namespace GDG.Utils
                 destinationCell = (grid as Grid2D<Cell>).GetValue(destinationWorldPos);
 
             if (destinationCell == null)
-                return;
+                return false;
+
+            //如果目的地是障碍物，则选择一个里目的地最近的非障碍物cell作为新目的地
+            if(destinationCell.cost == byte.MaxValue)
+            {
+                if(!EnableSmartPathFinding)
+                    return false;
+                canReach = false;
+                Queue<Cell> desCellQueue = new Queue<Cell>();
+                desCellQueue.Enqueue(destinationCell);
+                Cell cell;
+                while (desCellQueue.Count > 0)
+                {
+                    cell = desCellQueue.Dequeue();
+                    if(cell==null)
+                        continue;
+                        
+                    var neighbourCells = GetNeighborCells_4Directions(cell.index);
+                    
+                    bool isFoundDes = false;
+                    foreach (var item in neighbourCells)
+                    {
+                        if(item.cost!=byte.MaxValue)
+                        {
+                            isFoundDes = true;
+                            destinationCell = item;
+                            break;
+                        }
+                        else
+                            desCellQueue.Enqueue(item);
+                    }
+                    if(isFoundDes)
+                        break;
+                }
+            }
+            
 
             destinationCell.integration = 0;
             destinationCell.fieldType = FieldType.Integration;
@@ -262,6 +310,7 @@ namespace GDG.Utils
             grid.SetValue(destinationCell.index.x, destinationCell.index.y, destinationCell);
 
             Cell currentCell;
+            var count = 0;
             while (cellQueue.Count > 0)
             {
                 currentCell = cellQueue.Dequeue();
@@ -273,7 +322,7 @@ namespace GDG.Utils
                 {
                     if (item == null)
                         continue;
-
+                    
                     item.fieldType = FieldType.Integration;
 
                     //如果是路障则跳过
@@ -289,11 +338,15 @@ namespace GDG.Utils
                         item.integration = (ushort)(currentCell.integration + item.cost);
                         cellQueue.Enqueue(item);
                         grid.SetValue(item.index.x, item.index.y, item);
+                        count++;
                     }
                 }
             }
+            isEnclosedArea = count >= grid.gridArray.Length - impasableCellCount;
             this.destinationCell = destinationCell;
+            return canReach;
         }
+
         //生成矢量场
         internal void GenerateVectorField()
         {
@@ -363,10 +416,32 @@ namespace GDG.Utils
     }
     public static class FlowFieldExtension
     {
-        public static void SetDestination(this FlowField flowField, Vector3 destinationWorldPos)
+        /// <summary>
+        /// 设置目的地
+        /// </summary>
+        /// <param name="destinationWorldPos">目的地世界坐标</param>
+        /// <param name="enableSmartPathFinding">若为true，则当目的地处在Impassable Layer时，自动重新调整目的地</param>
+        /// <returns>目的地是否处在Impassable Layer中，或是被设置在流场范围外</returns>
+        public static bool SetDestination(this FlowField flowField, Vector3 destinationWorldPos , bool enableSmartPathFinding = true)
         {
-            flowField.GenerateIntegrationField(destinationWorldPos);
+            flowField.EnableSmartPathFinding = enableSmartPathFinding;
+            var canReach = flowField.GenerateIntegrationField(destinationWorldPos , out bool _);
             flowField.GenerateVectorField();
+            return canReach;
+        }
+        /// <summary>
+        /// 设置目的地
+        /// </summary>
+        /// <param name="destinationWorldPos">目的地世界坐标</param>
+        /// <param name="isEnclosedArea">相对于整个流场而言，目的地是否被设置在一个封闭区域，比如围墙内</param>
+        /// <param name="enableSmartPathFinding">若为true，则当目的地处在Impassable Layer时，自动重新调整目的地</param>
+        /// <returns>目的地是否处在Impassable Layer中，或是被设置在流场范围外</returns>
+        public static bool SetDestination(this FlowField flowField, Vector3 destinationWorldPos ,out bool isEnclosedArea,bool enableSmartPathFinding = true)
+        {
+            flowField.EnableSmartPathFinding = enableSmartPathFinding;
+            var canReach = flowField.GenerateIntegrationField(destinationWorldPos, out isEnclosedArea);
+            flowField.GenerateVectorField();
+            return canReach;
         }
     }
 }
