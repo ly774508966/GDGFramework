@@ -32,12 +32,12 @@ namespace GDG.ECS
             SystemSingletonInit();
             foreach (var system in Systems.Values)
             {
-                // IOCSystems.Add(system.GetType(), system);
                 monoWorld.AddOrRemoveListener(system.OnUpdate, "Update");
                 monoWorld.AddOrRemoveListener(system.OnLateUpdate, "LateUpdate");
                 monoWorld.AddOrRemoveListener(system.OnFixedUpdate, "FixedUpdate");
                 monoWorld.AddOrRemoveListener(system.OnStart, "Start");
             }
+            UpdateEntitiesOfSystems(EntityManager.m_ActivedEntityList);
         }
         private void SystemSingletonInit()
         {
