@@ -325,6 +325,7 @@ namespace GDG.ECS
             if(entity.TryGetComponent<T>(out T component))
             {
                 action?.Invoke(component);
+                return;
             }
             LogManager.Instance.LogError($"Entity doesn't exist Component!Index:{entity.Index}, Component:{typeof(T)}");
         }
