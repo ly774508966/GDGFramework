@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using GDG.ECS;
 using GDG.ModuleManager;
 using UnityEngine;
@@ -61,6 +62,15 @@ namespace GDG.Utils
             var playerPos = camera.WorldToScreenPoint(new Vector3(0,0,z));
             var pos = new Vector3(UnityEngine.Input.mousePosition.x, UnityEngine.Input.mousePosition.y, playerPos.z);
             return camera.ScreenToWorldPoint(pos);
+        }
+        public static bool IsBlittable(object obj)
+        {
+            var type = obj.GetType();
+            if(type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) ||
+               type == typeof(ushort) || type == typeof(int) || type == typeof(uint) ||
+               type == typeof(long) || type == typeof(ulong) || type == typeof(Single) || type == typeof(double))
+                return true;
+            return false;
         }
         #endregion
     }

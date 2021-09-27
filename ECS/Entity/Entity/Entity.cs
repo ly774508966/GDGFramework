@@ -9,15 +9,17 @@ namespace GDG.ECS
 {
     public class Entity : IEquatable<Entity>
     {
-        private Action initCallback;
-        private Action enableCallback;
-        private Action recycleCallback;
-        private Action destroyCallback;
+        internal Action<Entity> setNameCallBack;
+        internal Action initCallback;
+        internal Action enableCallback;
+        internal Action recycleCallback;
+        internal Action destroyCallback;
+        public string Name { get; set; }
         public ulong Index { get;private set; }
         public int Version { get;private set; }
         public uint TypeId{ get;private set; }
         public bool IsActived{ get;private set; }
-        internal List<IComponent> Components { get;private set; }
+        //public void SetName(string name) => this.Name = name;
         internal void SetIndex(ulong index) => this.Index = index;
         internal void SetVersion(int version) => this.Version = version;
         internal void SetTypeId(uint typeId) => this.TypeId = typeId;
@@ -25,11 +27,11 @@ namespace GDG.ECS
         internal Entity(){}
         internal virtual void OnInit()
         {
-            Components = new List<IComponent>();
             Version = 1;
             IsActived = true;
 
             initCallback?.Invoke();
+            setNameCallBack?.Invoke(this);
         }
         internal virtual void OnEnable()
         {
@@ -46,36 +48,6 @@ namespace GDG.ECS
         {
             IsActived = false;
             destroyCallback?.Invoke();
-        }
-        internal virtual void AddComponentToList(IComponent component)
-        {
-            if(Components.Contains(component))
-                return;
-            
-            if(component is IInitable init)
-                initCallback += init.OnInit;
-            if(component is IEnable enable)
-                enableCallback += enable.OnEnable;
-            if(component is IRecyclable recycle)
-                recycleCallback += recycle.OnRecycle;
-            if(component is IDestroyable destroy)
-                destroyCallback += destroy.OnDestroy;
-
-
-            Components.Add(component);
-        }
-        internal virtual bool RemoveComponentToList(IComponent component)
-        {
-            if(component is IInitable init)
-                initCallback -= init.OnInit;
-            if(component is IEnable enable)
-                enableCallback -= enable.OnEnable;
-            if(component is IRecyclable recycle)
-                recycleCallback -= recycle.OnRecycle;
-            if(component is IDestroyable destroy)
-                destroyCallback -= destroy.OnDestroy;
-            
-            return Components.Remove(component);
         }
     
         public bool Equals(Entity other) => Index == other.Index;
@@ -115,7 +87,7 @@ namespace GDG.ECS
         public static bool TryGetComponent<T>(this Entity entity,out T component)where T:class,IComponent
         {
             component = null;
-            foreach (var item in entity.Components)
+            foreach (var item in World.EntityManager.GetComponent(entity))
             {
                 if(item is T t)
                 {
@@ -127,7 +99,7 @@ namespace GDG.ECS
         }
         public static T GetComponent<T>(this Entity entity)where T:class,IComponent
         {
-            foreach (var item in entity.Components)
+            foreach (var item in World.EntityManager.GetComponent(entity))
             {
                 if(item is T t)
                 {

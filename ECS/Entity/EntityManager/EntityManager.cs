@@ -1,3 +1,4 @@
+using System.Linq;
 using System.ComponentModel;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,19 +13,22 @@ namespace GDG.ECS
     public class EntityManager : IEntityCreateable, IEntityDestoryable, IEntityRecyclable
     {
         private readonly Dictionary<uint, EntityPool> m_TypeId2EntityPoolMapping;
-        private readonly Dictionary<ulong, Entity> m_Index2EnityMapping;
+        internal readonly Dictionary<ulong, Entity> m_Index2EntityMapping;
         private readonly Dictionary<uint, ComponentTypes> m_TypeId2ComponentTypeMapping;
         private readonly Dictionary<uint, List<ulong>> m_TypeId2IndexMapping;
-        public readonly List<Entity> m_ActivedEntityList;
+        private readonly Dictionary<ulong, List<IComponent>> m_Index2ComponentMapping;
+        internal readonly List<Entity> m_ActivedEntityList;
         private ulong entityMaxIndex;
         private uint maxTypeId;
+        public List<Entity> GetAllEntity() => m_Index2EntityMapping.Values.ToList();
         internal EntityManager()
         {
             m_TypeId2EntityPoolMapping = new Dictionary<uint, EntityPool>();
-            m_Index2EnityMapping = new Dictionary<ulong, Entity>();
+            m_Index2EntityMapping = new Dictionary<ulong, Entity>();
             m_TypeId2ComponentTypeMapping = new Dictionary<uint, ComponentTypes>();
             m_TypeId2IndexMapping = new Dictionary<uint, List<ulong>>();
             m_ActivedEntityList = new List<Entity>();//活跃实体列表，供世界使用
+            m_Index2ComponentMapping = new Dictionary<ulong, List<IComponent>>();
         }
         internal void EntityMaxIndexIncrease()
         {
@@ -65,8 +69,9 @@ namespace GDG.ECS
         public void DestroyEntity(Entity entity)
         {
             EntityRefCountDecrementOne(entity);
-            RemoveTypeId2IndexMapping(entity.TypeId, entity.Index, () => { });
-            RemoveIndex2EnityMapping(entity.Index, () => { });
+            RemoveTypeId2IndexMapping(entity.TypeId, entity.Index);
+            RemoveIndex2EnityMapping(entity.Index);
+            RemoveIndex2ComponentMapping(entity.Index);
             m_ActivedEntityList.Remove(entity);
             BaseWorld.Instance.UpdateEntitiesOfSystems(m_ActivedEntityList);
             entity.OnDestroy();
@@ -98,8 +103,6 @@ namespace GDG.ECS
                 }
             }
 
-            if (!m_Index2EnityMapping.ContainsKey(entity.Index))
-                m_Index2EnityMapping.Add(entity.Index, entity);
             if (!m_ActivedEntityList.Contains(entity))
                 m_ActivedEntityList.Add(entity);
 
@@ -136,6 +139,7 @@ namespace GDG.ECS
             {
                 gameObject = gameObject
             });
+            entity.Name = gameObject.name;
             return entity;
         }
         public Entity CreateGameEntity(ComponentTypes componentTypes, GameObject gameObject)
@@ -149,11 +153,10 @@ namespace GDG.ECS
         }
 
         #endregion
-
         #region SelectEntity
         public bool TrySelectEntityWithIndex<T>(ulong index, out T result) where T : Entity
         {
-            if (m_Index2EnityMapping.TryGetValue(index, out Entity absEntity))
+            if (m_Index2EntityMapping.TryGetValue(index, out Entity absEntity))
             {
                 result = absEntity as T;
                 return true;
@@ -163,7 +166,7 @@ namespace GDG.ECS
         }
         public bool TrySelectActivedEntityWithIndex<T>(ulong index, out T result) where T : Entity
         {
-            if (m_Index2EnityMapping.TryGetValue(index, out Entity absEntity))
+            if (m_Index2EntityMapping.TryGetValue(index, out Entity absEntity))
             {
                 if (!absEntity.IsActived)
                 {
@@ -183,7 +186,7 @@ namespace GDG.ECS
             foreach (var index in indexList)
             {
                 Entity entity;
-                if (m_Index2EnityMapping.TryGetValue(index, out entity))
+                if (m_Index2EntityMapping.TryGetValue(index, out entity))
                 {
                     if (entity is T tempEntity)
                     {
@@ -201,7 +204,7 @@ namespace GDG.ECS
             foreach (var index in indexList)
             {
                 Entity entity;
-                if (m_Index2EnityMapping.TryGetValue(index, out entity))
+                if (m_Index2EntityMapping.TryGetValue(index, out entity))
                 {
                     if (entity is T tempEntity && entity.IsActived)
                     {
@@ -214,7 +217,7 @@ namespace GDG.ECS
         }
         public Entity SelectEntityWithIndex(ulong index)
         {
-            if (m_Index2EnityMapping.TryGetValue(index, out ECS.Entity absEntity))
+            if (m_Index2EntityMapping.TryGetValue(index, out ECS.Entity absEntity))
             {
                 return absEntity;
             }
@@ -222,7 +225,7 @@ namespace GDG.ECS
         }
         public Entity SelectActivedEntityWithIndex(ulong index)
         {
-            if (m_Index2EnityMapping.TryGetValue(index, out Entity absEntity))
+            if (m_Index2EntityMapping.TryGetValue(index, out Entity absEntity))
             {
                 if (!absEntity.IsActived)
                 {
@@ -239,7 +242,7 @@ namespace GDG.ECS
             foreach (var index in indexList)
             {
                 ECS.Entity entity;
-                if (m_Index2EnityMapping.TryGetValue(index, out entity))
+                if (m_Index2EntityMapping.TryGetValue(index, out entity))
                 {
                     if (entity is Entity tempEntity)
                     {
@@ -258,7 +261,7 @@ namespace GDG.ECS
             foreach (var index in indexList)
             {
                 Entity entity;
-                if (m_Index2EnityMapping.TryGetValue(index, out entity))
+                if (m_Index2EntityMapping.TryGetValue(index, out entity))
                 {
                     if (entity.IsActived)
                     {
@@ -270,6 +273,84 @@ namespace GDG.ECS
         }
         #endregion
         #region Component
+        internal void InitEntityComponent(ulong index)
+        {
+            if(!m_Index2ComponentMapping.ContainsKey(index))
+                m_Index2ComponentMapping.Add(index, new List<IComponent>());
+            else
+                Log.Error($"InitEntityComponent failed ! The same mapping already exists here ! Index:{index}");
+        }
+        public List<IComponent> GetComponent(Entity entity)
+        {
+            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
+            {
+                Log.Error($"AddComponentToList failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
+                return null;
+            }
+            return Components;
+        }
+        public List<IComponent> GetComponent(ulong Index)
+        {
+            if(!m_Index2ComponentMapping.TryGetValue(Index,out List<IComponent> Components))
+            {
+                Log.Error($"AddComponentToList failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {Index}");
+                return null;
+            }
+            return Components;
+        }
+        private void AddComponentToList(ulong index,IComponent component)
+        {
+            if(!m_Index2ComponentMapping.TryGetValue(index,out List<IComponent> Components))
+            {
+                Log.Error($"AddComponentToList failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {index}");
+                return;
+            }
+            if(!m_Index2EntityMapping.TryGetValue(index,out Entity entity))
+            {
+                Log.Error($"AddComponentToList failed ! Cant't Find Index in m_Index2EntityMapping, Index: {index}");
+                return;
+            }
+            if(Components.Contains(component))
+                return;
+            if(component is ISetNameable setname)
+                entity.setNameCallBack += setname.SetName;
+            if(component is IInitable init)
+                entity.initCallback += init.OnInit;
+            if(component is IEnable enable)
+                entity.enableCallback += enable.OnEnable;
+            if(component is IRecyclable recycle)
+                entity.recycleCallback += recycle.OnRecycle;
+            if(component is IDestroyable destroy)
+                entity.destroyCallback += destroy.OnDestroy;
+
+
+            Components.Add(component);
+        }
+        private bool RemoveComponentToList(ulong index,IComponent component)
+        {
+            if(!m_Index2ComponentMapping.TryGetValue(index,out List<IComponent> Components))
+            {
+                Log.Error($"AddComponentToList failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {index}");
+                return false;
+            }
+            if(!m_Index2EntityMapping.TryGetValue(index,out Entity entity))
+            {
+                Log.Error($"AddComponentToList failed ! Cant't Find Index in m_Index2EntityMapping, Index: {index}");
+                return false;
+            }
+            if(component is ISetNameable setname)
+                entity.setNameCallBack -= setname.SetName;
+            if(component is IInitable init)
+                entity.initCallback -= init.OnInit;
+            if(component is IEnable enable)
+                entity.enableCallback -= enable.OnEnable;
+            if(component is IRecyclable recycle)
+                entity.recycleCallback -= recycle.OnRecycle;
+            if(component is IDestroyable destroy)
+                entity.destroyCallback -= destroy.OnDestroy;
+            
+            return Components.Remove(component);
+        }
         public List<IComponent> AddComponent(Entity entity, ComponentTypes componentTypes)
         {
             if (!entity.IsActived)
@@ -277,9 +358,13 @@ namespace GDG.ECS
                 LogManager.Instance.LogError("Illegal Operation! Entity is not actived");
                 return null;
             }
-
             AddComponentTypes(entity, componentTypes);
-            return entity.Components;
+            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
+            {
+                Log.Error($"AddComponent failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
+                return null;
+            }
+            return Components;
         }
         public T AddComponent<T>(Entity entity) where T : class,IComponent, new()
         {
@@ -310,11 +395,16 @@ namespace GDG.ECS
         }
         public void SetComponentData<T>(Entity entity, T component) where T :class,IComponent
         {
-            for (var i = 0; i < entity.Components.Count; i++)
+            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
             {
-                if (entity.Components[i] is T)
+                Log.Error($"SetComponentData failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
+                return;
+            }
+            for (var i = 0; i < Components.Count; i++)
+            {
+                if (Components[i] is T)
                 {
-                    entity.Components[i] = component;
+                    Components[i] = component;
                     return;
                 }
             }
@@ -333,7 +423,12 @@ namespace GDG.ECS
         //实体组件类型在字典中的引用对实体引用计数-1，只用于对实体组件的修改件之前以及实体的销毁时使用
         private bool EntityRefCountDecrementOne(Entity entity)
         {
-            if (entity.TypeId == 0 || entity.Components.Count == 0)
+            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
+            {
+                Log.Error($"EntityRefCountDecrementOne failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
+                return false;
+            }
+            if (entity.TypeId == 0 || Components.Count == 0)
                 return false;
             ComponentTypes tempComponentTypes;
             if (m_TypeId2ComponentTypeMapping.TryGetValue(entity.TypeId, out tempComponentTypes))
@@ -365,10 +460,16 @@ namespace GDG.ECS
             //添加组件
             foreach (var item in componentTypes)
             {
-                entity.AddComponentToList(Activator.CreateInstance(item) as IComponent);
+                AddComponentToList(entity.Index,Activator.CreateInstance(item) as IComponent);
             }
+            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
+            {
+                Log.Error($"AddComponent failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
+                return null;
+            }
+
             //获取添加之后的组件类型
-            foreach (var item in entity.Components)
+            foreach (var item in Components)
             {
                 types.Add(item.GetType());
             }
@@ -401,7 +502,12 @@ namespace GDG.ECS
             EntityRefCountDecrementOne(entity);
 
             //遍历移除实体组件
-            var componentList = entity.Components;
+            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
+            {
+                Log.Error($"RemoveComponent failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
+                return false;
+            }
+            var componentList = Components;
             List<Type> types = new List<Type>();
             for (int i = componentList.Count - 1; i >= 0; i--)
             {
@@ -409,7 +515,7 @@ namespace GDG.ECS
                 {
                     if (componentList[i].GetType() == item)
                     {
-                        if (!entity.RemoveComponentToList(componentList[i]))
+                        if (!RemoveComponentToList(entity.Index,componentList[i]))
                         {
                             LogManager.Instance.LogError($"Remove component failed ! Can't Find Component in Entity !Entity.Index:{index}");
                             return false;
@@ -444,9 +550,16 @@ namespace GDG.ECS
             List<Type> types = new List<Type>();
             //添加组件
             var component = Activator.CreateInstance<T>();
-            entity.AddComponentToList(Activator.CreateInstance<T>());
+            AddComponentToList(entity.Index,Activator.CreateInstance<T>());
+            
+            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
+            {
+                Log.Error($"AddComponent failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
+                return default(T);
+            }
+
             //获取添加之后的组件类型
-            foreach (var item in entity.Components)
+            foreach (var item in Components)
             {
                 types.Add(item.GetType());
             }
@@ -476,14 +589,20 @@ namespace GDG.ECS
 
             //删除之前        
             EntityRefCountDecrementOne(entity);
+            
             //遍历移除实体组件
-            var componentList = entity.Components;
+            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
+            {
+                Log.Error($"RemoveComponent failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
+                return false;
+            }
+            var componentList = Components;
             List<Type> types = new List<Type>();
             for (int i = componentList.Count - 1; i >= 0; i--)
             {
                 if (componentList[i] is T item)
                 {
-                    if (!entity.RemoveComponentToList(item))
+                    if (!RemoveComponentToList(entity.Index,item))
                     {
                         LogManager.Instance.LogError($"Remove component failed ! Can't Find Component in Entity !Entity.Index:{index}");
                         return false;
@@ -538,9 +657,9 @@ namespace GDG.ECS
         }
         internal bool AddIndex2EnityMapping(ulong typeId, Entity entity, Action<Entity> sucessCallback = null)
         {
-            if (!m_Index2EnityMapping.TryGetValue(typeId, out Entity outEntity))
+            if (!m_Index2EntityMapping.TryGetValue(typeId, out Entity outEntity))
             {
-                m_Index2EnityMapping.Add(typeId, entity);
+                m_Index2EntityMapping.Add(typeId, entity);
                 sucessCallback?.Invoke(entity);
                 return true;
             }
@@ -548,9 +667,19 @@ namespace GDG.ECS
         }
         internal bool RemoveIndex2EnityMapping(ulong typeId, Action sucessCallback = null)
         {
-            if (m_Index2EnityMapping.TryGetValue(typeId, out Entity outentity))
+            if (m_Index2EntityMapping.TryGetValue(typeId, out Entity outentity))
             {
-                m_Index2EnityMapping.Remove(typeId);
+                m_Index2EntityMapping.Remove(typeId);
+                sucessCallback?.Invoke();
+                return true;
+            }
+            return false;
+        }
+        internal bool RemoveIndex2ComponentMapping(ulong typeId, Action sucessCallback = null)
+        {
+            if (m_Index2ComponentMapping.TryGetValue(typeId, out List<IComponent> outComponents))
+            {
+                m_Index2ComponentMapping.Remove(typeId);
                 sucessCallback?.Invoke();
                 return true;
             }

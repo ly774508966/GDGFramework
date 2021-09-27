@@ -8,14 +8,13 @@ using UnityEngine;
 
 public partial class ProjectSetting : EditorWindow
 {
-    [MenuItem("Project/GlobalSetting", false)]
+    [MenuItem("GDGFramework/ProjectSetting", false , 0)]
     static void CreateWindow()
     {
-        Rect rect = new Rect(500, 500, 500, 200);
         EditorWindow.GetWindow<ProjectSetting>(false, "ProjectSetting", true);
     }
     private GUINavigationBar SelectionBar;
-    public static string[] s_SelectionItemList = new string[]{"Logger","Input","Audio","Macro"};
+    private static string[] s_SelectionItemList = new string[]{"Logger","Input","Audio","Macro"};
     private static int s_CurrentSelect = 0 ;
     private void Awake() 
     {
@@ -89,13 +88,6 @@ public partial class ProjectSetting : EditorWindow
             GUILayout.Space(position.width/30);
         }
         GUILayout.Space(30);
-    }
-    public enum SelectionType
-    {
-        Logger,
-        Audio,
-        Input,
-        Marco
     }
     private void DrawSplitLine(string title)
     {

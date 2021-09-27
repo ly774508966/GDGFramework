@@ -102,7 +102,7 @@ public partial class ProjectSetting
     {
         using (new EditorGUILayout.VerticalScope())
         {
-            using (var scope = new EditorGUILayout.ScrollViewScope(m_CurrentScrollPosition, GUILayout.Height(position.height / 1.5f)))
+            using (var scope = new EditorGUILayout.ScrollViewScope(m_CurrentScrollPosition))
             {
                 m_CurrentScrollPosition = scope.scrollPosition;
                 m_InputTable.DrawTitle();

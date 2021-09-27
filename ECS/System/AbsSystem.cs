@@ -43,6 +43,9 @@ namespace GDG.ECS
         }
         public void SetActive(bool isActived)
         {
+            if(isActived == this.isActived)
+                return;
+
             this.isActived = isActived;
             if (isActived)
             {

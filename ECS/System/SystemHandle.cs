@@ -92,7 +92,8 @@ namespace GDG.ECS
                 return;
             foreach (var item in result)
             {
-                foreach (var component in item.Components)
+
+                foreach (var component in World.EntityManager.GetComponent(item))
                 {
                     if (component is T c)
                     {
@@ -115,7 +116,7 @@ namespace GDG.ECS
             T2 t2 = null;
             foreach (var item in result)
             {
-                foreach (var component in item.Components)
+                foreach (var component in World.EntityManager.GetComponent(item))
                 {
 
                     if (component is T1 c1) t1 = c1;
@@ -135,7 +136,7 @@ namespace GDG.ECS
             T3 t3 = null;
             foreach (var item in result)
             {
-                foreach (var component in item.Components)
+                foreach (var component in World.EntityManager.GetComponent(item))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
@@ -156,7 +157,7 @@ namespace GDG.ECS
             T4 t4 = null;
             foreach (var item in result)
             {
-                foreach (var component in item.Components)
+                foreach (var component in World.EntityManager.GetComponent(item))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
@@ -179,7 +180,7 @@ namespace GDG.ECS
             T5 t5 = null;
             foreach (var item in result)
             {
-                foreach (var component in item.Components)
+                foreach (var component in World.EntityManager.GetComponent(item))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
@@ -204,7 +205,7 @@ namespace GDG.ECS
             T6 t6 = null;
             foreach (var item in result)
             {
-                foreach (var component in item.Components)
+                foreach (var component in World.EntityManager.GetComponent(item))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
@@ -231,7 +232,7 @@ namespace GDG.ECS
             T7 t7 = null;
             foreach (var item in result)
             {
-                foreach (var component in item.Components)
+                foreach (var component in World.EntityManager.GetComponent(item))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
@@ -260,7 +261,7 @@ namespace GDG.ECS
             T8 t8 = null;
             foreach (var item in result)
             {
-                foreach (var component in item.Components)
+                foreach (var component in World.EntityManager.GetComponent(item))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;

@@ -17,7 +17,7 @@ public class PersistTools : EditorWindow
     private int sheetIndex=0;
     private float width=40f;
 
-    [MenuItem("Tools/PersistTools", false)]
+    [MenuItem("GDGFramework/Tools/PersistTools", false)]
 	static void AddWindow()
 	{
 		Rect rect=new Rect(500,500,500,200);

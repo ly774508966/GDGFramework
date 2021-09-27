@@ -30,6 +30,12 @@ namespace GDG.ECS
             var entity = new Entity();
             BaseWorld.Instance.EntityManager.EntityMaxIndexIncrease();
             entity.SetIndex(World.EntityManager.GetEntityMaxIndex());
+            entity.Name = "Entity " + entity.Index;
+            BaseWorld.Instance.EntityManager.InitEntityComponent(entity.Index);
+
+            if (!BaseWorld.Instance.EntityManager.m_Index2EntityMapping.ContainsKey(entity.Index))
+                BaseWorld.Instance.EntityManager.m_Index2EntityMapping.Add(entity.Index, entity);
+
             if(entity == null)
             
             beforeEnableCallback?.Invoke(entity);
@@ -52,6 +58,12 @@ namespace GDG.ECS
             var entity = new T();
             BaseWorld.Instance.EntityManager.EntityMaxIndexIncrease();
             entity.SetIndex(World.EntityManager.GetEntityMaxIndex());
+            entity.Name = "Entity " + entity.Index;
+            BaseWorld.Instance.EntityManager.InitEntityComponent(entity.Index);
+
+            if (!BaseWorld.Instance.EntityManager.m_Index2EntityMapping.ContainsKey(entity.Index))
+                BaseWorld.Instance.EntityManager.m_Index2EntityMapping.Add(entity.Index, entity);
+
             if(beforeEnableCallback!=null)
                 beforeEnableCallback(entity);            
             entity.OnInit();

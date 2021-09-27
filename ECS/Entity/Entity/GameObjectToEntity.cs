@@ -18,6 +18,7 @@ namespace GDG.ECS
             }
             BaseWorld.Instance.monoWorld.AddOrRemoveListener(ProxyConvertExcute, "AfterUpdate");
         }
+
         void ProxyConvertExcute()
         {
             entity = World.EntityManager.CreateGameEntity(this.gameObject);

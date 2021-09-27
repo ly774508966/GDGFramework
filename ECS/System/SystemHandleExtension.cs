@@ -152,7 +152,7 @@ namespace GDG.ECS
         }
         public static bool IsExistComponent<T>(this Entity entity)where T:IComponent
         {
-            foreach (var item in entity.Components)
+            foreach (var item in World.EntityManager.GetComponent(entity))
             {
                 if (item is T)
                     return true;

@@ -3,22 +3,29 @@ using System.Collections.Generic;
 using UnityEngine;
 using GDG.ECS;
 
-public class GameObjectComponent : IComponent,IDestroyable,IRecyclable,IEnable
+namespace GDG.Utils
 {
-    public GameObject gameObject;
+    public class GameObjectComponent : IComponent, IDestroyable, IRecyclable, IEnable, ISetNameable
+    {
+        public GameObject gameObject;
 
-    public void OnDestroy()
-    {
-        if(gameObject!=null)
-            GameObject.Destroy(gameObject);
-    }
-    public void OnEnable()
-    {
-        gameObject?.SetActive(true);
-    }
+        public void OnDestroy()
+        {
+            if (gameObject != null)
+                GameObject.Destroy(gameObject);
+        }
+        public void OnEnable()
+        {
+            gameObject?.SetActive(true);
+        }
 
-    public void OnRecycle()
-    {
-        gameObject?.SetActive(false);
+        public void OnRecycle()
+        {
+            gameObject?.SetActive(false);
+        }
+        public void SetName(Entity entity)
+        {
+            entity.Name = gameObject.name;
+        }
     }
 }

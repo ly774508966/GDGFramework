@@ -104,7 +104,7 @@ public partial class ProjectSetting
             {
                 m_CurrentCategoriesName = m_Index2CategoriesMapping[m_CurrentCategoriesIndex];
 
-                using (var scope = new EditorGUILayout.ScrollViewScope(m_CurrentScrollPosition,GUILayout.Height(position.height/2f)))
+                using (var scope = new EditorGUILayout.ScrollViewScope(m_CurrentScrollPosition))
                 {
                     m_CurrentScrollPosition = scope.scrollPosition;
                     using (new EditorGUILayout.VerticalScope())

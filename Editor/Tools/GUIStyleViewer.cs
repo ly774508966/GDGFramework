@@ -9,7 +9,7 @@ public class GUIStyleViewer : EditorWindow
     GUIStyle textStyle;
 
     private static GUIStyleViewer window;
-    [MenuItem("Tools/GUIStyle Viewer", false, 2)]
+    [MenuItem("GDGFramework/Tools/GUIStyle Viewer", false, 2)]
     private static void OpenStyleViewer()
     {
         window = GetWindow<GUIStyleViewer>(false, "GUIStyle");
