@@ -17,8 +17,8 @@ namespace GDG.ECS
     public delegate void SystemCallback<E, T1, T2, T3, T4, T5>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent;
     public delegate void SystemCallback<E, T1, T2, T3, T4, T5, T6>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent;
     public delegate void SystemCallback<E, T1, T2, T3, T4, T5, T6, T7>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6, T7 c7) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent;
-    public delegate void SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6, T7 c7,T8 c8) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent;
-    public abstract class AbsSystemHandle<E>: IExcutable where E:Entity
+    public delegate void SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6, T7 c7, T8 c8) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent;
+    public abstract class AbsSystemHandle<E> : IExcutable where E : Entity
     {
         internal IEnumerable<E> result;
         internal string eventName;
@@ -27,77 +27,240 @@ namespace GDG.ECS
     }
     internal static class EntityCallbackExcuteExtension
     {
-        internal static bool CallbackExcute<E>(this E entity, string eventName, ISystem system, Action callback) where E : Entity
+        internal static void CallbackExcute<E>(this E entity, string eventName, ISystem system, SystemCallback<E> callback, E e, bool isLastOne = false) where E : Entity
         {
-            if (eventName != null)
+            if (!string.IsNullOrEmpty(eventName))
             {
-                if (system.m_Event2IndexListMapping.TryGetValue(eventName, out List<ulong> indexList))
+                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
                 {
-                    if (indexList.Contains(entity.Index))
-                        return false;
+                    var id = system.CurrentSelectId;
 
-                    system.m_Event2IndexListMapping[eventName].Add(entity.Index);
+                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                     {
+                         callback(e);
+                         system.m_SelectId2CanBeExcutedMapping[id] = true;
+                     });
 
-                    UnityAction cb = null;
-                    cb = () =>
-                    {
-                        callback();
-                        EventManager.Instance.RemoveActionListener(eventName,cb);
-                        system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
-                        system.m_Index2EventMapping.Remove(entity.Index);
-                        cb = null;
-                    };
-                    EventManager.Instance.AddActionListener(eventName, cb);
-                }
-                else
-                {
-                    system.m_Event2IndexListMapping.Add(eventName, new List<ulong>() { entity.Index });
-                    UnityAction cb = null;
-                    cb = () =>
-                    {
-                        callback();
-                        EventManager.Instance.RemoveActionListener(eventName, cb);
-                        system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
-                        system.m_Index2EventMapping.Remove(entity.Index);
-                        cb = null;
-                    };
-                    EventManager.Instance.AddActionListener(eventName, cb);
+                    if (isLastOne)
+                        system.m_SelectId2CanBeExcutedMapping[id] = false;
                 }
             }
             else
-                callback();
-            return true;
+                callback(e);
+            return;
+        }
+        internal static void CallbackExcute<E, T>(this E entity, string eventName, ISystem system, SystemCallback<E, T> callback, E e, T t, bool isLastOne = false) where E : Entity where T : class, IComponent
+        {
+            if (!string.IsNullOrEmpty(eventName))
+            {
+                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                {
+                    var id = system.CurrentSelectId;
+
+                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                     {
+                         callback(e, t);
+                         system.m_SelectId2CanBeExcutedMapping[id] = true;
+                     });
+
+                    if (isLastOne)
+                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                }
+            }
+            else
+                callback(e, t);
+            return;
+        }
+        internal static void CallbackExcute<E, T1, T2>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2> callback, E e, T1 t1, T2 t2, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent
+        {
+            if (!string.IsNullOrEmpty(eventName))
+            {
+                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                {
+                    var id = system.CurrentSelectId;
+
+                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                     {
+                         callback(e, t1, t2);
+                         system.m_SelectId2CanBeExcutedMapping[id] = true;
+                     });
+
+                    if (isLastOne)
+                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                }
+            }
+            else
+                callback(e, t1, t2);
+            return;
+        }
+        internal static void CallbackExcute<E, T1, T2, T3>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3> callback, E e, T1 t1, T2 t2, T3 t3, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
+        {
+            if (!string.IsNullOrEmpty(eventName))
+            {
+                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                {
+                    var id = system.CurrentSelectId;
+
+                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                     {
+                         callback(e, t1, t2, t3);
+                         system.m_SelectId2CanBeExcutedMapping[id] = true;
+                     });
+
+                    if (isLastOne)
+                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                }
+            }
+            else
+                callback(e, t1, t2, t3);
+            return;
+        }
+        internal static void CallbackExcute<E, T1, T2, T3, T4>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3, T4> callback, E e, T1 t1, T2 t2, T3 t3, T4 t4, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
+        {
+            if (!string.IsNullOrEmpty(eventName))
+            {
+                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                {
+                    var id = system.CurrentSelectId;
+
+                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                     {
+                         callback(e, t1, t2, t3, t4);
+                         system.m_SelectId2CanBeExcutedMapping[id] = true;
+                     });
+
+                    if (isLastOne)
+                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                }
+            }
+            else
+                callback(e, t1, t2, t3, t4);
+            return;
+        }
+        internal static void CallbackExcute<E, T1, T2, T3, T4, T5>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5> callback, E e, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
+        {
+            if (!string.IsNullOrEmpty(eventName))
+            {
+                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                {
+                    var id = system.CurrentSelectId;
+
+                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                     {
+                         callback(e, t1, t2, t3, t4, t5);
+                         system.m_SelectId2CanBeExcutedMapping[id] = true;
+                     });
+
+                    if (isLastOne)
+                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                }
+            }
+            else
+                callback(e, t1, t2, t3, t4, t5);
+            return;
+        }
+        internal static void CallbackExcute<E, T1, T2, T3, T4, T5, T6>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5, T6> callback, E e, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
+        {
+            if (!string.IsNullOrEmpty(eventName))
+            {
+                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                {
+                    var id = system.CurrentSelectId;
+
+                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                     {
+                         callback(e, t1, t2, t3, t4, t5, t6);
+                         system.m_SelectId2CanBeExcutedMapping[id] = true;
+                     });
+
+                    if (isLastOne)
+                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                }
+            }
+            else
+                callback(e, t1, t2, t3, t4, t5, t6);
+            return;
+        }
+        internal static void CallbackExcute<E, T1, T2, T3, T4, T5, T6, T7>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback, E e, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, T7 t7, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
+        {
+            if (!string.IsNullOrEmpty(eventName))
+            {
+                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                {
+                    var id = system.CurrentSelectId;
+
+                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                     {
+                         callback(e, t1, t2, t3, t4, t5, t6, t7);
+                         system.m_SelectId2CanBeExcutedMapping[id] = true;
+                     });
+
+                    if (isLastOne)
+                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                }
+            }
+            else
+                callback(e, t1, t2, t3, t4, t5, t6, t7);
+            return;
+        }
+        internal static void CallbackExcute<E, T1, T2, T3, T4, T5, T6, T7, T8>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback, E e, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, T7 t7, T8 t8, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
+        {
+            if (!string.IsNullOrEmpty(eventName))
+            {
+                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                {
+                    var id = system.CurrentSelectId;
+
+                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                     {
+                         callback(e, t1, t2, t3, t4, t5, t6, t7, t8);
+                         system.m_SelectId2CanBeExcutedMapping[id] = true;
+                     });
+
+                    if (isLastOne)
+                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                }
+            }
+            else
+                callback(e, t1, t2, t3, t4, t5, t6, t7, t8);
+            return;
         }
     }
     public class SystemHandle<E> : AbsSystemHandle<E> where E : Entity
     {
+        public static SystemHandle<E> None = new SystemHandle<E>() { };
         public SystemCallback<E> callback;
         public override void Excute()
         {
             if (result == null || callback == null)
                 return;
+            int count = result.Count();
+            int i = 0;
             foreach (var item in result)
             {
-                item.CallbackExcute(eventName, system, () => { callback(item); });
+                item.CallbackExcute(eventName, system, callback, item, i++ == count);
                 break;
             }
         }
     }
     public class SystemHandle<E, T> : AbsSystemHandle<E> where E : Entity where T : class, IComponent
     {
+        public static SystemHandle<E, T> None = new SystemHandle<E, T>() { };
         public SystemCallback<E, T> callback;
         public override void Excute()
         {
             if (result == null || callback == null)
                 return;
+            int count = result.Count();
+            int i = 0;
             foreach (var item in result)
             {
 
-                foreach (var component in World.EntityManager.GetComponent(item))
+                foreach (var component in World.EntityManager.GetComponents(item))
                 {
                     if (component is T c)
                     {
-                        item.CallbackExcute(eventName, system, () => { callback(item, c); });
+                        item.CallbackExcute(eventName, system, callback, item, c, i++ == count);
                         break;
                     }
                 }
@@ -107,6 +270,7 @@ namespace GDG.ECS
     }
     public class SystemHandle<E, T1, T2> : AbsSystemHandle<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent
     {
+        public static SystemHandle<E, T1, T2> None = new SystemHandle<E, T1, T2>() { };
         public SystemCallback<E, T1, T2> callback;
         public override void Excute()
         {
@@ -114,73 +278,90 @@ namespace GDG.ECS
                 return;
             T1 t1 = null;
             T2 t2 = null;
+            int count = result.Count();
+            int i = 0;
             foreach (var item in result)
             {
-                foreach (var component in World.EntityManager.GetComponent(item))
+                foreach (var component in World.EntityManager.GetComponents(item))
                 {
-
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
                 }
-                item.CallbackExcute(eventName, system, () => { callback(item, t1, t2); });
+                item.CallbackExcute(eventName, system, callback, item, t1, t2, ++i == count);
             }
+
         }
     }
     public class SystemHandle<E, T1, T2, T3> : AbsSystemHandle<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
     {
+        public static SystemHandle<E, T1, T2, T3> None = new SystemHandle<E, T1, T2, T3>() { };
         public SystemCallback<E, T1, T2, T3> callback;
         public override void Excute()
         {
+            if (result == null || callback == null)
+                return;
             T1 t1 = null;
             T2 t2 = null;
             T3 t3 = null;
+            int count = result.Count();
+            int i = 0;
             foreach (var item in result)
             {
-                foreach (var component in World.EntityManager.GetComponent(item))
+                foreach (var component in World.EntityManager.GetComponents(item))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
                     if (component is T3 c3) t3 = c3;
                 }
-                item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3); });
+                item.CallbackExcute(eventName, system, callback, item, t1, t2, t3, i++ == count);
             }
         }
     }
     public class SystemHandle<E, T1, T2, T3, T4> : AbsSystemHandle<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
     {
+        public static SystemHandle<E, T1, T2, T3, T4> None = new SystemHandle<E, T1, T2, T3, T4>() { };
         public SystemCallback<E, T1, T2, T3, T4> callback;
         public override void Excute()
         {
+            if (result == null || callback == null)
+                return;
             T1 t1 = null;
             T2 t2 = null;
             T3 t3 = null;
             T4 t4 = null;
+            int count = result.Count();
+            int i = 0;
             foreach (var item in result)
             {
-                foreach (var component in World.EntityManager.GetComponent(item))
+                foreach (var component in World.EntityManager.GetComponents(item))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
                     if (component is T3 c3) t3 = c3;
                     if (component is T4 c4) t4 = c4;
                 }
-                item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3, t4); });
+                item.CallbackExcute(eventName, system, callback, item, t1, t2, t3, t4, i++ == count);
             }
         }
     }
     public class SystemHandle<E, T1, T2, T3, T4, T5> : AbsSystemHandle<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
     {
+        public static SystemHandle<E, T1, T2, T3, T4, T5> None = new SystemHandle<E, T1, T2, T3, T4, T5>() { };
         public SystemCallback<E, T1, T2, T3, T4, T5> callback;
         public override void Excute()
         {
+            if (result == null || callback == null)
+                return;
             T1 t1 = null;
             T2 t2 = null;
             T3 t3 = null;
             T4 t4 = null;
             T5 t5 = null;
+            int count = result.Count();
+            int i = 0;
             foreach (var item in result)
             {
-                foreach (var component in World.EntityManager.GetComponent(item))
+                foreach (var component in World.EntityManager.GetComponents(item))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
@@ -188,24 +369,29 @@ namespace GDG.ECS
                     if (component is T4 c4) t4 = c4;
                     if (component is T5 c5) t5 = c5;
                 }
-                item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3, t4, t5); });
+                item.CallbackExcute(eventName, system, callback, item, t1, t2, t3, t4, t5, i++ == count);
             }
         }
     }
     public class SystemHandle<E, T1, T2, T3, T4, T5, T6> : AbsSystemHandle<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
     {
+        public static SystemHandle<E, T1, T2, T3, T4, T5, T6> None = new SystemHandle<E, T1, T2, T3, T4, T5, T6>() { };
         public SystemCallback<E, T1, T2, T3, T4, T5, T6> callback;
         public override void Excute()
         {
+            if (result == null || callback == null)
+                return;
             T1 t1 = null;
             T2 t2 = null;
             T3 t3 = null;
             T4 t4 = null;
             T5 t5 = null;
             T6 t6 = null;
+            int count = result.Count();
+            int i = 0;
             foreach (var item in result)
             {
-                foreach (var component in World.EntityManager.GetComponent(item))
+                foreach (var component in World.EntityManager.GetComponents(item))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
@@ -214,15 +400,18 @@ namespace GDG.ECS
                     if (component is T5 c5) t5 = c5;
                     if (component is T6 c6) t6 = c6;
                 }
-                item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3, t4, t5, t6); });
+                item.CallbackExcute(eventName, system, callback, item, t1, t2, t3, t4, t5, t6, i++ == count);
             }
         }
     }
     public class SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> : AbsSystemHandle<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
     {
+        public static SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> None = new SystemHandle<E, T1, T2, T3, T4, T5, T6, T7>() { };
         public SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback;
         public override void Excute()
         {
+            if (result == null || callback == null)
+                return;
             T1 t1 = null;
             T2 t2 = null;
             T3 t3 = null;
@@ -230,9 +419,11 @@ namespace GDG.ECS
             T5 t5 = null;
             T6 t6 = null;
             T7 t7 = null;
+            int count = result.Count();
+            int i = 0;
             foreach (var item in result)
             {
-                foreach (var component in World.EntityManager.GetComponent(item))
+                foreach (var component in World.EntityManager.GetComponents(item))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
@@ -242,15 +433,18 @@ namespace GDG.ECS
                     if (component is T6 c6) t6 = c6;
                     if (component is T7 c7) t7 = c7;
                 }
-                item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3, t4, t5, t6, t7); });
+                item.CallbackExcute(eventName, system, callback, item, t1, t2, t3, t4, t5, t6, t7, i++ == count);
             }
         }
     }
     public class SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> : AbsSystemHandle<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
     {
+        public static SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> None = new SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8>() { };
         public SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback;
         public override void Excute()
         {
+            if (result == null || callback == null)
+                return;
             T1 t1 = null;
             T2 t2 = null;
             T3 t3 = null;
@@ -259,9 +453,11 @@ namespace GDG.ECS
             T6 t6 = null;
             T7 t7 = null;
             T8 t8 = null;
+            int count = result.Count();
+            int i = 0;
             foreach (var item in result)
             {
-                foreach (var component in World.EntityManager.GetComponent(item))
+                foreach (var component in World.EntityManager.GetComponents(item))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
@@ -272,7 +468,7 @@ namespace GDG.ECS
                     if (component is T7 c7) t7 = c7;
                     if (component is T8 c8) t8 = c8;
                 }
-                item.CallbackExcute(eventName, system, () => { callback(item, t1, t2, t3, t4, t5, t6, t7, t8); });
+                item.CallbackExcute(eventName, system, callback, item, t1, t2, t3, t4, t5, t6, t7, t8, i++ == count);
             }
         }
     }

@@ -280,7 +280,7 @@ namespace GDG.ECS
             else
                 Log.Error($"InitEntityComponent failed ! The same mapping already exists here ! Index:{index}");
         }
-        public List<IComponent> GetComponent(Entity entity)
+        public List<IComponent> GetComponents(Entity entity)
         {
             if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
             {
@@ -289,7 +289,7 @@ namespace GDG.ECS
             }
             return Components;
         }
-        public List<IComponent> GetComponent(ulong Index)
+        public List<IComponent> GetComponents(ulong Index)
         {
             if(!m_Index2ComponentMapping.TryGetValue(Index,out List<IComponent> Components))
             {

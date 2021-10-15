@@ -16,11 +16,11 @@ namespace GDG.ModuleManager
             public Func<object[], object> funcs;
             public VLArgEventHandle(UnityAction<object[]> action)
             {
-                actions += action;
+                this.actions = action;
             }
             public VLArgEventHandle(Func<object[], object> func)
             {
-                funcs += func;
+                this.funcs = func;
             }
         }
         private class EventHandle<T1, T2, T3, T4, T5> : IEventHandle
@@ -28,7 +28,7 @@ namespace GDG.ModuleManager
             public Func<T1, T2, T3, T4, T5> funcs;
             public EventHandle(Func<T1, T2, T3, T4, T5> func)
             {
-                funcs += func;
+                this.funcs = func;
             }
         }
         private class EventHandle<T1, T2, T3, T4> : IEventHandle
@@ -37,11 +37,11 @@ namespace GDG.ModuleManager
             public Func<T1, T2, T3, T4> funcs;
             public EventHandle(UnityAction<T1, T2, T3, T4> action)
             {
-                actions += action;
+                this.actions = action;
             }
             public EventHandle(Func<T1, T2, T3, T4> func)
             {
-                funcs += func;
+                this.funcs = func;
             }
         }
         private class EventHandle<T1, T2, T3> : IEventHandle
@@ -50,11 +50,11 @@ namespace GDG.ModuleManager
             public Func<T1, T2, T3> funcs;
             public EventHandle(UnityAction<T1, T2, T3> action)
             {
-                actions += action;
+                this.actions = action;
             }
             public EventHandle(Func<T1, T2, T3> func)
             {
-                funcs += func;
+                this.funcs = func;
             }
         }
         private class EventHandle<T1, T2> : IEventHandle
@@ -63,11 +63,11 @@ namespace GDG.ModuleManager
             public Func<T1, T2> funcs;
             public EventHandle(UnityAction<T1, T2> action)
             {
-                actions += action;
+                this.actions = action;
             }
             public EventHandle(Func<T1, T2> func)
             {
-                funcs += func;
+                this.funcs = func;
             }
         }
         private class EventHandle<T> : IEventHandle
@@ -76,11 +76,11 @@ namespace GDG.ModuleManager
             public Func<T> funcs;
             public EventHandle(UnityAction<T> action)
             {
-                actions += action;
+                this.actions = action;
             }
             public EventHandle(Func<T> func)
             {
-                funcs += func;
+                this.funcs = func;
             }
         }
         private class EventHandle : IEventHandle
@@ -88,7 +88,7 @@ namespace GDG.ModuleManager
             public UnityAction actions;
             public EventHandle(UnityAction action)
             {
-                actions += action;
+                this.actions = action;
             }
         }
         # endregion
@@ -100,9 +100,114 @@ namespace GDG.ModuleManager
         }
         //事件字典
         private readonly Dictionary<string, IEventHandle> EventDic = new Dictionary<string, IEventHandle>();
+        //private Dictionary<string,bool> boolDic = new Dictionary<string, bool>();
         public static bool EnableEventLog = false;
-
+        #region 清空事件
+        public void ClearEvent(string eventName)
+        {
+            if (EventDic.TryGetValue(eventName, out IEventHandle eventHandle))
+            {
+                if(eventHandle is EventHandle handle)
+                {
+                    handle.actions = null;
+                    EventDic.Remove(eventName);
+                }
+            }
+        }
+        public void ClearEvent<T>(string eventName)
+        {
+            if (EventDic.TryGetValue(eventName, out IEventHandle eventHandle))
+            {
+                if(eventHandle is EventHandle<T> handle)
+                {
+                    handle.actions = null;
+                    handle.funcs = null;
+                    EventDic.Remove(eventName);
+                }
+            }
+        }
+        public void ClearEvent<T1,T2>(string eventName)
+        {
+            if (EventDic.TryGetValue(eventName, out IEventHandle eventHandle))
+            {
+                if(eventHandle is EventHandle<T1,T2> handle)
+                {
+                    handle.actions = null;
+                    handle.funcs = null;
+                    EventDic.Remove(eventName);
+                }
+            }
+        }
+        public void ClearEvent<T1,T2,T3>(string eventName)
+        {
+            if (EventDic.TryGetValue(eventName, out IEventHandle eventHandle))
+            {
+                if(eventHandle is EventHandle<T1,T2,T3> handle)
+                {
+                    handle.actions = null;
+                    handle.funcs = null;
+                    EventDic.Remove(eventName);
+                }
+            }
+        }
+        public void ClearEvent<T1,T2,T3,T4>(string eventName)
+        {
+            if (EventDic.TryGetValue(eventName, out IEventHandle eventHandle))
+            {
+                if(eventHandle is EventHandle<T1,T2,T3,T4> handle)
+                {
+                    handle.actions = null;
+                    handle.funcs = null;
+                    EventDic.Remove(eventName);
+                }
+            }
+        }
+        public void ClearEvent<T1,T2,T3,T4,T5>(string eventName)
+        {
+            if (EventDic.TryGetValue(eventName, out IEventHandle eventHandle))
+            {
+                if(eventHandle is EventHandle<T1,T2,T3,T4,T5> handle)
+                {
+                    handle.funcs = null;
+                    EventDic.Remove(eventName);
+                }
+            }
+        }
+        public void ClearEvent_VLArg(string eventName)
+        {
+            if (EventDic.TryGetValue(eventName, out IEventHandle eventHandle))
+            {
+                if(eventHandle is VLArgEventHandle handle)
+                {
+                    handle.funcs = null;
+                    EventDic.Remove(eventName);
+                }
+            }
+        }
+        #endregion
         #region 注册监听
+        public void AddActionListener_AutoRemoveAfterTrigger(string eventName, UnityAction Event)
+        {
+            UnityAction callback = null;
+            callback = () =>
+            {
+                Event();
+                if(EventDic.TryGetValue(eventName,out IEventHandle handle))
+                {
+                    if(handle is EventHandle eventHandle)
+                    {
+                        eventHandle.actions -= callback;
+                    }
+                }
+            };
+
+            if (!EventDic.ContainsKey(eventName))
+            {
+                EventDic.Add(eventName, new EventHandle(callback));
+            }
+            else
+                (EventDic[eventName] as EventHandle).actions += callback;            
+        }
         public void AddActionListener(string eventName, UnityAction Event)
         {
             if (!EventDic.ContainsKey(eventName))

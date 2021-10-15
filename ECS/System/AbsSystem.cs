@@ -16,24 +16,24 @@ namespace GDG.ECS
         private static ST instance;
         public static ST GetInstance() { if (instance == null) { instance = new ST(); instance.Init(); } return instance; }
         #endregion
+        private bool isActived = true;
+        public int MaxSelectId{ get; set; }
+        public int CurrentSelectId { get; set; }
         private List<Entity> entities;
-        private Dictionary<string, List<ulong>> eventMapping;
+        private Dictionary<int, bool> selectMapping;
         private Dictionary<ulong, double> timerMapping;
         private Dictionary<ulong, ulong> frameMapping;
-        private Dictionary<ulong, string> indexEventMapping;
-        private bool isActived = true;
-        public Dictionary<string, List<ulong>> m_Event2IndexListMapping { get => eventMapping; }
+        public Dictionary<int, bool> m_SelectId2CanBeExcutedMapping { get => selectMapping; }
         public Dictionary<ulong, double> m_Index2TimeHandleMapping { get => timerMapping; }
         public Dictionary<ulong, ulong> m_Index2FrameHandleMapping { get => frameMapping; }
-        public Dictionary<ulong, string> m_Index2EventMapping{ get => indexEventMapping; }
         public List<Entity> Entities { get => this.entities; }
-
-        internal void Init()
+        private void Init()
         {
-            eventMapping = new Dictionary<string, List<ulong>>();
+            CurrentSelectId = 0;
+            MaxSelectId = 0;
+            selectMapping = new Dictionary<int, bool>();
             timerMapping = new Dictionary<ulong, double>();
             frameMapping = new Dictionary<ulong, ulong>();
-            indexEventMapping = new Dictionary<ulong, string>();
             entities = new List<Entity>();
             BaseWorld.Instance.Systems.Add(typeof(ST), this);
         }
@@ -64,19 +64,6 @@ namespace GDG.ECS
         }
         public bool RemoveEntity(Entity entity)
         {
-            if(m_Index2EventMapping.TryGetValue(entity.Index,out string eventName))
-            {
-                if(m_Event2IndexListMapping.TryGetValue(eventName,out List<ulong> indexList))
-                {
-                    if(!indexList.Remove(entity.Index))
-                        return false;
-                }
-                else
-                    return false;
-            }
-            else
-                return false;
-
             if(!timerMapping.Remove(entity.Index))
                 return false;
             if(!frameMapping.Remove(entity.Index))
@@ -112,6 +99,16 @@ namespace GDG.ECS
         }
         public SystemHandle<E> Select<E>(SystemCallback<E> callback) where E : Entity
         {
+            if(selectMapping.TryGetValue(++CurrentSelectId,out bool _canBeExcuted))
+            {
+                if(!_canBeExcuted)
+                    return null;
+            }
+            else
+            {
+                selectMapping.Add(++MaxSelectId, true);
+            }
+
             if (entities == null)
                 return null;
             return ForEach<E>(callback);
@@ -129,7 +126,7 @@ namespace GDG.ECS
         private SystemHandle<E, T> ForEach<E, T>(SystemCallback<E, T> callback) where E : Entity where T : class, IComponent
         {
             if (entities == null)
-                return null;
+                return SystemHandle<E, T>.None;
             var result =
             from obj in entities.AsParallel()
             where obj.IsExistComponent<T>()
@@ -139,8 +136,17 @@ namespace GDG.ECS
         }
         public SystemHandle<E, T> Select<E, T>(SystemCallback<E, T> callback) where E : Entity where T : class, IComponent
         {
+            if(selectMapping.TryGetValue(++CurrentSelectId,out bool _canBeExcuted))
+            {
+                if(!_canBeExcuted)
+                    return SystemHandle<E, T>.None;
+            }
+            else
+            {
+                selectMapping.Add(++MaxSelectId, true);
+            }
             if (entities == null)
-                return null;
+                return SystemHandle<E, T>.None;
             return ForEach<E, T>(callback);
         }
         #endregion
@@ -156,7 +162,7 @@ namespace GDG.ECS
         private SystemHandle<E, T1, T2> ForEach<E, T1, T2>(SystemCallback<E, T1, T2> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent
         {
             if (entities == null)
-                return null;
+                return SystemHandle<E,T1,T2>.None;;
             var result =
             from obj in entities.AsParallel()
             where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>()
@@ -166,8 +172,16 @@ namespace GDG.ECS
         }
         public SystemHandle<E, T1, T2> Select<E, T1, T2>(SystemCallback<E, T1, T2> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent
         {
+            if(selectMapping.TryGetValue(++CurrentSelectId,out bool _canBeExcuted))
+            {
+                if(!_canBeExcuted)
+                    return SystemHandle<E, T1,T2>.None;
+            }
+            else
+                selectMapping.Add(++MaxSelectId, true);
+            
             if (entities == null)
-                return null;
+                return SystemHandle<E, T1,T2>.None;
             return ForEach<E, T1, T2>(callback);
         }
         #endregion
@@ -183,7 +197,7 @@ namespace GDG.ECS
         private SystemHandle<E, T1, T2, T3> ForEach<E, T1, T2, T3>(SystemCallback<E, T1, T2, T3> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
         {
             if (entities == null)
-                return null;
+                return SystemHandle<E, T1, T2, T3>.None;
             var result =
             from obj in entities.AsParallel()
             where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>()
@@ -193,8 +207,17 @@ namespace GDG.ECS
         }
         public SystemHandle<E, T1, T2, T3> Select<E, T1, T2, T3>(SystemCallback<E, T1, T2, T3> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
         {
+            if(selectMapping.TryGetValue(++CurrentSelectId,out bool _canBeExcuted))
+            {
+                if(!_canBeExcuted)
+                    return SystemHandle<E, T1, T2, T3>.None;
+            }
+            else
+            {
+                selectMapping.Add(++MaxSelectId, true);
+            }
             if (entities == null)
-                return null;
+                return SystemHandle<E, T1, T2, T3>.None;
             return ForEach<E, T1, T2, T3>(callback);
         }
         #endregion
@@ -210,7 +233,7 @@ namespace GDG.ECS
         private SystemHandle<E, T1, T2, T3, T4> ForEach<E, T1, T2, T3, T4>(SystemCallback<E, T1, T2, T3, T4> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
         {
             if (entities == null)
-                return null;
+                return SystemHandle<E, T1, T2, T3, T4>.None;
             var result =
             from obj in entities.AsParallel()
             where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>()
@@ -220,8 +243,17 @@ namespace GDG.ECS
         }
         public SystemHandle<E, T1, T2, T3, T4> Select<E, T1, T2, T3, T4>(SystemCallback<E, T1, T2, T3, T4> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
         {
+            if(selectMapping.TryGetValue(++CurrentSelectId,out bool _canBeExcuted))
+            {
+                if(!_canBeExcuted)
+                    return SystemHandle<E, T1, T2, T3, T4>.None;
+            }
+            else
+            {
+                selectMapping.Add(++MaxSelectId, true);
+            }
             if (entities == null)
-                return null;
+                return SystemHandle<E, T1, T2, T3, T4>.None;
             return ForEach<E, T1, T2, T3, T4>(callback);
         }
         #endregion
@@ -237,7 +269,7 @@ namespace GDG.ECS
         private SystemHandle<E, T1, T2, T3, T4, T5> ForEach<E, T1, T2, T3, T4, T5>(SystemCallback<E, T1, T2, T3, T4, T5> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
         {
             if (entities == null)
-                return null;
+                return SystemHandle<E, T1, T2, T3, T4, T5>.None;
             var result =
             from obj in entities.AsParallel()
             where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>()
@@ -247,8 +279,17 @@ namespace GDG.ECS
         }
         public SystemHandle<E, T1, T2, T3, T4, T5> Select<E, T1, T2, T3, T4, T5>(SystemCallback<E, T1, T2, T3, T4, T5> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
         {
+            if(selectMapping.TryGetValue(++CurrentSelectId,out bool _canBeExcuted))
+            {
+                if(!_canBeExcuted)
+                    return SystemHandle<E, T1, T2, T3, T4, T5>.None;
+            }
+            else
+            {
+                selectMapping.Add(++MaxSelectId, true);
+            }
             if (entities == null)
-                return null;
+                return SystemHandle<E, T1, T2, T3, T4, T5>.None;
             return ForEach<E, T1, T2, T3, T4, T5>(callback);
         }
         #endregion
@@ -264,7 +305,7 @@ namespace GDG.ECS
         private SystemHandle<E, T1, T2, T3, T4, T5, T6> ForEach<E, T1, T2, T3, T4, T5, T6>(SystemCallback<E, T1, T2, T3, T4, T5, T6> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
         {
             if (entities == null)
-                return null;
+                return SystemHandle<E, T1, T2, T3, T4, T5, T6>.None;
             var result =
             from obj in entities.AsParallel()
             where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>() && obj.IsExistComponent<T6>()
@@ -274,8 +315,17 @@ namespace GDG.ECS
         }
         public SystemHandle<E, T1, T2, T3, T4, T5, T6> Select<E, T1, T2, T3, T4, T5, T6>(SystemCallback<E, T1, T2, T3, T4, T5, T6> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
         {
+            if(selectMapping.TryGetValue(++CurrentSelectId,out bool _canBeExcuted))
+            {
+                if(!_canBeExcuted)
+                    return SystemHandle<E, T1, T2, T3, T4, T5, T6>.None;
+            }
+            else
+            {
+                selectMapping.Add(++MaxSelectId, true);
+            }
             if (entities == null)
-                return null;
+                return SystemHandle<E, T1, T2, T3, T4, T5, T6>.None;
             return ForEach<E, T1, T2, T3, T4, T5, T6>(callback);
         }
         #endregion
@@ -291,7 +341,7 @@ namespace GDG.ECS
         private SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> ForEach<E, T1, T2, T3, T4, T5, T6, T7>(SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
         {
             if (entities == null)
-                return null;
+                return SystemHandle<E, T1, T2, T3, T4, T5, T6, T7>.None;
             var result =
             from obj in entities.AsParallel()
             where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>() && obj.IsExistComponent<T6>() && obj.IsExistComponent<T7>()
@@ -301,8 +351,17 @@ namespace GDG.ECS
         }
         public SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> Select<E, T1, T2, T3, T4, T5, T6, T7>(SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
         {
+            if(selectMapping.TryGetValue(++CurrentSelectId,out bool _canBeExcuted))
+            {
+                if(!_canBeExcuted)
+                    return SystemHandle<E, T1, T2, T3, T4, T5, T6, T7>.None;
+            }
+            else
+            {
+                selectMapping.Add(++MaxSelectId, true);
+            }
             if (entities == null)
-                return null;
+                return SystemHandle<E, T1, T2, T3, T4, T5, T6, T7>.None;
             return ForEach<E, T1, T2, T3, T4, T5, T6, T7>(callback);
         }
         #endregion
@@ -318,7 +377,7 @@ namespace GDG.ECS
         private SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> ForEach<E, T1, T2, T3, T4, T5, T6, T7, T8>(SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
         {
             if (entities == null)
-                return null;
+                return SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8>.None;
             var result =
             from obj in entities.AsParallel()
             where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>() && obj.IsExistComponent<T6>() && obj.IsExistComponent<T7>() && obj.IsExistComponent<T8>()
@@ -328,8 +387,17 @@ namespace GDG.ECS
         }
         public SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> Select<E, T1, T2, T3, T4, T5, T6, T7, T8>(SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
         {
+            if(selectMapping.TryGetValue(++CurrentSelectId,out bool _canBeExcuted))
+            {
+                if(!_canBeExcuted)
+                    return SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8>.None;
+            }
+            else
+            {
+                selectMapping.Add(++MaxSelectId, true);
+            }
             if (entities == null)
-                return null;
+                return SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8>.None;
             return ForEach<E, T1, T2, T3, T4, T5, T6, T7, T8>(callback);
             #endregion
         }

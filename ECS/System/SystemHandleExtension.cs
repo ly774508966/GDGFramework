@@ -145,19 +145,12 @@ namespace GDG.ECS
                 }
             }
         }
-        public static AbsSystemHandle<E> WithEventHandle<E>(this AbsSystemHandle<E> handle, string eventName)where E:Entity
+        public static AbsSystemHandle<E> WaitForEvent<E>(this AbsSystemHandle<E> handle, string eventName)where E:Entity
         {
+            if(handle.system==null)
+                return handle;
             handle.eventName = eventName;
             return handle;
-        }
-        public static bool IsExistComponent<T>(this Entity entity)where T:IComponent
-        {
-            foreach (var item in World.EntityManager.GetComponent(entity))
-            {
-                if (item is T)
-                    return true;
-            }
-            return false;
         }
     }
 }

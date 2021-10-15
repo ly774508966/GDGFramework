@@ -29,21 +29,23 @@ public class EntitiesViewer : EditorWindow
     private Color beginColor;
     BaseWorld world;
     void OnGUI()
-    {
+    {   
         beginColor = GUI.color;
+
         buttonStyle = new GUIStyle("ProgressBarBar");
         buttonStyle.fontSize = 12;
         buttonStyle.normal.textColor = Color.white;
+        
         if (world == null)
         {
             if (Application.isPlaying)
                 world = BaseWorld.Instance;
         }
-            
+
 
         using (new GUILayout.VerticalScope(WindowStyles.DarkBackground))
         {
-            using (new GUILayout.HorizontalScope(WindowStyles.DarkBackground,GUILayout.Height(position.height/1.5f)))
+            using (new GUILayout.HorizontalScope(WindowStyles.DarkBackground, GUILayout.Height(position.height / 1.5f)))
             {
                 DrawSystem();
                 DrawEntities();
@@ -105,7 +107,7 @@ public class EntitiesViewer : EditorWindow
                         {
                             var entity = World.EntityManager.GetAllEntity().First();
                             if (entity != null)
-                                m_CurrentComponents = World.EntityManager.GetComponent(entity);
+                                m_CurrentComponents = World.EntityManager.GetComponents(entity);
                         }
                         var entities = World.EntityManager.GetAllEntity();
                         for (int i = 0; i < entities.Count; i++)
@@ -118,7 +120,7 @@ public class EntitiesViewer : EditorWindow
                                     {
                                         if (GUILayout.Button(entities[i].Name, EditorStyles.label))
                                         {
-                                            m_CurrentComponents = World.EntityManager.GetComponent(entities[i]);
+                                            m_CurrentComponents = World.EntityManager.GetComponents(entities[i]);
                                             m_CurrentIndex = i;
                                             m_CurrentComponent = null;
                                         }
@@ -127,7 +129,7 @@ public class EntitiesViewer : EditorWindow
                                     {
                                         if (GUILayout.Button(entities[i].Name, GDGEditorGUI.DisabledLabelStyle))
                                         {
-                                            m_CurrentComponents = World.EntityManager.GetComponent(entities[i]);
+                                            m_CurrentComponents = World.EntityManager.GetComponents(entities[i]);
                                             m_CurrentIndex = i;
                                             m_CurrentComponent = null;
                                         }
@@ -142,7 +144,7 @@ public class EntitiesViewer : EditorWindow
                                     {
                                         if (GUILayout.Button(entities[i].Name, EditorStyles.label))
                                         {
-                                            m_CurrentComponents = World.EntityManager.GetComponent(entities[i]);
+                                            m_CurrentComponents = World.EntityManager.GetComponents(entities[i]);
                                             m_CurrentIndex = i;
                                             m_CurrentComponent = null;
                                         }
@@ -151,7 +153,7 @@ public class EntitiesViewer : EditorWindow
                                     {
                                         if (GUILayout.Button(entities[i].Name, GDGEditorGUI.DisabledLabelStyle))
                                         {
-                                            m_CurrentComponents = World.EntityManager.GetComponent(entities[i]);
+                                            m_CurrentComponents = World.EntityManager.GetComponents(entities[i]);
                                             m_CurrentIndex = i;
                                             m_CurrentComponent = null;
                                         }
@@ -236,9 +238,9 @@ public class EntitiesViewer : EditorWindow
                             {
                                 using (new GUILayout.HorizontalScope())
                                 {
-                                    FieldViewer(info);
+                                    MemberInfoViewer<FieldInfo>(info);
                                     //GUILayout.FlexibleSpace();
-                                    GUILayout.Space(position.width/1.5f);
+                                    GUILayout.Space(position.width / 1.5f);
                                 }
                                 GUILayout.Space(2);
                             }
@@ -249,8 +251,8 @@ public class EntitiesViewer : EditorWindow
                             {
                                 using (new GUILayout.HorizontalScope())
                                 {
-                                    PropertyViewer(info);
-                                    GUILayout.Space(position.width/1.5f);
+                                    MemberInfoViewer<PropertyInfo>(info);
+                                    GUILayout.Space(position.width / 1.5f);
                                 }
                                 GUILayout.Space(2);
                             }
@@ -262,57 +264,73 @@ public class EntitiesViewer : EditorWindow
             }
         }
     }
-    private void FieldViewer(FieldInfo info)
+    private void MemberInfoViewer<T>(T info) where T : MemberInfo
     {
-        Color valueColor = beginColor;
+        Color TypeColor = new Color(0.4f, 0.6f, 1f,0.8f);
         Color childColor = beginColor;
         childColor.a = 0.5f;
+
+        object value = null;
+        Type type = default(Type);
+
+        if (info is FieldInfo fieldInfo)
+        {
+            value = fieldInfo.GetValue(m_CurrentComponent);
+            type = fieldInfo.FieldType;
+        }
+        else if (info is PropertyInfo propertyInfo)
+        {
+            value = propertyInfo.GetValue(m_CurrentComponent);
+            type = propertyInfo.PropertyType;
+        }
+
+
+        
         using (new GUILayout.VerticalScope())
         {
-            if (GDG.Utils.GDGTools.IsBlittable(info.GetValue(m_CurrentComponent)))
+            if (GDG.Utils.GDGTools.IsBlittable(value) || type == typeof(string) || type == typeof(char) || type == typeof(bool) || type.IsEnum)
             {
                 using (new GUILayout.HorizontalScope())
                 {
-                    GUI.color = valueColor;
-                    GUILayout.Label($"[{info.FieldType.Name}]  {info.Name}: ", GDGEditorGUI.LargeLabelStyle);
+
+                    GUI.color = TypeColor;
+                    GUILayout.Label($"[{type.Name}]  " , GDGEditorGUI.LargeLabelStyle);
                     GUI.color = beginColor;
+                    GUILayout.Label($"{info.Name}: ", GDGEditorGUI.LargeLabelStyle);
+                    
                     GUILayout.FlexibleSpace();
                     GUI.color = childColor;
-                    GUILayout.Label(info.GetValue(m_CurrentComponent).ToString(), GDGEditorGUI.LargeLabelStyle);
+                    GUILayout.Label(value.ToString(), GDGEditorGUI.LargeLabelStyle);
                     GUI.color = beginColor;
                     GUILayout.Space(10);
                 }
             }
-            else if (info.FieldType == typeof(string) || info.FieldType == typeof(char) || info.FieldType == typeof(bool) || info.FieldType.IsEnum)
+            else if (value is IEnumerable enumerable)
             {
+
                 using (new GUILayout.HorizontalScope())
                 {
-                    GUI.color = valueColor;
-                    GUILayout.Label($"[{info.FieldType.Name}]  {info.Name}: ", GDGEditorGUI.LargeLabelStyle);
+                    GUI.color = TypeColor;
+                    GUILayout.Label($"[{type.Name}]  ", GDGEditorGUI.LargeLabelStyle);
                     GUI.color = beginColor;
+                    GUILayout.Label($"{info.Name}: ", GDGEditorGUI.LargeLabelStyle);
                     GUILayout.FlexibleSpace();
-                    GUI.color = childColor;
-                    GUILayout.Label(info.GetValue(m_CurrentComponent).ToString(), GDGEditorGUI.LargeLabelStyle);
-                    GUI.color = beginColor;
-                    GUILayout.Space(10);
                 }
-            }
-            else if (info.GetValue(m_CurrentComponent) is IEnumerable enumerable)
-            {
-                GUI.color = valueColor;
-                GUILayout.Label($"[{info.FieldType.Name}]  {info.Name}: ", GDGEditorGUI.LargeLabelStyle);
-                GUI.color = beginColor; ;
+                
                 GUI.color = childColor;
                 foreach (var item in enumerable)
                 {
-                    if (GDG.Utils.GDGTools.IsBlittable(item))
+                    if (GDG.Utils.GDGTools.IsBlittable(item) || type == typeof(string) || type == typeof(char) || type == typeof(bool) || type.IsEnum)
                     {
                         using (new GUILayout.HorizontalScope())
                         {
                             GUILayout.FlexibleSpace();
-                            GUILayout.Label($"● [{item.GetType().Name}]  {nameof(item)}: ", GDGEditorGUI.LargeLabelStyle);
+
+                            GUILayout.Label($"► [{item.GetType().Name}]  ");
+
+                            GUILayout.Label($"{nameof(item)}: ");
                             GUILayout.FlexibleSpace();
-                            GUILayout.Label(item.ToString(), GDGEditorGUI.LargeLabelStyle);
+                            GUILayout.Label(item.ToString());
 
                             GUILayout.Space(10);
                         }
@@ -323,9 +341,12 @@ public class EntitiesViewer : EditorWindow
                         using (new GUILayout.HorizontalScope())
                         {
                             GUILayout.FlexibleSpace();
-                            GUILayout.Label($"● [{item.GetType().Name}]  {nameof(item)}: ", GDGEditorGUI.LargeLabelStyle);
+
+                            GUILayout.Label($"► [{item.GetType().Name}]  ");
+
+                            GUILayout.Label($"{nameof(item)}: ");
                             GUILayout.FlexibleSpace();
-                            GUILayout.Label("[Invisible]", GDGEditorGUI.LargeLabelStyle);
+                            GUILayout.Label("[Invisible]");
 
                             GUILayout.Space(10);
                         }
@@ -337,9 +358,12 @@ public class EntitiesViewer : EditorWindow
             {
                 using (new GUILayout.HorizontalScope())
                 {
-                    GUI.color = valueColor;
-                    GUILayout.Label($"[{info.FieldType.Name}]  {info.Name}: ", GDGEditorGUI.LargeLabelStyle);
+
+                    GUI.color = TypeColor;
+                    GUILayout.Label($"[{type.Name}]  " , GDGEditorGUI.LargeLabelStyle);
                     GUI.color = beginColor;
+                    GUILayout.Label($"{info.Name}: ", GDGEditorGUI.LargeLabelStyle);
+                    
                     GUILayout.FlexibleSpace();
                     GUI.color = childColor;
                     GUILayout.Label("[Invisible]", GDGEditorGUI.LargeLabelStyle);
@@ -349,91 +373,5 @@ public class EntitiesViewer : EditorWindow
             }
         }
     }
-    private void PropertyViewer(PropertyInfo info)
-    {
-        Color valueColor = beginColor;
-        Color childColor = beginColor;
-        childColor.a = 0.5f;
-        using (new GUILayout.VerticalScope())
-        {
-            if (GDG.Utils.GDGTools.IsBlittable(info.GetValue(m_CurrentComponent)))
-            {
-                using (new GUILayout.HorizontalScope())
-                {
-                    GUI.color = valueColor;
-                    GUILayout.Label($"[{info.PropertyType.Name}]  {info.Name}: ", GDGEditorGUI.LargeLabelStyle);
-                    GUI.color = beginColor;
-                    GUILayout.FlexibleSpace();
-                    GUI.color = childColor;
-                    GUILayout.Label(info.GetValue(m_CurrentComponent).ToString(), GDGEditorGUI.LargeLabelStyle);
-                    GUI.color = beginColor;
-                    GUILayout.Space(10);
-                }
-            }
-            else if (info.PropertyType == typeof(string) || info.PropertyType == typeof(char) || info.PropertyType == typeof(bool) || info.PropertyType.IsEnum)
-            {
-                using (new GUILayout.HorizontalScope())
-                {
-                    GUI.color = valueColor;
-                    GUILayout.Label($"[{info.PropertyType.Name}]  {info.Name}: ", GDGEditorGUI.LargeLabelStyle);
-                    GUI.color = beginColor;
-                    GUILayout.FlexibleSpace();
-                    GUI.color = childColor;
-                    GUILayout.Label(info.GetValue(m_CurrentComponent).ToString(), GDGEditorGUI.LargeLabelStyle);
-                    GUI.color = beginColor;
-                    GUILayout.Space(10);
-                }
-            }
-            else if (info.GetValue(m_CurrentComponent) is IEnumerable enumerable)
-            {
-                GUI.color = valueColor;
-                GUILayout.Label($"[{info.PropertyType.Name}]  {info.Name}: ", GDGEditorGUI.LargeLabelStyle);
-                GUI.color = beginColor; ;
-                GUI.color = childColor;
-                foreach (var item in enumerable)
-                {
-                    if (GDG.Utils.GDGTools.IsBlittable(item))
-                    {
-                        using (new GUILayout.HorizontalScope())
-                        {
-                            GUILayout.FlexibleSpace();
-                            GUILayout.Label($"● [{item.GetType().Name}]  {nameof(item)}: ", GDGEditorGUI.LargeLabelStyle);
-                            GUILayout.FlexibleSpace();
-                            GUILayout.Label(item.ToString(), GDGEditorGUI.LargeLabelStyle);
 
-                            GUILayout.Space(10);
-                        }
-
-                    }
-                    else
-                    {
-                        using (new GUILayout.HorizontalScope())
-                        {
-                            GUILayout.FlexibleSpace();
-                            GUILayout.Label($"● [{item.GetType().Name}]  {nameof(item)}: ", GDGEditorGUI.LargeLabelStyle);
-                            GUILayout.FlexibleSpace();
-                            GUILayout.Label("[Invisible]", GDGEditorGUI.LargeLabelStyle);
-
-                            GUILayout.Space(10);
-                        }
-                    }
-                }
-                GUI.color = beginColor;
-            }
-            else
-            {
-                using (new GUILayout.HorizontalScope())
-                {
-                    GUI.color = valueColor;
-                    GUILayout.Label($"[{info.PropertyType.Name}]  {info.Name}: ", GDGEditorGUI.LargeLabelStyle);
-                    GUI.color = beginColor;
-                    GUILayout.FlexibleSpace();
-                    GUI.color = childColor;
-                    GUILayout.Label("[Invisible]", GDGEditorGUI.LargeLabelStyle);
-                    GUI.color = beginColor;
-                    GUILayout.Space(10);
-                }
-            }
-        }
-    }
 }

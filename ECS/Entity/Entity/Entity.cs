@@ -67,7 +67,7 @@ namespace GDG.ECS
             tempHash ^= Index.GetHashCode();
             return tempHash;
         }
-        public override string ToString() => $"Index:{this.Index}，Version:{this.Version}";
+        public override string ToString() => $"Index: {this.Index}，Version: {this.Version}，Name: {Name}";
         public static bool operator ==(Entity lhs, Entity rhs) => lhs?.Index == rhs?.Index && lhs?.Version == rhs?.Version;
         public static bool operator !=(Entity lhs, Entity rhs) => lhs?.Index != rhs?.Index || lhs?.Version != rhs?.Version;
         public static Entity operator ++(Entity entity)
@@ -87,7 +87,7 @@ namespace GDG.ECS
         public static bool TryGetComponent<T>(this Entity entity,out T component)where T:class,IComponent
         {
             component = null;
-            foreach (var item in World.EntityManager.GetComponent(entity))
+            foreach (var item in World.EntityManager.GetComponents(entity))
             {
                 if(item is T t)
                 {
@@ -99,7 +99,7 @@ namespace GDG.ECS
         }
         public static T GetComponent<T>(this Entity entity)where T:class,IComponent
         {
-            foreach (var item in World.EntityManager.GetComponent(entity))
+            foreach (var item in World.EntityManager.GetComponents(entity))
             {
                 if(item is T t)
                 {
@@ -140,6 +140,14 @@ namespace GDG.ECS
         {
             BaseWorld.Instance.EntityManager.DestroyEntity(entity);
         }
-
+        public static bool IsExistComponent<T>(this Entity entity)where T:IComponent
+        {
+            foreach (var item in World.EntityManager.GetComponents(entity))
+            {
+                if (item is T)
+                    return true;
+            }
+            return false;
+        }
     }
 }

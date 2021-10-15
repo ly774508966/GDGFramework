@@ -13,6 +13,7 @@ namespace GDG.Utils
         #region 静态属性
         public static TimerManager Timer{ get => TimerManager.Instance; }
         public static EventManager EventCenter{ get => EventManager.Instance; }
+        public static MessageManager MessageCenter{ get => MessageManager.Instance; }
         public static PersistManager PersistTools{ get => PersistManager.Instance; }
         public static InputManager Input { get => InputManager.Instance; }
         public static AudioManager AudioController { get => AudioManager.Instance; }

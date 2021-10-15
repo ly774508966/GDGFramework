@@ -32,7 +32,7 @@ namespace GDG.ECS
             SystemSingletonInit();
             foreach (var system in Systems.Values)
             {
-                monoWorld.AddOrRemoveListener(system.OnUpdate, "Update");
+                monoWorld.AddOrRemoveListener(()=>{ {system.CurrentSelectId = 0; system.OnUpdate(); } }, "Update");
                 monoWorld.AddOrRemoveListener(system.OnLateUpdate, "LateUpdate");
                 monoWorld.AddOrRemoveListener(system.OnFixedUpdate, "FixedUpdate");
                 monoWorld.AddOrRemoveListener(system.OnStart, "Start");
@@ -41,27 +41,20 @@ namespace GDG.ECS
         }
         private void SystemSingletonInit()
         {
-            UnityEditor.Compilation.Assembly assembly = null;
-            foreach(var item in CompilationPipeline.GetAssemblies(AssembliesType.Player))
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            //var assembly_Cshap = assemblies.First(assembly => assembly.GetName().Name == "Assembly-CSharp");
+            foreach (var assembly in assemblies)
             {
-                if(item.name.Equals("Assembly-CSharp"))
+                List<Type> types = new List<Type>(assembly.GetTypes().ToArray());
+                foreach (var item in types)
                 {
-                    assembly = item;
-                    break;
-                }
-            }
-            if(assembly == null)
-                return;
-            
-            List<Type> types = new List<Type>(System.Reflection.Assembly.LoadFrom(assembly.outputPath).GetTypes().ToArray());
-            foreach (var item in types)
-            {
-                var baseType = item.BaseType;
+                    var baseType = item.BaseType;
 
-                if (baseType?.Name == "AbsSystem`1")
-                {
-                    var info = baseType.GetMethod("GetInstance");
-                    info.Invoke(null, null);
+                    if (baseType?.Name == "AbsSystem`1")
+                    {
+                        var info = baseType.GetMethod("GetInstance");
+                        info.Invoke(null, null);
+                    }
                 }
             }
         }
