@@ -100,6 +100,9 @@ namespace GDG.ECS
             select entity;
             return handle;
         }
+        /// <summary>
+        /// 返回查询到的实体
+        /// </summary>
         public static AbsSystemHandle<E> ReturnQueryResult<E>(this AbsSystemHandle<E> handle,out IEnumerable<Entity> result)where E:Entity
         {
             result = handle.result;
@@ -145,11 +148,30 @@ namespace GDG.ECS
                 }
             }
         }
+        /// <summary>
+        /// 直到事件被触发，才会调用Excute方法
+        /// </summary>
         public static AbsSystemHandle<E> WaitForEvent<E>(this AbsSystemHandle<E> handle, string eventName)where E:Entity
         {
             if(handle.system==null)
                 return handle;
             handle.eventName = eventName;
+            return handle;
+        }
+        /// <summary>
+        /// 是否允许执行该Select
+        /// </summary>
+        /// <param name="canBeExcute">若为false，则不进行查询</param>
+        public static AbsSystemHandle<E> CanBeEexcute<E>(this AbsSystemHandle<E> handle, bool canBeExcute)where E:Entity
+        {
+            if(!canBeExcute)
+            {
+                if(handle.system.m_SelectId2CanBeExcutedMapping.TryGetValue(handle.system.CurrentSelectId,out bool _canBeExcute))
+                {
+                    _canBeExcute = canBeExcute;
+                }
+                return SystemHandle<E>.None;
+            }
             return handle;
         }
     }

@@ -27,203 +27,248 @@ namespace GDG.ECS
     }
     internal static class EntityCallbackExcuteExtension
     {
-        internal static void CallbackExcute<E>(this E entity, string eventName, ISystem system, SystemCallback<E> callback, E e, bool isLastOne = false) where E : Entity
+        internal static void CallbackExcute<E>(this E entity, string eventName, ISystem system, SystemCallback<E> callback, bool isLastOne = false) where E : Entity
         {
             if (!string.IsNullOrEmpty(eventName))
             {
-                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                if (!system.m_Event2IndexListMapping.TryGetValue(eventName, out List<ulong> indexList))
                 {
-                    var id = system.CurrentSelectId;
-
-                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
-                     {
-                         callback(e);
-                         system.m_SelectId2CanBeExcutedMapping[id] = true;
-                     });
-
-                    if (isLastOne)
-                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                    indexList = new List<ulong>();
+                    system.m_Event2IndexListMapping.Add(eventName, indexList);
                 }
+                if(!indexList.Contains(entity.Index))
+                {
+                    indexList.Add(entity.Index);
+                    system.m_Index2EventMapping.Add(entity.Index, eventName);
+                }
+                else
+                    return;
+
+                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                {
+                    callback(entity);
+                    system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
+                    system.m_Index2EventMapping.Remove(entity.Index);
+                });
             }
             else
-                callback(e);
-            return;
+                callback(entity);
         }
-        internal static void CallbackExcute<E, T>(this E entity, string eventName, ISystem system, SystemCallback<E, T> callback, E e, T t, bool isLastOne = false) where E : Entity where T : class, IComponent
+        internal static void CallbackExcute<E, T>(this E entity, string eventName, ISystem system, SystemCallback<E, T> callback, T t, bool isLastOne = false) where E : Entity where T : class, IComponent
         {
             if (!string.IsNullOrEmpty(eventName))
             {
-                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                if (!system.m_Event2IndexListMapping.TryGetValue(eventName, out List<ulong> indexList))
                 {
-                    var id = system.CurrentSelectId;
-
-                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
-                     {
-                         callback(e, t);
-                         system.m_SelectId2CanBeExcutedMapping[id] = true;
-                     });
-
-                    if (isLastOne)
-                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                    indexList = new List<ulong>();
+                    system.m_Event2IndexListMapping.Add(eventName, indexList);
                 }
+                if(!indexList.Contains(entity.Index))
+                {
+                    indexList.Add(entity.Index);
+                    system.m_Index2EventMapping.Add(entity.Index, eventName);
+                }
+                else
+                    return;
+
+                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                {
+                    callback(entity, t);
+                    system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
+                    system.m_Index2EventMapping.Remove(entity.Index);
+                });
             }
             else
-                callback(e, t);
-            return;
+                callback(entity, t);
         }
-        internal static void CallbackExcute<E, T1, T2>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2> callback, E e, T1 t1, T2 t2, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent
+        internal static void CallbackExcute<E, T1, T2>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2> callback, T1 t1, T2 t2, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent
         {
             if (!string.IsNullOrEmpty(eventName))
             {
-                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                if (!system.m_Event2IndexListMapping.TryGetValue(eventName, out List<ulong> indexList))
                 {
-                    var id = system.CurrentSelectId;
-
-                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
-                     {
-                         callback(e, t1, t2);
-                         system.m_SelectId2CanBeExcutedMapping[id] = true;
-                     });
-
-                    if (isLastOne)
-                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                    indexList = new List<ulong>();
+                    system.m_Event2IndexListMapping.Add(eventName, indexList);
                 }
+                if(!indexList.Contains(entity.Index))
+                {
+                    indexList.Add(entity.Index);
+                    system.m_Index2EventMapping.Add(entity.Index, eventName);
+                }
+                else
+                    return;
+
+                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                {
+                    callback(entity, t1, t2);
+                    system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
+                    system.m_Index2EventMapping.Remove(entity.Index);
+                });
             }
             else
-                callback(e, t1, t2);
-            return;
+                callback(entity, t1, t2);
         }
-        internal static void CallbackExcute<E, T1, T2, T3>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3> callback, E e, T1 t1, T2 t2, T3 t3, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
+        internal static void CallbackExcute<E, T1, T2, T3>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3> callback, T1 t1, T2 t2, T3 t3, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
         {
             if (!string.IsNullOrEmpty(eventName))
             {
-                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                if (!system.m_Event2IndexListMapping.TryGetValue(eventName, out List<ulong> indexList))
                 {
-                    var id = system.CurrentSelectId;
-
-                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
-                     {
-                         callback(e, t1, t2, t3);
-                         system.m_SelectId2CanBeExcutedMapping[id] = true;
-                     });
-
-                    if (isLastOne)
-                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                    indexList = new List<ulong>();
+                    system.m_Event2IndexListMapping.Add(eventName, indexList);
                 }
+                if(!indexList.Contains(entity.Index))
+                {
+                    indexList.Add(entity.Index);
+                    system.m_Index2EventMapping.Add(entity.Index, eventName);
+                }
+                else
+                    return;
+
+                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                {
+                    callback(entity, t1, t2, t3);
+                    system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
+                    system.m_Index2EventMapping.Remove(entity.Index);
+                });
             }
             else
-                callback(e, t1, t2, t3);
-            return;
+                callback(entity, t1, t2, t3);
         }
-        internal static void CallbackExcute<E, T1, T2, T3, T4>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3, T4> callback, E e, T1 t1, T2 t2, T3 t3, T4 t4, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
+        internal static void CallbackExcute<E, T1, T2, T3, T4>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3, T4> callback, T1 t1, T2 t2, T3 t3, T4 t4, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
         {
             if (!string.IsNullOrEmpty(eventName))
             {
-                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                if (!system.m_Event2IndexListMapping.TryGetValue(eventName, out List<ulong> indexList))
                 {
-                    var id = system.CurrentSelectId;
-
-                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
-                     {
-                         callback(e, t1, t2, t3, t4);
-                         system.m_SelectId2CanBeExcutedMapping[id] = true;
-                     });
-
-                    if (isLastOne)
-                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                    indexList = new List<ulong>();
+                    system.m_Event2IndexListMapping.Add(eventName, indexList);
                 }
+                if(!indexList.Contains(entity.Index))
+                {
+                    indexList.Add(entity.Index);
+                    system.m_Index2EventMapping.Add(entity.Index, eventName);
+                }
+                else
+                    return;
+
+                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                {
+                    callback(entity, t1, t2, t3, t4);
+                    system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
+                    system.m_Index2EventMapping.Remove(entity.Index);
+                });
             }
             else
-                callback(e, t1, t2, t3, t4);
-            return;
+                callback(entity, t1, t2, t3, t4);
         }
-        internal static void CallbackExcute<E, T1, T2, T3, T4, T5>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5> callback, E e, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
+        internal static void CallbackExcute<E, T1, T2, T3, T4, T5>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5> callback, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
         {
             if (!string.IsNullOrEmpty(eventName))
             {
-                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                if (!system.m_Event2IndexListMapping.TryGetValue(eventName, out List<ulong> indexList))
                 {
-                    var id = system.CurrentSelectId;
-
-                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
-                     {
-                         callback(e, t1, t2, t3, t4, t5);
-                         system.m_SelectId2CanBeExcutedMapping[id] = true;
-                     });
-
-                    if (isLastOne)
-                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                    indexList = new List<ulong>();
+                    system.m_Event2IndexListMapping.Add(eventName, indexList);
                 }
+                if(!indexList.Contains(entity.Index))
+                {
+                    indexList.Add(entity.Index);
+                    system.m_Index2EventMapping.Add(entity.Index, eventName);
+                }
+                else
+                    return;
+
+                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                {
+                    callback(entity, t1, t2, t3, t4, t5);
+                    system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
+                    system.m_Index2EventMapping.Remove(entity.Index);
+                });
             }
             else
-                callback(e, t1, t2, t3, t4, t5);
-            return;
+                callback(entity, t1, t2, t3, t4, t5);
         }
-        internal static void CallbackExcute<E, T1, T2, T3, T4, T5, T6>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5, T6> callback, E e, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
+        internal static void CallbackExcute<E, T1, T2, T3, T4, T5, T6>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5, T6> callback, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
         {
             if (!string.IsNullOrEmpty(eventName))
             {
-                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                if (!system.m_Event2IndexListMapping.TryGetValue(eventName, out List<ulong> indexList))
                 {
-                    var id = system.CurrentSelectId;
-
-                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
-                     {
-                         callback(e, t1, t2, t3, t4, t5, t6);
-                         system.m_SelectId2CanBeExcutedMapping[id] = true;
-                     });
-
-                    if (isLastOne)
-                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                    indexList = new List<ulong>();
+                    system.m_Event2IndexListMapping.Add(eventName, indexList);
                 }
+                if(!indexList.Contains(entity.Index))
+                {
+                    indexList.Add(entity.Index);
+                    system.m_Index2EventMapping.Add(entity.Index, eventName);
+                }
+                else
+                    return;
+
+                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                {
+                    callback(entity, t1, t2, t3, t4, t5, t6);
+                    system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
+                    system.m_Index2EventMapping.Remove(entity.Index);
+                });
             }
             else
-                callback(e, t1, t2, t3, t4, t5, t6);
-            return;
+                callback(entity, t1, t2, t3, t4, t5, t6);
         }
-        internal static void CallbackExcute<E, T1, T2, T3, T4, T5, T6, T7>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback, E e, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, T7 t7, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
+        internal static void CallbackExcute<E, T1, T2, T3, T4, T5, T6, T7>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, T7 t7, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
         {
             if (!string.IsNullOrEmpty(eventName))
             {
-                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                if (!system.m_Event2IndexListMapping.TryGetValue(eventName, out List<ulong> indexList))
                 {
-                    var id = system.CurrentSelectId;
-
-                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
-                     {
-                         callback(e, t1, t2, t3, t4, t5, t6, t7);
-                         system.m_SelectId2CanBeExcutedMapping[id] = true;
-                     });
-
-                    if (isLastOne)
-                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                    indexList = new List<ulong>();
+                    system.m_Event2IndexListMapping.Add(eventName, indexList);
                 }
+                if(!indexList.Contains(entity.Index))
+                {
+                    indexList.Add(entity.Index);
+                    system.m_Index2EventMapping.Add(entity.Index, eventName);
+                }
+                else
+                    return;
+
+                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                {
+                    callback(entity, t1, t2, t3, t4, t5, t6, t7);
+                    system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
+                    system.m_Index2EventMapping.Remove(entity.Index);
+                });
             }
             else
-                callback(e, t1, t2, t3, t4, t5, t6, t7);
-            return;
+                callback(entity, t1, t2, t3, t4, t5, t6, t7);
         }
-        internal static void CallbackExcute<E, T1, T2, T3, T4, T5, T6, T7, T8>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback, E e, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, T7 t7, T8 t8, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
+        internal static void CallbackExcute<E, T1, T2, T3, T4, T5, T6, T7, T8>(this E entity, string eventName, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, T7 t7, T8 t8, bool isLastOne = false) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
         {
             if (!string.IsNullOrEmpty(eventName))
             {
-                if (system.m_SelectId2CanBeExcutedMapping[system.CurrentSelectId] == true)
+                if (!system.m_Event2IndexListMapping.TryGetValue(eventName, out List<ulong> indexList))
                 {
-                    var id = system.CurrentSelectId;
-
-                    EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
-                     {
-                         callback(e, t1, t2, t3, t4, t5, t6, t7, t8);
-                         system.m_SelectId2CanBeExcutedMapping[id] = true;
-                     });
-
-                    if (isLastOne)
-                        system.m_SelectId2CanBeExcutedMapping[id] = false;
+                    indexList = new List<ulong>();
+                    system.m_Event2IndexListMapping.Add(eventName, indexList);
                 }
+                if(!indexList.Contains(entity.Index))
+                {
+                    indexList.Add(entity.Index);
+                    system.m_Index2EventMapping.Add(entity.Index, eventName);
+                }
+                else
+                    return;
+
+                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                {
+                    callback(entity, t1, t2, t3, t4, t5, t6, t7, t8);
+                    system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
+                    system.m_Index2EventMapping.Remove(entity.Index);
+                });
             }
             else
-                callback(e, t1, t2, t3, t4, t5, t6, t7, t8);
-            return;
+                callback(entity, t1, t2, t3, t4, t5, t6, t7, t8);
         }
     }
     public class SystemHandle<E> : AbsSystemHandle<E> where E : Entity
@@ -238,7 +283,7 @@ namespace GDG.ECS
             int i = 0;
             foreach (var item in result)
             {
-                item.CallbackExcute(eventName, system, callback, item, i++ == count);
+                item.CallbackExcute(eventName, system, callback, i++ == count);
                 break;
             }
         }
@@ -260,7 +305,7 @@ namespace GDG.ECS
                 {
                     if (component is T c)
                     {
-                        item.CallbackExcute(eventName, system, callback, item, c, i++ == count);
+                        item.CallbackExcute(eventName, system, callback, c, i++ == count);
                         break;
                     }
                 }
@@ -287,7 +332,7 @@ namespace GDG.ECS
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
                 }
-                item.CallbackExcute(eventName, system, callback, item, t1, t2, ++i == count);
+                item.CallbackExcute(eventName, system, callback, t1, t2, ++i == count);
             }
 
         }
@@ -313,7 +358,7 @@ namespace GDG.ECS
                     if (component is T2 c2) t2 = c2;
                     if (component is T3 c3) t3 = c3;
                 }
-                item.CallbackExcute(eventName, system, callback, item, t1, t2, t3, i++ == count);
+                item.CallbackExcute(eventName, system, callback, t1, t2, t3, i++ == count);
             }
         }
     }
@@ -340,7 +385,7 @@ namespace GDG.ECS
                     if (component is T3 c3) t3 = c3;
                     if (component is T4 c4) t4 = c4;
                 }
-                item.CallbackExcute(eventName, system, callback, item, t1, t2, t3, t4, i++ == count);
+                item.CallbackExcute(eventName, system, callback, t1, t2, t3, t4, i++ == count);
             }
         }
     }
@@ -369,7 +414,7 @@ namespace GDG.ECS
                     if (component is T4 c4) t4 = c4;
                     if (component is T5 c5) t5 = c5;
                 }
-                item.CallbackExcute(eventName, system, callback, item, t1, t2, t3, t4, t5, i++ == count);
+                item.CallbackExcute(eventName, system, callback, t1, t2, t3, t4, t5, i++ == count);
             }
         }
     }
@@ -400,7 +445,7 @@ namespace GDG.ECS
                     if (component is T5 c5) t5 = c5;
                     if (component is T6 c6) t6 = c6;
                 }
-                item.CallbackExcute(eventName, system, callback, item, t1, t2, t3, t4, t5, t6, i++ == count);
+                item.CallbackExcute(eventName, system, callback, t1, t2, t3, t4, t5, t6, i++ == count);
             }
         }
     }
@@ -433,7 +478,7 @@ namespace GDG.ECS
                     if (component is T6 c6) t6 = c6;
                     if (component is T7 c7) t7 = c7;
                 }
-                item.CallbackExcute(eventName, system, callback, item, t1, t2, t3, t4, t5, t6, t7, i++ == count);
+                item.CallbackExcute(eventName, system, callback, t1, t2, t3, t4, t5, t6, t7, i++ == count);
             }
         }
     }
@@ -468,7 +513,7 @@ namespace GDG.ECS
                     if (component is T7 c7) t7 = c7;
                     if (component is T8 c8) t8 = c8;
                 }
-                item.CallbackExcute(eventName, system, callback, item, t1, t2, t3, t4, t5, t6, t7, t8, i++ == count);
+                item.CallbackExcute(eventName, system, callback, t1, t2, t3, t4, t5, t6, t7, t8, i++ == count);
             }
         }
     }

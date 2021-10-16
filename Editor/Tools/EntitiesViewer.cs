@@ -28,6 +28,10 @@ public class EntitiesViewer : EditorWindow
     private IComponent m_CurrentComponent;
     private Color beginColor;
     BaseWorld world;
+    void  OnEnable()
+    {
+        beginColor = GUI.color;
+    }
     void OnGUI()
     {   
         beginColor = GUI.color;
@@ -41,7 +45,6 @@ public class EntitiesViewer : EditorWindow
             if (Application.isPlaying)
                 world = BaseWorld.Instance;
         }
-
 
         using (new GUILayout.VerticalScope(WindowStyles.DarkBackground))
         {

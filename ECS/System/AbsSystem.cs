@@ -21,8 +21,12 @@ namespace GDG.ECS
         public int CurrentSelectId { get; set; }
         private List<Entity> entities;
         private Dictionary<int, bool> selectMapping;
+        private Dictionary<ulong, string> indexEventMapping;
+        private Dictionary<string, List<ulong>> eventMapping;
         private Dictionary<ulong, double> timerMapping;
         private Dictionary<ulong, ulong> frameMapping;
+        public Dictionary<ulong, string> m_Index2EventMapping{ get => indexEventMapping; }
+        public Dictionary<string, List<ulong>> m_Event2IndexListMapping { get => eventMapping; }
         public Dictionary<int, bool> m_SelectId2CanBeExcutedMapping { get => selectMapping; }
         public Dictionary<ulong, double> m_Index2TimeHandleMapping { get => timerMapping; }
         public Dictionary<ulong, ulong> m_Index2FrameHandleMapping { get => frameMapping; }
@@ -31,6 +35,8 @@ namespace GDG.ECS
         {
             CurrentSelectId = 0;
             MaxSelectId = 0;
+            indexEventMapping = new Dictionary<ulong, string>();
+            eventMapping = new Dictionary<string, List<ulong>>();
             selectMapping = new Dictionary<int, bool>();
             timerMapping = new Dictionary<ulong, double>();
             frameMapping = new Dictionary<ulong, ulong>();
@@ -64,6 +70,18 @@ namespace GDG.ECS
         }
         public bool RemoveEntity(Entity entity)
         {
+            if(m_Index2EventMapping.TryGetValue(entity.Index,out string eventName))
+            {
+                if(m_Event2IndexListMapping.TryGetValue(eventName,out List<ulong> indexList))
+                {
+                    if(!indexList.Remove(entity.Index))
+                        return false;
+                }
+                else
+                    return false;
+            }
+            else
+                return false;
             if(!timerMapping.Remove(entity.Index))
                 return false;
             if(!frameMapping.Remove(entity.Index))

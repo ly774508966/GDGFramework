@@ -130,9 +130,9 @@ namespace GDG.ECS
         #region CreateGameEntity
         public Entity CreateGameEntity(GameObject gameObject)
         {
-            return CreateGameEntity(0, gameObject);
+            return CreateGameEntity(null, gameObject);
         }
-        public Entity CreateGameEntity(uint typeId, GameObject gameObject)
+        public Entity CreateGameEntity(ComponentTypes componentTypes, GameObject gameObject)
         {
             var entity = CreateEntity<GameObjectComponent>();
             World.EntityManager.SetComponentData<GameObjectComponent>(entity, new GameObjectComponent()
@@ -140,11 +140,11 @@ namespace GDG.ECS
                 gameObject = gameObject
             });
             entity.Name = gameObject.name;
+            if(componentTypes!=null)
+            {
+                AddComponent(entity, componentTypes);
+            }
             return entity;
-        }
-        public Entity CreateGameEntity(ComponentTypes componentTypes, GameObject gameObject)
-        {
-            return CreateGameEntity(componentTypes.TypeId, gameObject);
         }
         public Entity CreateGameEntity<T>(GameObject gameObject) where T : IComponent
         {
