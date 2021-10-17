@@ -117,7 +117,7 @@ public partial class ProjectSetting
                     };
                     Action remove = () =>
                     {
-                        m_keyList.Remove(m_keyList[i]);
+                        m_keyList.RemoveAt(i);
                         isRemove = true;
                     };
                     if (isRemove)
