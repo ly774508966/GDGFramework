@@ -17,7 +17,7 @@ namespace GDG.Utils
         public static PersistManager PersistTools{ get => PersistManager.Instance; }
         public static InputManager Input { get => InputManager.Instance; }
         public static AudioManager AudioController { get => AudioManager.Instance; }
-        public static FlowFieldController FlowFieldController { get => FlowFieldController.Instance; }
+        public static FlowFieldManager FlowFieldController { get => FlowFieldManager.Instance; }
         public static AssetPool AssetPool { get => AssetPool.Instance; }
         public static ResourcesManager ResourceLoder{ get => ResourcesManager.Instance; }
         public static AssetManager AssetLoder { get => AssetManager.Instance; }

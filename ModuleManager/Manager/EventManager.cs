@@ -186,36 +186,30 @@ namespace GDG.ModuleManager
         }
         #endregion
         #region 注册监听
-        public void AddActionListener_AutoRemoveAfterTrigger(string eventName, UnityAction Event)
+        public void AddActionListener(string eventName, UnityAction Event,bool AutoRemoveAfterTrigger = false)
         {
             UnityAction callback = null;
-            callback = () =>
+            if(AutoRemoveAfterTrigger)
             {
-                Event();
-                if(EventDic.TryGetValue(eventName,out IEventHandle handle))
+                callback = () =>
                 {
-                    if(handle is EventHandle eventHandle)
+                    Event();
+                    if(EventDic.TryGetValue(eventName,out IEventHandle handle))
                     {
-                        eventHandle.actions -= callback;
+                        if(handle is EventHandle eventHandle)
+                        {
+                            eventHandle.actions -= callback;
+                        }
                     }
-                }
-            };
+                };
+            }
 
             if (!EventDic.ContainsKey(eventName))
             {
-                EventDic.Add(eventName, new EventHandle(callback));
+                EventDic.Add(eventName, new EventHandle(AutoRemoveAfterTrigger?callback:Event));
             }
             else
-                (EventDic[eventName] as EventHandle).actions += callback;            
-        }
-        public void AddActionListener(string eventName, UnityAction Event)
-        {
-            if (!EventDic.ContainsKey(eventName))
-            {
-                EventDic.Add(eventName, new EventHandle(Event));
-            }
-            else
-                (EventDic[eventName] as EventHandle).actions += Event;
+                (EventDic[eventName] as EventHandle).actions += AutoRemoveAfterTrigger?callback:Event;
         }
         public void AddActionListener<T>(string eventName, UnityAction<T> Event)
         {

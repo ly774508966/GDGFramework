@@ -9,6 +9,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 using Log = GDG.Utils.Log;
+using GDG.Utils;
 
 namespace GDG.ModuleManager
 {

@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace GDG.ModuleManager
 {
-    public class FlowFieldController : AbsLazySingleton<FlowFieldController>
+    public class FlowFieldManager : AbsLazySingleton<FlowFieldManager>
     {
         private readonly Dictionary<string, FlowField> m_Name2FlowFieldMapping = new Dictionary<string, FlowField>();
 

@@ -44,12 +44,12 @@ namespace GDG.ECS
                 else
                     return;
 
-                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                EventManager.Instance.AddActionListener(eventName, () =>
                 {
                     callback(entity);
                     system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
                     system.m_Index2EventMapping.Remove(entity.Index);
-                });
+                },true);
             }
             else
                 callback(entity);
@@ -71,12 +71,12 @@ namespace GDG.ECS
                 else
                     return;
 
-                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                EventManager.Instance.AddActionListener(eventName, () =>
                 {
                     callback(entity, t);
                     system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
                     system.m_Index2EventMapping.Remove(entity.Index);
-                });
+                },true);
             }
             else
                 callback(entity, t);
@@ -98,12 +98,12 @@ namespace GDG.ECS
                 else
                     return;
 
-                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                EventManager.Instance.AddActionListener(eventName, () =>
                 {
                     callback(entity, t1, t2);
                     system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
                     system.m_Index2EventMapping.Remove(entity.Index);
-                });
+                },true);
             }
             else
                 callback(entity, t1, t2);
@@ -125,12 +125,12 @@ namespace GDG.ECS
                 else
                     return;
 
-                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                EventManager.Instance.AddActionListener(eventName, () =>
                 {
                     callback(entity, t1, t2, t3);
                     system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
                     system.m_Index2EventMapping.Remove(entity.Index);
-                });
+                },true);
             }
             else
                 callback(entity, t1, t2, t3);
@@ -152,12 +152,12 @@ namespace GDG.ECS
                 else
                     return;
 
-                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                EventManager.Instance.AddActionListener(eventName, () =>
                 {
                     callback(entity, t1, t2, t3, t4);
                     system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
                     system.m_Index2EventMapping.Remove(entity.Index);
-                });
+                },true);
             }
             else
                 callback(entity, t1, t2, t3, t4);
@@ -179,12 +179,12 @@ namespace GDG.ECS
                 else
                     return;
 
-                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                EventManager.Instance.AddActionListener(eventName, () =>
                 {
                     callback(entity, t1, t2, t3, t4, t5);
                     system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
                     system.m_Index2EventMapping.Remove(entity.Index);
-                });
+                },true);
             }
             else
                 callback(entity, t1, t2, t3, t4, t5);
@@ -206,12 +206,12 @@ namespace GDG.ECS
                 else
                     return;
 
-                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                EventManager.Instance.AddActionListener(eventName, () =>
                 {
                     callback(entity, t1, t2, t3, t4, t5, t6);
                     system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
                     system.m_Index2EventMapping.Remove(entity.Index);
-                });
+                },true);
             }
             else
                 callback(entity, t1, t2, t3, t4, t5, t6);
@@ -233,12 +233,12 @@ namespace GDG.ECS
                 else
                     return;
 
-                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                EventManager.Instance.AddActionListener(eventName, () =>
                 {
                     callback(entity, t1, t2, t3, t4, t5, t6, t7);
                     system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
                     system.m_Index2EventMapping.Remove(entity.Index);
-                });
+                },true);
             }
             else
                 callback(entity, t1, t2, t3, t4, t5, t6, t7);
@@ -260,12 +260,12 @@ namespace GDG.ECS
                 else
                     return;
 
-                EventManager.Instance.AddActionListener_AutoRemoveAfterTrigger(eventName, () =>
+                EventManager.Instance.AddActionListener(eventName, () =>
                 {
                     callback(entity, t1, t2, t3, t4, t5, t6, t7, t8);
                     system.m_Event2IndexListMapping[eventName].Remove(entity.Index);
                     system.m_Index2EventMapping.Remove(entity.Index);
-                });
+                },true);
             }
             else
                 callback(entity, t1, t2, t3, t4, t5, t6, t7, t8);

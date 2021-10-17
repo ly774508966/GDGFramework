@@ -2,8 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using GDG.ModuleManager;
 using UnityEngine;
-namespace GDG.ModuleManager
+namespace GDG.Utils
 {
     public class CustomErrorException : Exception
     {
