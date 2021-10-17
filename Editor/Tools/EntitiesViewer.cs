@@ -23,6 +23,8 @@ public class EntitiesViewer : EditorWindow
     private Vector2 m_CurrentComponentScrollPosition = Vector2.zero;
     private Vector2 m_CurrentInspectorScrollPosition = Vector2.zero;
     private GUIStyle buttonStyle;
+    private string searchText;
+    private List<Entity> entityList = new List<Entity>();
     private int m_CurrentIndex = 0;
     private List<IComponent> m_CurrentComponents;
     private IComponent m_CurrentComponent;
@@ -93,11 +95,13 @@ public class EntitiesViewer : EditorWindow
     }
     void DrawEntities()
     {
-        using (new GUILayout.VerticalScope(WindowStyles.LightBackground))//, GUILayout.MinWidth(120), GUILayout.MaxWidth(150), GUILayout.ExpandHeight(true)))
+        using (new GUILayout.VerticalScope(WindowStyles.LightBackground,GUILayout.MaxWidth(310)))//, GUILayout.MinWidth(120), GUILayout.MaxWidth(150), GUILayout.ExpandHeight(true)))
         {
             using (new GUILayout.HorizontalScope(WindowStyles.LightBackground))
             {
-                GUILayout.Label("Entities", EditorStyles.boldLabel);
+                GUILayout.Label("Entities", EditorStyles.boldLabel,GUILayout.Width(60));
+                searchText = GUILayout.TextField(searchText,new GUIStyle("SearchTextField"));
+                GUILayout.Space(20);
             }
             using (new GUILayout.VerticalScope())
             {
@@ -113,6 +117,18 @@ public class EntitiesViewer : EditorWindow
                                 m_CurrentComponents = World.EntityManager.GetComponents(entity);
                         }
                         var entities = World.EntityManager.GetAllEntity();
+                        if(!string.IsNullOrEmpty(searchText))
+                        {
+                            entityList.Clear();
+                            foreach(var item in entities)
+                            {
+                                if(item.Name.ToLower().Contains(searchText.ToLower()))
+                                {
+                                    entityList.Add(item);
+                                }
+                            }
+                            entities = entityList;
+                        }
                         for (int i = 0; i < entities.Count; i++)
                         {
                             if (m_CurrentIndex == i)
@@ -121,7 +137,7 @@ public class EntitiesViewer : EditorWindow
                                 {
                                     if (entities[i].IsActived)
                                     {
-                                        if (GUILayout.Button(entities[i].Name, EditorStyles.label))
+                                        if (GUILayout.Button("- " + entities[i].Name, EditorStyles.label))
                                         {
                                             m_CurrentComponents = World.EntityManager.GetComponents(entities[i]);
                                             m_CurrentIndex = i;
@@ -130,7 +146,7 @@ public class EntitiesViewer : EditorWindow
                                     }
                                     else
                                     {
-                                        if (GUILayout.Button(entities[i].Name, GDGEditorGUI.DisabledLabelStyle))
+                                        if (GUILayout.Button("- " + entities[i].Name, GDGEditorGUI.DisabledLabelStyle))
                                         {
                                             m_CurrentComponents = World.EntityManager.GetComponents(entities[i]);
                                             m_CurrentIndex = i;
@@ -145,7 +161,7 @@ public class EntitiesViewer : EditorWindow
                                 {
                                     if (entities[i].IsActived)
                                     {
-                                        if (GUILayout.Button(entities[i].Name, EditorStyles.label))
+                                        if (GUILayout.Button("- " + entities[i].Name, EditorStyles.label))
                                         {
                                             m_CurrentComponents = World.EntityManager.GetComponents(entities[i]);
                                             m_CurrentIndex = i;
@@ -154,7 +170,7 @@ public class EntitiesViewer : EditorWindow
                                     }
                                     else
                                     {
-                                        if (GUILayout.Button(entities[i].Name, GDGEditorGUI.DisabledLabelStyle))
+                                        if (GUILayout.Button("- " + entities[i].Name, GDGEditorGUI.DisabledLabelStyle))
                                         {
                                             m_CurrentComponents = World.EntityManager.GetComponents(entities[i]);
                                             m_CurrentIndex = i;

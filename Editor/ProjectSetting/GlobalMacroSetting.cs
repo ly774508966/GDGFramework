@@ -86,7 +86,7 @@ public partial class ProjectSetting
                 
                 GUILayout.FlexibleSpace();
 
-                if(GUILayout.Button("Create Categories"))
+                if(GUILayout.Button("Create Page"))
                 {
                     if(!string.IsNullOrEmpty(m_NewCategoriesName))
                     {
@@ -138,7 +138,7 @@ public partial class ProjectSetting
                 }
 
                 GUILayout.FlexibleSpace();
-                if(GUILayout.Button("Remove Categories"))
+                if(GUILayout.Button("Remove Page"))
                 {
                     if(m_Categories2MarcoesMapping.ContainsKey(m_CurrentCategoriesName))
                         m_Categories2MarcoesMapping.Remove(m_CurrentCategoriesName);
