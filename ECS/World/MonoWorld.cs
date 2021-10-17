@@ -9,6 +9,7 @@ namespace GDG.ECS
 {
     public class MonoWorld : MonoBehaviour
     {
+        public GameObject EntityPool;
         private UnityAction timerUpdate;
         private UnityAction awake=null;
         private UnityAction start=null;
@@ -21,10 +22,24 @@ namespace GDG.ECS
         private UnityAction onEnable=null;
         private UnityAction onDisable=null;
         private UnityAction destroy=null;
-        void Awake() { timerUpdate += TimerManager.Instance.OnUpdate; DontDestroyOnLoad(this); if (awake != null) awake(); }
+        void Awake() 
+        {
+            EntityPool = new GameObject("EntityPool");
+            EntityPool.transform.SetParent(this.transform);
+            timerUpdate += TimerManager.Instance.OnUpdate; 
+            DontDestroyOnLoad(this);
+            if (awake != null) awake(); 
+        }
         void Start() { if (start != null) start(); }
         void OnGUI() { if (ongui != null) ongui(); }
-        void Update() { beforeUpdate?.Invoke(); update?.Invoke(); timerUpdate?.Invoke(); afterUpdate?.Invoke(); }
+        void Update() 
+        { 
+            beforeUpdate?.Invoke(); 
+            update?.Invoke(); 
+            timerUpdate?.Invoke(); 
+            afterUpdate?.Invoke(); 
+        }
+
         void FixedUpdate() { if (fixedUpdate != null) fixedUpdate(); }
         void LateUpdate() { if (lateUpdate != null) lateUpdate(); }
         void OnEnable() { if (onEnable != null) onEnable(); }

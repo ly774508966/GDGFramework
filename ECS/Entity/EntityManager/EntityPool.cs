@@ -21,7 +21,6 @@ namespace GDG.ECS
             if(entityStack.Count!=0)
             {
                 var tempEntity = entityStack.Pop();
-
                 beforeEnableCallback?.Invoke(tempEntity);
                 tempEntity.OnEnable();
                 return tempEntity;
@@ -44,32 +43,32 @@ namespace GDG.ECS
             entity.OnEnable();
             return entity;
         }
-        public T PopEntity<T>(Action<T> beforeEnableCallback=null)where T:Entity,new()
-        {
-            if(entityStack.Count!=0)
-            {
-                var tempEntity = entityStack.Pop() as T;
-                if(beforeEnableCallback!=null)
-                    beforeEnableCallback(tempEntity);
-                EnableEntity(tempEntity);
+        // public T PopEntity<T>(Action<T> beforeEnableCallback=null)where T:Entity,new()
+        // {
+        //     if(entityStack.Count!=0)
+        //     {
+        //         var tempEntity = entityStack.Pop() as T;
+        //         if(beforeEnableCallback!=null)
+        //             beforeEnableCallback(tempEntity);
+        //         EnableEntity(tempEntity);
 
-                return tempEntity;
-            }
-            var entity = new T();
-            BaseWorld.Instance.EntityManager.EntityMaxIndexIncrease();
-            entity.SetIndex(World.EntityManager.GetEntityMaxIndex());
-            entity.Name = "Entity " + entity.Index;
-            BaseWorld.Instance.EntityManager.InitEntityComponent(entity.Index);
+        //         return tempEntity;
+        //     }
+        //     var entity = new T();
+        //     BaseWorld.Instance.EntityManager.EntityMaxIndexIncrease();
+        //     entity.SetIndex(World.EntityManager.GetEntityMaxIndex());
+        //     entity.Name = "Entity " + entity.Index;
+        //     BaseWorld.Instance.EntityManager.InitEntityComponent(entity.Index);
 
-            if (!BaseWorld.Instance.EntityManager.m_Index2EntityMapping.ContainsKey(entity.Index))
-                BaseWorld.Instance.EntityManager.m_Index2EntityMapping.Add(entity.Index, entity);
+        //     if (!BaseWorld.Instance.EntityManager.m_Index2EntityMapping.ContainsKey(entity.Index))
+        //         BaseWorld.Instance.EntityManager.m_Index2EntityMapping.Add(entity.Index, entity);
 
-            if(beforeEnableCallback!=null)
-                beforeEnableCallback(entity);            
-            entity.OnInit();
-            entity.OnEnable();
-            return entity;
-        }
+        //     if(beforeEnableCallback!=null)
+        //         beforeEnableCallback(entity);            
+        //     entity.OnInit();
+        //     entity.OnEnable();
+        //     return entity;
+        // }
         public void EnableEntity(Entity entity)
         {
             entity.OnEnable();

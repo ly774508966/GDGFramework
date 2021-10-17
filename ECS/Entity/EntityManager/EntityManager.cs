@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using System.Linq;
 using System.ComponentModel;
 using System.Collections;
@@ -68,15 +69,31 @@ namespace GDG.ECS
         }
         public void DestroyEntity(Entity entity)
         {
+            entity.SetActive(false);
             EntityRefCountDecrementOne(entity);
             RemoveTypeId2IndexMapping(entity.TypeId, entity.Index);
             RemoveIndex2EnityMapping(entity.Index);
             RemoveIndex2ComponentMapping(entity.Index);
             m_ActivedEntityList.Remove(entity);
-            BaseWorld.Instance.UpdateEntitiesOfSystems(m_ActivedEntityList);
+            foreach(var system in World.Systems)
+            {
+                system.RemoveEntity(entity);
+                system.SetEntities(m_ActivedEntityList);
+            }
             entity.OnDestroy();
         }
+        public void ClearInactiveEntities()
+        {
+            foreach (var pool in m_TypeId2EntityPoolMapping.Values)
+            {
+                foreach(var entity in pool.entityStack)
+                {
+                    DestroyEntity(entity);
+                }
+                pool.entityStack.Clear();
 
+            }
+        }
         #region CreateEntity
         /// <summary>
         /// 创建实体
@@ -134,12 +151,13 @@ namespace GDG.ECS
         }
         public Entity CreateGameEntity(ComponentTypes componentTypes, GameObject gameObject)
         {
-            var entity = CreateEntity<GameObjectComponent>();
-            World.EntityManager.SetComponentData<GameObjectComponent>(entity, new GameObjectComponent()
+            var entity = CreateEntity<GameObjectComponent>((game)=>
             {
-                gameObject = gameObject
+                if(game.gameObject==null)
+                    game.gameObject = gameObject;      
             });
             entity.Name = gameObject.name;
+
             if(componentTypes!=null)
             {
                 AddComponent(entity, componentTypes);

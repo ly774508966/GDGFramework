@@ -13,7 +13,8 @@ namespace GDG.ECS
         Dictionary<string,List<ulong>> m_Event2IndexListMapping{ get;}
         Dictionary<int, bool> m_SelectId2CanBeExcutedMapping { get; }
         Dictionary<ulong,double> m_Index2TimeHandleMapping{ get;}
-        Dictionary<ulong,ulong> m_Index2FrameHandleMapping{ get;}        void SetEntities(List<Entity> entities);
+        Dictionary<ulong,ulong> m_Index2FrameHandleMapping{ get;}        
+        void SetEntities(List<Entity> entities);
         void SetActive(bool isActived);
         bool IsActived();
         void AddEntity(Entity entity);

@@ -2,26 +2,29 @@
 using System.Collections.Generic;
 using UnityEngine;
 using GDG.ECS;
+using UnityEngine.SceneManagement;
 
 namespace GDG.Utils
 {
     public class GameObjectComponent : IComponent, IDestroyable, IRecyclable, IEnable, ISetNameable
     {
         public GameObject gameObject;
-
         public void OnDestroy()
         {
             if (gameObject != null)
                 GameObject.Destroy(gameObject);
         }
         public void OnEnable()
-        {
-            gameObject?.SetActive(true);
+        {   
+            gameObject?.transform.SetParent(null);
+            gameObject?.RemoveFromDontDestoryOnLoad();
+            this.gameObject?.SetActive(true);
         }
 
         public void OnRecycle()
         {
-            gameObject?.SetActive(false);
+            this.gameObject?.SetActive(false);
+            gameObject?.transform.SetParent(World.monoWorld.EntityPool.transform);
         }
         public void SetName(Entity entity)
         {

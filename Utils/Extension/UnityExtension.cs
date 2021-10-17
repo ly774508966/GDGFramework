@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using GDG.ECS;
+using UnityEngine.SceneManagement;
 
 public static class UnityExtension
 {
@@ -40,6 +41,10 @@ public static class UnityExtension
                 }
             }
         }
+    }
+    public static void RemoveFromDontDestoryOnLoad(this GameObject gameObject)
+    {
+        SceneManager.MoveGameObjectToScene(gameObject, SceneManager.GetActiveScene());
     }
     #endregion
     #region  Transform
