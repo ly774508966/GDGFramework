@@ -277,14 +277,13 @@ namespace GDG.ECS
         public SystemCallback<E> callback;
         public override void Excute()
         {
-            if (result == null || callback == null)
+            if (result == null || callback == null || result.Count()==0 )
                 return;
             int count = result.Count();
             int i = 0;
-            foreach (var item in result)
+            for (int index = 0; index < result.Count();index++)
             {
-                item.CallbackExcute(eventName, system, callback, i++ == count);
-                break;
+                result.ElementAt(index).CallbackExcute(eventName, system, callback, i++ == count);
             }
         }
     }
@@ -294,18 +293,17 @@ namespace GDG.ECS
         public SystemCallback<E, T> callback;
         public override void Excute()
         {
-            if (result == null || callback == null)
+            if (result == null || callback == null || result.Count()==0)
                 return;
             int count = result.Count();
             int i = 0;
-            foreach (var item in result)
+            for (int index = 0; index < result.Count();index++)
             {
-
-                foreach (var component in World.EntityManager.GetComponents(item))
+                foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
                     if (component is T c)
                     {
-                        item.CallbackExcute(eventName, system, callback, c, i++ == count);
+                        result.ElementAt(index).CallbackExcute(eventName, system, callback, c, i++ == count);
                         break;
                     }
                 }
@@ -319,20 +317,20 @@ namespace GDG.ECS
         public SystemCallback<E, T1, T2> callback;
         public override void Excute()
         {
-            if (result == null || callback == null)
+            if (result == null || callback == null || result.Count()==0 )
                 return;
             T1 t1 = null;
             T2 t2 = null;
             int count = result.Count();
             int i = 0;
-            foreach (var item in result)
+            for (int index = 0; index < result.Count();index++)
             {
-                foreach (var component in World.EntityManager.GetComponents(item))
+                foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
                 }
-                item.CallbackExcute(eventName, system, callback, t1, t2, ++i == count);
+                result.ElementAt(index).CallbackExcute(eventName, system, callback, t1, t2, ++i == count);
             }
 
         }
@@ -343,22 +341,22 @@ namespace GDG.ECS
         public SystemCallback<E, T1, T2, T3> callback;
         public override void Excute()
         {
-            if (result == null || callback == null)
+            if (result == null || callback == null || result.Count()==0 )
                 return;
             T1 t1 = null;
             T2 t2 = null;
             T3 t3 = null;
             int count = result.Count();
             int i = 0;
-            foreach (var item in result)
+            for (int index = 0; index < result.Count();index++)
             {
-                foreach (var component in World.EntityManager.GetComponents(item))
+                foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
                     if (component is T3 c3) t3 = c3;
                 }
-                item.CallbackExcute(eventName, system, callback, t1, t2, t3, i++ == count);
+                result.ElementAt(index).CallbackExcute(eventName, system, callback, t1, t2, t3, i++ == count);
             }
         }
     }
@@ -368,7 +366,7 @@ namespace GDG.ECS
         public SystemCallback<E, T1, T2, T3, T4> callback;
         public override void Excute()
         {
-            if (result == null || callback == null)
+            if (result == null || callback == null || result.Count()==0 )
                 return;
             T1 t1 = null;
             T2 t2 = null;
@@ -376,16 +374,16 @@ namespace GDG.ECS
             T4 t4 = null;
             int count = result.Count();
             int i = 0;
-            foreach (var item in result)
+            for (int index = 0; index < result.Count();index++)
             {
-                foreach (var component in World.EntityManager.GetComponents(item))
+                foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
                     if (component is T3 c3) t3 = c3;
                     if (component is T4 c4) t4 = c4;
                 }
-                item.CallbackExcute(eventName, system, callback, t1, t2, t3, t4, i++ == count);
+                result.ElementAt(index).CallbackExcute(eventName, system, callback, t1, t2, t3, t4, i++ == count);
             }
         }
     }
@@ -395,7 +393,7 @@ namespace GDG.ECS
         public SystemCallback<E, T1, T2, T3, T4, T5> callback;
         public override void Excute()
         {
-            if (result == null || callback == null)
+            if (result == null || callback == null || result.Count()==0 )
                 return;
             T1 t1 = null;
             T2 t2 = null;
@@ -404,9 +402,9 @@ namespace GDG.ECS
             T5 t5 = null;
             int count = result.Count();
             int i = 0;
-            foreach (var item in result)
+            for (int index = 0; index < result.Count();index++)
             {
-                foreach (var component in World.EntityManager.GetComponents(item))
+                foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
@@ -414,7 +412,7 @@ namespace GDG.ECS
                     if (component is T4 c4) t4 = c4;
                     if (component is T5 c5) t5 = c5;
                 }
-                item.CallbackExcute(eventName, system, callback, t1, t2, t3, t4, t5, i++ == count);
+                result.ElementAt(index).CallbackExcute(eventName, system, callback, t1, t2, t3, t4, t5, i++ == count);
             }
         }
     }
@@ -424,7 +422,7 @@ namespace GDG.ECS
         public SystemCallback<E, T1, T2, T3, T4, T5, T6> callback;
         public override void Excute()
         {
-            if (result == null || callback == null)
+            if (result == null || callback == null || result.Count()==0 )
                 return;
             T1 t1 = null;
             T2 t2 = null;
@@ -434,9 +432,9 @@ namespace GDG.ECS
             T6 t6 = null;
             int count = result.Count();
             int i = 0;
-            foreach (var item in result)
+            for (int index = 0; index < result.Count();index++)
             {
-                foreach (var component in World.EntityManager.GetComponents(item))
+                foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
@@ -445,7 +443,7 @@ namespace GDG.ECS
                     if (component is T5 c5) t5 = c5;
                     if (component is T6 c6) t6 = c6;
                 }
-                item.CallbackExcute(eventName, system, callback, t1, t2, t3, t4, t5, t6, i++ == count);
+                result.ElementAt(index).CallbackExcute(eventName, system, callback, t1, t2, t3, t4, t5, t6, i++ == count);
             }
         }
     }
@@ -455,7 +453,7 @@ namespace GDG.ECS
         public SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback;
         public override void Excute()
         {
-            if (result == null || callback == null)
+            if (result == null || callback == null || result.Count()==0 )
                 return;
             T1 t1 = null;
             T2 t2 = null;
@@ -466,9 +464,9 @@ namespace GDG.ECS
             T7 t7 = null;
             int count = result.Count();
             int i = 0;
-            foreach (var item in result)
+            for (int index = 0; index < result.Count();index++)
             {
-                foreach (var component in World.EntityManager.GetComponents(item))
+                foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
@@ -478,7 +476,7 @@ namespace GDG.ECS
                     if (component is T6 c6) t6 = c6;
                     if (component is T7 c7) t7 = c7;
                 }
-                item.CallbackExcute(eventName, system, callback, t1, t2, t3, t4, t5, t6, t7, i++ == count);
+                result.ElementAt(index).CallbackExcute(eventName, system, callback, t1, t2, t3, t4, t5, t6, t7, i++ == count);
             }
         }
     }
@@ -488,7 +486,7 @@ namespace GDG.ECS
         public SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback;
         public override void Excute()
         {
-            if (result == null || callback == null)
+            if (result == null || callback == null || result.Count()==0 )
                 return;
             T1 t1 = null;
             T2 t2 = null;
@@ -500,9 +498,9 @@ namespace GDG.ECS
             T8 t8 = null;
             int count = result.Count();
             int i = 0;
-            foreach (var item in result)
+            for (int index = 0; index < result.Count();index++)
             {
-                foreach (var component in World.EntityManager.GetComponents(item))
+                foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
                     if (component is T1 c1) t1 = c1;
                     if (component is T2 c2) t2 = c2;
@@ -513,7 +511,7 @@ namespace GDG.ECS
                     if (component is T7 c7) t7 = c7;
                     if (component is T8 c8) t8 = c8;
                 }
-                item.CallbackExcute(eventName, system, callback, t1, t2, t3, t4, t5, t6, t7, t8, i++ == count);
+                result.ElementAt(index).CallbackExcute(eventName, system, callback, t1, t2, t3, t4, t5, t6, t7, t8, i++ == count);
             }
         }
     }

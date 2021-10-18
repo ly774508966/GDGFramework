@@ -112,9 +112,14 @@ public class EntitiesViewer : EditorWindow
                     {
                         if (m_CurrentComponents == null)
                         {
-                            var entity = World.EntityManager.GetAllEntity().First();
-                            if (entity != null)
-                                m_CurrentComponents = World.EntityManager.GetComponents(entity);
+                            var temp_entities = World.EntityManager.GetAllEntity();
+                            if(temp_entities.Count!=0)
+                            {
+                                var entity = World.EntityManager.GetAllEntity().First();
+                                if (entity != null)
+                                    m_CurrentComponents = World.EntityManager.GetComponents(entity);                                
+                            }
+
                         }
                         var entities = World.EntityManager.GetAllEntity();
                         if(!string.IsNullOrEmpty(searchText))

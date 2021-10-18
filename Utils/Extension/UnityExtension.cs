@@ -9,7 +9,6 @@ public static class UnityExtension
     #region GameObject
     public static T RequireComponent<T>(this GameObject gameObject) where T : Component
     {
-
         T component = gameObject.GetComponent<T>();
         if (component == null)
         {

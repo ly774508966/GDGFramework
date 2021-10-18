@@ -8,19 +8,13 @@ using UnityEngine.Events;
 namespace GDG.ModuleManager
 {
     /// <summary>
-    /// 管理AssetBundle的工具类，提供了加载Asset和卸载Asset的方法，注意：若要使用此类，需将AssetBundle的文件夹路径设为StreamingAssets的路径,并且根据打包平台的需求，分别在以下文件夹打包：</param>
+    /// 管理AssetBundle的工具类，提供了加载Asset和卸载Asset的方法，注意：若要使用此类，默认AssetBundle的文件夹路径为StreamingAssets的路径,并且根据打包平台的需求，分别在以下文件夹打包：</param>
     /// 安卓：Android</param>
     /// IOS：IOS</param>
     /// PC：PC</param>
     /// </summary>
     public class AssetManager : AbsLazySingleton<AssetManager>
     {
-        public AssetManager()
-        {
-            UserFileManager.BuildFolder_Async("PC", Application.streamingAssetsPath);
-            UserFileManager.BuildFolder_Async("Android", Application.streamingAssetsPath);
-            UserFileManager.BuildFolder_Async("IOS", Application.streamingAssetsPath);
-        }
         //AB包文件夹路径
         public string Path { get => Application.streamingAssetsPath + "/"; }
         //主包路径
@@ -47,22 +41,24 @@ namespace GDG.ModuleManager
         private AssetBundleManifest manifest;
 
         //加载主包和描述文件
-        private void LoadMainAndManifest(string bundlename)
+        private void LoadMainAndManifest(string bundlename,string path = null,string mainABName = null)
         {
+            if(mainABName==null)
+                mainABName = MainABName;
+
             //加载主包和描述文件
             if (mainAB == null)
             {
-                mainAB = AssetBundle.LoadFromFile(Path + MainABName);
+                mainAB = AssetBundle.LoadFromFile(path==null?Path + mainABName:path);
                 manifest = mainAB.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
             }
-
             //加载目标包
             AssetBundle bundle = null;
             if (!ABDic.ContainsKey(bundlename))
             {
-                bundle = AssetBundle.LoadFromFile(Path + bundlename);
+                bundle = AssetBundle.LoadFromFile(path==null?Path + bundlename:path);
                 if (bundle == null)
-                    Log.Error($"Load bundle'{Path}{bundlename}' failed");
+                    Log.Error($"Load bundle'{path}{bundlename}' failed");
                 ABDic.Add(bundlename, bundle);
             }
 
@@ -75,7 +71,7 @@ namespace GDG.ModuleManager
             {
                 if (!ABDic.ContainsKey(item))
                 {
-                    AssetBundle.LoadFromFile(Path + item);
+                    AssetBundle.LoadFromFile(path + item);
                     ABDic.Add(item, bundle);
                 }
             }
@@ -91,9 +87,9 @@ namespace GDG.ModuleManager
         /// <param name="assetname"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public T LoadAsset<T>(string bundlename, string assetname) where T : Object
+        public T LoadAsset<T>(string bundlename, string assetname,string path = null,string mainABName = null) where T : Object
         {
-            LoadMainAndManifest(bundlename);
+            LoadMainAndManifest(bundlename,path,mainABName);
 
             //加载目标包
             AssetBundle bundle = ABDic[bundlename];
@@ -112,9 +108,9 @@ namespace GDG.ModuleManager
         /// <param name="assetname"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public Object LoadAsset(string bundlename, string assetname, System.Type type)
+        public Object LoadAsset(string bundlename, string assetname, System.Type type,string path = null,string mainABName = null)
         {
-            LoadMainAndManifest(bundlename);
+            LoadMainAndManifest(bundlename,path,mainABName);
 
             //加载目标包
             AssetBundle bundle = ABDic[bundlename];

@@ -75,7 +75,7 @@ namespace GDG.ECS
             RemoveIndex2EnityMapping(entity.Index);
             RemoveIndex2ComponentMapping(entity.Index);
             m_ActivedEntityList.Remove(entity);
-            foreach(var system in World.Systems)
+            foreach (var system in World.Systems)
             {
                 system.RemoveEntity(entity);
                 system.SetEntities(m_ActivedEntityList);
@@ -86,7 +86,7 @@ namespace GDG.ECS
         {
             foreach (var pool in m_TypeId2EntityPoolMapping.Values)
             {
-                foreach(var entity in pool.entityStack)
+                foreach (var entity in pool.entityStack)
                 {
                     DestroyEntity(entity);
                 }
@@ -98,15 +98,17 @@ namespace GDG.ECS
         /// <summary>
         /// 创建实体
         /// </summary>
-        public Entity CreateEntity()
+        public Entity CreateEntity(string rename = null)
         {
-            return CreateEntity(0);
+            return CreateEntity(0, rename);
         }
-        public Entity CreateEntity(ComponentTypes componentTypes)
+        public Entity CreateEntity(ComponentTypes componentTypes, string rename = null)
         {
-            return CreateEntity(componentTypes.TypeId);
+            if (componentTypes == null)
+                return CreateEntity(0, rename);
+            return CreateEntity(componentTypes.TypeId, rename);
         }
-        public Entity CreateEntity(uint typeId)
+        public Entity CreateEntity(uint typeId, string rename = null)
         {
             AddTypeId2EntityPoolMapping(typeId, out EntityPool entityPool, null, null);
 
@@ -124,52 +126,162 @@ namespace GDG.ECS
                 m_ActivedEntityList.Add(entity);
 
             BaseWorld.Instance.UpdateEntitiesOfSystems(m_ActivedEntityList);
-
+            if (rename != null)
+                entity.Name = rename;
             return entity;
         }
-        public Entity CreateEntity<T>() where T : class, IComponent
+        public Entity CreateEntity<T>(string rename = null) where T : class, IComponent
         {
-            return CreateEntity<T>(null);
+            return CreateEntity<T>(null, rename);
         }
-        public Entity CreateEntity<T>(Action<T> initCallback) where T : class, IComponent
+        public Entity CreateEntity<T>(Action<T> initCallback, string rename = null) where T : class, IComponent
         {
             ComponentTypes componentTypes = new ComponentTypes(typeof(T));
-            var entity = CreateEntity(componentTypes);
-            if (!entity.TryGetComponent<T>(out T gameObjectComponent))
+            var entity = CreateEntity(componentTypes, rename);
+            if (!entity.TryGetComponent<T>(out T component))
             {
                 Log.Error($"Create Entity failed ! Can't find component after create it , Component Type : {typeof(T)}");
             }
-            initCallback?.Invoke(gameObjectComponent);
+            initCallback?.Invoke(component);
             return entity;
         }
 
         #endregion
         #region CreateGameEntity
-        public Entity CreateGameEntity(GameObject gameObject)
+        public Entity CreateGameEntity(string rename = null)
         {
-            return CreateGameEntity(null, gameObject);
+            return CreateGameEntity(null, null, rename);
         }
-        public Entity CreateGameEntity(ComponentTypes componentTypes, GameObject gameObject)
+        public Entity CreateGameEntity(GameObject gameObject, string rename = null)
         {
-            var entity = CreateEntity<GameObjectComponent>((game)=>
-            {
-                if(game.gameObject==null)
-                    game.gameObject = gameObject;      
-            });
-            entity.Name = gameObject.name;
+            return CreateGameEntity(null, gameObject, rename);
+        }
+        public Entity CreateGameEntity(ComponentTypes componentTypes, GameObject gameObject, string rename = null)
+        {
+            if (componentTypes == null)
+                componentTypes = new ComponentTypes(typeof(GameObjectComponent));
+            componentTypes.Add(typeof(GameObjectComponent));
+            var entity = CreateEntity(componentTypes, rename);
 
-            if(componentTypes!=null)
+            if (entity.Version == 1)
             {
-                AddComponent(entity, componentTypes);
+                if (rename == null)
+                    gameObject = new GameObject("Entity" + entity.Index);
+                else
+                    gameObject = new GameObject(rename);
+            }
+            entity.GetComponent<GameObjectComponent>().gameObject = gameObject;
+            entity.Name = gameObject.name;
+            return entity;
+        }
+        public Entity CreateGameEntity<T>(string rename = null) where T : IComponent
+        {
+            ComponentTypes componentTypes = new ComponentTypes(typeof(T));
+            return CreateGameEntity(componentTypes, null, rename);
+        }
+        public Entity CreateGameEntity<T>(GameObject gameObject, string rename = null) where T : IComponent
+        {
+            ComponentTypes componentTypes = new ComponentTypes(typeof(T));
+            return CreateGameEntity(componentTypes, gameObject, rename);
+        }
+        #endregion
+        #region CreateEntityFromResources
+        public Entity CreateEntityFromResources<T>(ComponentTypes componentTypes, string path, string rename = null) where T : UnityEngine.Object
+        {
+            if (componentTypes == null)
+                componentTypes = new ComponentTypes(typeof(AssetComponent));
+            else
+                componentTypes.Add(typeof(AssetComponent));
+
+            if (typeof(T) == typeof(GameObject))
+                componentTypes.Add(typeof(GameObjectComponent));
+
+            var entity = CreateEntity(componentTypes);
+
+            if (entity.Version == 1)
+            {
+                T res = Resources.Load<T>(path);
+                Log.Info(res.name);
+                if (rename != null)
+                    res.name = rename;
+
+                if (res is GameObject gameObject)
+                {
+                    entity.GetComponent<GameObjectComponent>().gameObject = GameObject.Instantiate(gameObject);
+                    if (rename != null)
+                        entity.GetComponent<GameObjectComponent>().gameObject.name = rename;
+                }
+
+                entity.Name = res.name;
+                entity.GetComponent<AssetComponent>().asset = res;
             }
             return entity;
         }
-        public Entity CreateGameEntity<T>(GameObject gameObject) where T : IComponent
+        public Entity CreateEntityFromResources<T>(string path, string rename = null) where T : UnityEngine.Object
         {
-            ComponentTypes componentTypes = new ComponentTypes(typeof(T));
-            return CreateGameEntity(componentTypes, gameObject);
+            return CreateEntityFromResources<T>(null, path, rename);
         }
 
+        #endregion
+        #region CreateEntityFromAssetBundle
+        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string assetName, string bundleName, string mainABName, string path, string rename) where T : UnityEngine.Object
+        {
+            if (componentTypes == null)
+                componentTypes = new ComponentTypes(typeof(AssetComponent));
+            else
+                componentTypes.Add(typeof(AssetComponent));
+
+            if (typeof(T) == typeof(GameObject))
+                componentTypes.Add(typeof(GameObjectComponent));
+
+            var entity = CreateEntity(componentTypes);
+            if (entity.Version == 1)
+            {
+                var asset = AssetManager.Instance.LoadAsset<T>(assetName, bundleName, path, mainABName);
+
+                if (rename != null)
+                    asset.name = rename;
+
+                if (asset is GameObject gameObject)
+                {
+                    entity.GetComponent<GameObjectComponent>().gameObject = gameObject;
+                    if (rename != null)
+                        entity.GetComponent<GameObjectComponent>().gameObject.name = rename;
+                }
+                entity.Name = asset.name;
+                entity.GetComponent<AssetComponent>().asset = asset;
+            }
+            return entity;
+        }
+        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string assetName, string bundleName, string mainABName,string rename) where T : UnityEngine.Object
+        {
+            return CreateEntityFromAssetBundle<T>(componentTypes, assetName, bundleName, mainABName , null, rename);
+        }
+        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string assetName, string bundleName, string rename) where T : UnityEngine.Object
+        {
+            return CreateEntityFromAssetBundle<T>(componentTypes, assetName, bundleName, null , null, rename);
+        }
+        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string assetName, string bundleName) where T : UnityEngine.Object
+        {
+             return CreateEntityFromAssetBundle<T>(componentTypes, assetName, bundleName, null , null, null);
+        }
+        public Entity CreateEntityFromAssetBundle<T>(string assetName, string bundleName, string mainABName, string path, string rename) where T : UnityEngine.Object
+        {
+            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, mainABName , path, rename); 
+        }
+        public Entity CreateEntityFromAssetBundle<T>(string assetName, string bundleName, string mainABName, string rename) where T : UnityEngine.Object
+        {
+            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, mainABName , null, rename); 
+        }
+        public Entity CreateEntityFromAssetBundle<T>(string assetName, string bundleName, string rename) where T : UnityEngine.Object
+        {
+            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, null , null, rename); 
+        }
+        public Entity CreateEntityFromAssetBundle<T>(string assetName, string bundleName) where T : UnityEngine.Object
+        {
+            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, null , null, null); 
+        }
+        
         #endregion
         #region SelectEntity
         public bool TrySelectEntityWithIndex<T>(ulong index, out T result) where T : Entity
@@ -293,14 +405,14 @@ namespace GDG.ECS
         #region Component
         internal void InitEntityComponent(ulong index)
         {
-            if(!m_Index2ComponentMapping.ContainsKey(index))
+            if (!m_Index2ComponentMapping.ContainsKey(index))
                 m_Index2ComponentMapping.Add(index, new List<IComponent>());
             else
                 Log.Error($"InitEntityComponent failed ! The same mapping already exists here ! Index:{index}");
         }
         public List<IComponent> GetComponents(Entity entity)
         {
-            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
+            if (!m_Index2ComponentMapping.TryGetValue(entity.Index, out List<IComponent> Components))
             {
                 Log.Error($"AddComponentToList failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
                 return null;
@@ -309,64 +421,64 @@ namespace GDG.ECS
         }
         public List<IComponent> GetComponents(ulong Index)
         {
-            if(!m_Index2ComponentMapping.TryGetValue(Index,out List<IComponent> Components))
+            if (!m_Index2ComponentMapping.TryGetValue(Index, out List<IComponent> Components))
             {
                 Log.Error($"AddComponentToList failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {Index}");
                 return null;
             }
             return Components;
         }
-        private void AddComponentToList(ulong index,IComponent component)
+        private void AddComponentToList(ulong index, IComponent component)
         {
-            if(!m_Index2ComponentMapping.TryGetValue(index,out List<IComponent> Components))
+            if (!m_Index2ComponentMapping.TryGetValue(index, out List<IComponent> Components))
             {
                 Log.Error($"AddComponentToList failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {index}");
                 return;
             }
-            if(!m_Index2EntityMapping.TryGetValue(index,out Entity entity))
+            if (!m_Index2EntityMapping.TryGetValue(index, out Entity entity))
             {
                 Log.Error($"AddComponentToList failed ! Cant't Find Index in m_Index2EntityMapping, Index: {index}");
                 return;
             }
-            if(Components.Contains(component))
+            if (Components.Contains(component))
                 return;
-            if(component is ISetNameable setname)
+            if (component is ISetNameable setname)
                 entity.setNameCallBack += setname.SetName;
-            if(component is IInitable init)
+            if (component is IInitable init)
                 entity.initCallback += init.OnInit;
-            if(component is IEnable enable)
+            if (component is IEnable enable)
                 entity.enableCallback += enable.OnEnable;
-            if(component is IRecyclable recycle)
+            if (component is IRecyclable recycle)
                 entity.recycleCallback += recycle.OnRecycle;
-            if(component is IDestroyable destroy)
+            if (component is IDestroyable destroy)
                 entity.destroyCallback += destroy.OnDestroy;
 
 
             Components.Add(component);
         }
-        private bool RemoveComponentToList(ulong index,IComponent component)
+        private bool RemoveComponentToList(ulong index, IComponent component)
         {
-            if(!m_Index2ComponentMapping.TryGetValue(index,out List<IComponent> Components))
+            if (!m_Index2ComponentMapping.TryGetValue(index, out List<IComponent> Components))
             {
                 Log.Error($"AddComponentToList failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {index}");
                 return false;
             }
-            if(!m_Index2EntityMapping.TryGetValue(index,out Entity entity))
+            if (!m_Index2EntityMapping.TryGetValue(index, out Entity entity))
             {
                 Log.Error($"AddComponentToList failed ! Cant't Find Index in m_Index2EntityMapping, Index: {index}");
                 return false;
             }
-            if(component is ISetNameable setname)
+            if (component is ISetNameable setname)
                 entity.setNameCallBack -= setname.SetName;
-            if(component is IInitable init)
+            if (component is IInitable init)
                 entity.initCallback -= init.OnInit;
-            if(component is IEnable enable)
+            if (component is IEnable enable)
                 entity.enableCallback -= enable.OnEnable;
-            if(component is IRecyclable recycle)
+            if (component is IRecyclable recycle)
                 entity.recycleCallback -= recycle.OnRecycle;
-            if(component is IDestroyable destroy)
+            if (component is IDestroyable destroy)
                 entity.destroyCallback -= destroy.OnDestroy;
-            
+
             return Components.Remove(component);
         }
         public List<IComponent> AddComponent(Entity entity, ComponentTypes componentTypes)
@@ -377,14 +489,14 @@ namespace GDG.ECS
                 return null;
             }
             AddComponentTypes(entity, componentTypes);
-            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
+            if (!m_Index2ComponentMapping.TryGetValue(entity.Index, out List<IComponent> Components))
             {
                 Log.Error($"AddComponent failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
                 return null;
             }
             return Components;
         }
-        public T AddComponent<T>(Entity entity) where T : class,IComponent, new()
+        public T AddComponent<T>(Entity entity) where T : class, IComponent, new()
         {
             if (!entity.IsActived)
             {
@@ -402,7 +514,7 @@ namespace GDG.ECS
             }
             return RemoveComponentTypes(entity, componentTypes);
         }
-        public bool RemoveComponet<T>(Entity entity) where T : class,IComponent
+        public bool RemoveComponet<T>(Entity entity) where T : class, IComponent
         {
             if (!entity.IsActived)
             {
@@ -411,9 +523,9 @@ namespace GDG.ECS
             }
             return RemoveComponentTypes<T>(entity);
         }
-        public void SetComponentData<T>(Entity entity, T component) where T :class,IComponent
+        public void SetComponentData<T>(Entity entity, T component) where T : class, IComponent
         {
-            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
+            if (!m_Index2ComponentMapping.TryGetValue(entity.Index, out List<IComponent> Components))
             {
                 Log.Error($"SetComponentData failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
                 return;
@@ -428,9 +540,9 @@ namespace GDG.ECS
             }
             LogManager.Instance.LogError($"Entity doesn't exist Component!Index:{entity.Index}, Component:{typeof(T)}");
         }
-        public void SetComponentData<T>(Entity entity,Action<T> action)where T:class,IComponent
+        public void SetComponentData<T>(Entity entity, Action<T> action) where T : class, IComponent
         {
-            if(entity.TryGetComponent<T>(out T component))
+            if (entity.TryGetComponent<T>(out T component))
             {
                 action?.Invoke(component);
                 return;
@@ -441,7 +553,7 @@ namespace GDG.ECS
         //实体组件类型在字典中的引用对实体引用计数-1，只用于对实体组件的修改件之前以及实体的销毁时使用
         private bool EntityRefCountDecrementOne(Entity entity)
         {
-            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
+            if (!m_Index2ComponentMapping.TryGetValue(entity.Index, out List<IComponent> Components))
             {
                 Log.Error($"EntityRefCountDecrementOne failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
                 return false;
@@ -478,9 +590,9 @@ namespace GDG.ECS
             //添加组件
             foreach (var item in componentTypes)
             {
-                AddComponentToList(entity.Index,Activator.CreateInstance(item) as IComponent);
+                AddComponentToList(entity.Index, Activator.CreateInstance(item) as IComponent);
             }
-            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
+            if (!m_Index2ComponentMapping.TryGetValue(entity.Index, out List<IComponent> Components))
             {
                 Log.Error($"AddComponent failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
                 return null;
@@ -520,7 +632,7 @@ namespace GDG.ECS
             EntityRefCountDecrementOne(entity);
 
             //遍历移除实体组件
-            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
+            if (!m_Index2ComponentMapping.TryGetValue(entity.Index, out List<IComponent> Components))
             {
                 Log.Error($"RemoveComponent failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
                 return false;
@@ -533,7 +645,7 @@ namespace GDG.ECS
                 {
                     if (componentList[i].GetType() == item)
                     {
-                        if (!RemoveComponentToList(entity.Index,componentList[i]))
+                        if (!RemoveComponentToList(entity.Index, componentList[i]))
                         {
                             LogManager.Instance.LogError($"Remove component failed ! Can't Find Component in Entity !Entity.Index:{index}");
                             return false;
@@ -568,9 +680,9 @@ namespace GDG.ECS
             List<Type> types = new List<Type>();
             //添加组件
             var component = Activator.CreateInstance<T>();
-            AddComponentToList(entity.Index,Activator.CreateInstance<T>());
-            
-            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
+            AddComponentToList(entity.Index, Activator.CreateInstance<T>());
+
+            if (!m_Index2ComponentMapping.TryGetValue(entity.Index, out List<IComponent> Components))
             {
                 Log.Error($"AddComponent failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
                 return default(T);
@@ -607,9 +719,9 @@ namespace GDG.ECS
 
             //删除之前        
             EntityRefCountDecrementOne(entity);
-            
+
             //遍历移除实体组件
-            if(!m_Index2ComponentMapping.TryGetValue(entity.Index,out List<IComponent> Components))
+            if (!m_Index2ComponentMapping.TryGetValue(entity.Index, out List<IComponent> Components))
             {
                 Log.Error($"RemoveComponent failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
                 return false;
@@ -620,7 +732,7 @@ namespace GDG.ECS
             {
                 if (componentList[i] is T item)
                 {
-                    if (!RemoveComponentToList(entity.Index,item))
+                    if (!RemoveComponentToList(entity.Index, item))
                     {
                         LogManager.Instance.LogError($"Remove component failed ! Can't Find Component in Entity !Entity.Index:{index}");
                         return false;
