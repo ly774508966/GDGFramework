@@ -126,7 +126,8 @@ namespace GDG.ModuleManager
         {
             if (!EnableLog)
                 return "";
-
+            if(message==null)
+                message = "Null";
             string info;
             if (EnableTime)
                 info = $"<b>[{tag}]</b>[{DateTime.Now.ToString("HH:mm:ss")}]   <b>{message.ToString()}</b>\n";
@@ -367,7 +368,8 @@ namespace GDG.ModuleManager
         {
             if (!EnableLog)
                 return "";
-
+            if(message==null)
+                message = "Null";
             string info = "";
             if (EnableTime)
             {
@@ -465,7 +467,8 @@ namespace GDG.ModuleManager
         {
             if (!EnableLog)
                 return "";
-
+            if(message==null)
+                message = "Null";
             string info;
             if (EnableTime)
                 info = $"<b>[{tag}]</b>[{DateTime.Now.ToString("HH:mm:ss")}]   <b>{message.ToString()}</b>\n";

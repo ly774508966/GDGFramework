@@ -16,18 +16,17 @@ namespace GDG.ECS
             {
                 proxyConverts += item.Convert;
             }
-            BaseWorld.Instance.monoWorld.AddOrRemoveListener(ProxyConvertExcute, "AfterUpdate");
+            BaseWorld.Instance.monoWorld.AddOrRemoveListener(ProxyConvertExcute, "BeforeUpdate");
         }
 
         void ProxyConvertExcute()
         {
             entity = World.EntityManager.CreateGameEntity(this.gameObject);
-
             if (proxyConverts != null)
             {
                 proxyConverts(entity, World.EntityManager);
             }
-            BaseWorld.Instance.monoWorld.AddOrRemoveListener(ProxyConvertExcute, "AfterUpdate", false);
+            BaseWorld.Instance.monoWorld.AddOrRemoveListener(ProxyConvertExcute, "BeforeUpdate", false);
         }
     }
 }

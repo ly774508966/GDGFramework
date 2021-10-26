@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using GDG.Async;
 using GDG.ModuleManager;
 using UnityEngine;
 using UnityEngine.Events;
@@ -26,7 +27,8 @@ namespace GDG.ECS
         {
             EntityPool = new GameObject("EntityPool");
             EntityPool.transform.SetParent(this.transform);
-            timerUpdate += TimerManager.Instance.OnUpdate; 
+            timerUpdate += TimerManager.Instance.OnUpdate;
+            update += AsyncRunner.OnUpdate;
             DontDestroyOnLoad(this);
             if (awake != null) awake(); 
         }
@@ -34,10 +36,11 @@ namespace GDG.ECS
         void OnGUI() { if (ongui != null) ongui(); }
         void Update() 
         { 
-            beforeUpdate?.Invoke(); 
+            beforeUpdate?.Invoke();
+            beforeUpdate = null;
             update?.Invoke(); 
-            timerUpdate?.Invoke(); 
-            afterUpdate?.Invoke(); 
+            timerUpdate?.Invoke();
+            afterUpdate?.Invoke();
         }
 
         void FixedUpdate() { if (fixedUpdate != null) fixedUpdate(); }

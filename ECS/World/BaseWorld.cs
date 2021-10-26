@@ -29,10 +29,10 @@ namespace GDG.ECS
             SystemSingletonInit();
             foreach (var system in Systems.Values)
             {
-                monoWorld.AddOrRemoveListener(()=>{ {system.CurrentSelectId = 0; system.OnUpdate(); } }, "Update");
+                monoWorld.AddOrRemoveListener(system.OnUpdate , "Update");
                 monoWorld.AddOrRemoveListener(system.OnLateUpdate, "LateUpdate");
                 monoWorld.AddOrRemoveListener(system.OnFixedUpdate, "FixedUpdate");
-                monoWorld.AddOrRemoveListener(system.OnStart, "Start");
+                monoWorld.AddOrRemoveListener(system.OnStart, "BeforeUpdate");
             }
             UpdateEntitiesOfSystems(EntityManager.m_ActivedEntityList);
         }

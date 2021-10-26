@@ -50,15 +50,15 @@ namespace GDG.ModuleManager
         private static readonly object locker = new object();
         private DateTime beginTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
         private List<TimerHandle> m_TempList = new List<TimerHandle>();
-        // private List<TimerHandle> m_RecycalList = new List<TimerHandle>();
         private List<TimerHandle> m_TimerHandleList = new List<TimerHandle>();
         private List<ulong> m_IndexList = new List<ulong>();
-        public double GetCurrentTime()
+        private double GetCurrentTime()
         {
             TimeSpan ts = DateTime.UtcNow - beginTime;
             return ts.TotalMilliseconds;
         }
-        public ulong CurrentFrame;
+        public ulong CurrentFrame { get; private set; }
+        public double CurrentTime { get => GetCurrentTime(); }
         private ulong GetIndex()
         {
             lock (locker)

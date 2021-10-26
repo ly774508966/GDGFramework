@@ -109,69 +109,68 @@ namespace GDG.ECS
             return handle;
         }
         /// <summary>
-        /// 每隔secondTime秒执行
+        /// 查询结果中的 entity 将每隔 secondTime 秒执行
         /// </summary>
-        public static void ExcuteDelayTime<E>(this AbsSystemHandle<E> handle, float secondTime)where E:Entity
+        /// <param name="secondTime">延迟执行的时间，单位为秒</param>
+        /// <param name="selectId">指定的 Select 的唯一id，不能与其他 SelectId 重复，且不能为 int.MinValue</param>
+        public static void ExcuteDelayTime<E>(this AbsSystemHandle<E> handle, float secondTime,int selectId)where E:Entity
         {
-            var excuteTime = GDGTools.Timer.GetCurrentTime() + GDGTools.Timer.TimeUnitToMillisecond(secondTime, TimeUnit.Second);
+            if (handle.system.m_SelectId2ExcuteInfo.TryGetValue(selectId, out ExcuteInfo _excuteInfo))
+            {
+                if (!_excuteInfo.isTimeRegister)
+                {
+                    _excuteInfo.excuteTime = GDGTools.Timer.CurrentTime + secondTime;
+                    _excuteInfo.delayTime = secondTime;
+                }
+                handle.excuteInfo = _excuteInfo;
+            }
+            else
+                handle.excuteInfo.selectId = selectId;
+            handle.Excute();
+        }
+        /// <summary>
+        /// 查询结果中的 entity 将每隔 frame 帧执行
+        /// </summary>
+        /// <param name="frame">延迟执行帧数</param>
+        /// <param name="selectId">指定的 Select 的唯一id，不能与其他 SelectId 重复，且不能为 int.MinValue</param>
+        public static void ExcuteDelayFrame<E>(this AbsSystemHandle<E> handle, ushort frame,int selectId)where E:Entity
+        {
 
-            foreach(var item in handle.result)
+            if (handle.system.m_SelectId2ExcuteInfo.TryGetValue(selectId, out ExcuteInfo _excuteInfo))
             {
-                if (!handle.system.m_Index2TimeHandleMapping.TryGetValue(item.Index, out double extime))
+                if(!_excuteInfo.isFrameRegister)
                 {
-                    handle.system.m_Index2TimeHandleMapping.Add(item.Index, excuteTime);
-                    GDGTools.Timer.DelayTimeExcute(secondTime, () =>
-                     {
-                         handle.Excute();
-                         handle.system.m_Index2TimeHandleMapping.Remove(item.Index);
-                     });
+                    _excuteInfo.excuteFrame = GDGTools.Timer.CurrentFrame + frame;
+                    _excuteInfo.delayFrame = frame;
                 }
+                handle.excuteInfo = _excuteInfo;
             }
+            else
+                handle.excuteInfo.selectId = selectId;
+            handle.Excute();
         }
         /// <summary>
-        /// 每隔frame帧执行
+        /// 直到通过 EventCenter 注册的事件被触发，才会调用Excute方法
         /// </summary>
-        public static void ExcuteDelayFrame<E>(this AbsSystemHandle<E> handle, ushort frame)where E:Entity
+        /// <param name="eventName">事件名称</param>///
+        /// <param name="selectId">指定的 Select 的唯一id，不能与其他 SelectId 重复，且不能为 int.MinValue</param>/// 
+        public static void ExcuteWithEvent<E>(this AbsSystemHandle<E> handle, string eventName,int selectId)where E:Entity
         {
-            var excuteFrame = GDGTools.Timer.CurrentFrame + frame;
-
-            foreach(var item in handle.result)
+            if (handle.system.m_SelectId2ExcuteInfo.TryGetValue(selectId, out ExcuteInfo _excuteInfo))
             {
-                if (!handle.system.m_Index2FrameHandleMapping.TryGetValue(item.Index, out ulong exframe))
-                {
-                    handle.system.m_Index2FrameHandleMapping.Add(item.Index, excuteFrame);
-                    GDGTools.Timer.DelayFrameExcute(frame, () =>
-                     {
-                         handle.Excute();
-                         handle.system.m_Index2TimeHandleMapping.Remove(item.Index);
-                     });
-                }
+                _excuteInfo.eventName = eventName;
+                handle.excuteInfo = _excuteInfo;
             }
+            else
+                handle.excuteInfo.selectId = selectId;
+            handle.Excute();
         }
         /// <summary>
-        /// 直到事件被触发，才会调用Excute方法
+        /// 是否允许执行
         /// </summary>
-        public static AbsSystemHandle<E> WaitForEvent<E>(this AbsSystemHandle<E> handle, string eventName)where E:Entity
+        public static AbsSystemHandle<E> CanBeEexcuted<E>(this AbsSystemHandle<E> handle, bool canBeExcuted)where E:Entity
         {
-            if(handle.system==null)
-                return handle;
-            handle.eventName = eventName;
-            return handle;
-        }
-        /// <summary>
-        /// 是否允许执行该Select
-        /// </summary>
-        /// <param name="canBeExcute">若为false，则不进行查询</param>
-        public static AbsSystemHandle<E> CanBeEexcute<E>(this AbsSystemHandle<E> handle, bool canBeExcute)where E:Entity
-        {
-            if(!canBeExcute)
-            {
-                if(handle.system.m_SelectId2CanBeExcutedMapping.TryGetValue(handle.system.CurrentSelectId,out bool _canBeExcute))
-                {
-                    _canBeExcute = canBeExcute;
-                }
-                return SystemHandle<E>.None;
-            }
+            handle.excuteInfo.canBeExcuted = canBeExcuted;
             return handle;
         }
     }

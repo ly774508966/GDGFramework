@@ -21,6 +21,7 @@ namespace GDG.Utils
         public static AssetPool AssetPool { get => AssetPool.Instance; }
         public static ResourcesManager ResourceLoder{ get => ResourcesManager.Instance; }
         public static AssetManager AssetLoder { get => AssetManager.Instance; }
+        public static PanelManager PanelControl { get => PanelManager.Instance; }
         #endregion
 
         #region 静态方法
@@ -73,6 +74,7 @@ namespace GDG.Utils
                 return true;
             return false;
         }
+        
         #endregion
     }
 }

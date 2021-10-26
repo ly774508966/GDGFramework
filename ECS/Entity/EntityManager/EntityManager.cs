@@ -165,10 +165,15 @@ namespace GDG.ECS
 
             if (entity.Version == 1)
             {
-                if (rename == null)
-                    gameObject = new GameObject("Entity" + entity.Index);
-                else
-                    gameObject = new GameObject(rename);
+                if(gameObject==null)
+                {
+                    if (rename == null)
+                        gameObject = new GameObject("Entity" + entity.Index);
+                    else
+                        gameObject = new GameObject(rename);                    
+                }
+                else if(rename!=null)
+                    gameObject.name = rename;
             }
             entity.GetComponent<GameObjectComponent>().gameObject = gameObject;
             entity.Name = gameObject.name;

@@ -168,9 +168,9 @@ namespace GDG.ModuleManager
         {
             if (GetKeyUp(keyName))
             {
-                m_CurrentTime = GDGTools.Timer.GetCurrentTime();
+                m_CurrentTime = GDGTools.Timer.CurrentTime;
             }
-            if (GDGTools.Timer.GetCurrentTime() - m_CurrentTime < m_DoubleClickInterval)
+            if (GDGTools.Timer.CurrentTime - m_CurrentTime < m_DoubleClickInterval)
             {
                 return GetKeyDown(keyName);
             }
