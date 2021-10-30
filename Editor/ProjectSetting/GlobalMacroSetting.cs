@@ -52,7 +52,7 @@ public partial class ProjectSetting
         var macroStr = string.Join(";", defineList.ToArray());
         PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, macroStr);
         AssetDatabase.Refresh();
-        Log.Editor("Save Succesful !");
+        Log.Editor("Save Succesfully !");
     }
     private void LoadMacroConfig()
     {

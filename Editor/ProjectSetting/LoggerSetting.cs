@@ -54,7 +54,7 @@ partial class ProjectSetting
         s_LogErrorOrThrowException, s_LoggerMaxMBSize);
         JsonManager.SaveData<LogHandle>(LogHandle, m_LoggerConfigPath);
         AssetDatabase.Refresh();
-        Log.Editor("Save Succesful !");
+        Log.Editor("Save Succesfully !");
     }
     public void LoadLoggerConfig()
     {

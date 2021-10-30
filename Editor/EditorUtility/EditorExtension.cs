@@ -74,26 +74,30 @@ namespace GDG.Editor
                 );
         }
 
-        [MenuItem("Assets/Create/Component", false, 51)]
+        [MenuItem("Assets/Create/Component", false, 50)]
         private static void CreateComponent()
         {
             CreateCshapScriptFromTemplate("TestComponent.cs", TemplatePath + "/ComponentTemplate.txt");
         }
-        [MenuItem("Assets/Create/System", false, 52)]
+        [MenuItem("Assets/Create/System", false, 51)]
         private static void CreateSystem()
         {
             CreateCshapScriptFromTemplate("TestSystem.cs", TemplatePath + "/SystemTemplate.txt");
         }
-        [MenuItem("Assets/Create/Proxy", false, 53)]
+        [MenuItem("Assets/Create/Proxy", false, 52)]
         private static void CreateProxy()
         {
             CreateCshapScriptFromTemplate("EntityProxy.cs", TemplatePath + "/ProxyTemplate.txt");
         }
-        
-        [MenuItem("Assets/Create/Interface", false, 80)]
+        [MenuItem("Assets/Create/Class", false, 31)]
+        private static void CreateClass()
+        {
+            CreateCshapScriptFromTemplate("Test.cs", TemplatePath + "/ClassTemplate.txt");
+        }
+        [MenuItem("Assets/Create/Interface", false, 32)]
         private static void CreateInterface()
         {
-            CreateCshapScriptFromTemplate("New Interface.cs", TemplatePath + "/InterfaceTemplate.txt");
+            CreateCshapScriptFromTemplate("IInterface.cs", TemplatePath + "/InterfaceTemplate.txt");
         }
         #endregion
     }

@@ -6,7 +6,7 @@ using GDG.ModuleManager;
 using GDG.Utils;
 using GDG.ECS;
 
-namespace GDG.Utils
+namespace GDG.AI
 {
     public enum GridType
     {
@@ -201,7 +201,7 @@ namespace GDG.Utils
         }
        
         //生成成本场
-        internal void GenarateCostField(string impassibleLayerName, int firstRoughTerrainLayer = 0, int lastRoughTerrainLayer = 0, params (string, byte)[] roughTerrainLayerName_Cost)
+        internal void GenarateCostField(string impassibleLayerName, int roughTerrainLayer = 0, params (string, byte)[] roughTerrainLayerName_Cost)
         {
             impasableCellCount = 0;
             Collider[] colliders;
@@ -209,10 +209,10 @@ namespace GDG.Utils
             var hasIncrease = false;
             //过滤层级
             int mask = 0;
-            if (firstRoughTerrainLayer == 0 || lastRoughTerrainLayer == 0)
+            if (roughTerrainLayer==0)
                 mask = LayerMask.GetMask(impassibleLayerName);
             else
-                mask = LayerMask.GetMask(impassibleLayerName) | firstRoughTerrainLayer << lastRoughTerrainLayer;
+                mask = LayerMask.GetMask(impassibleLayerName) | roughTerrainLayer ;
 
             foreach (var cell in grid.gridArray)
             {
@@ -287,6 +287,8 @@ namespace GDG.Utils
                     bool isFoundDes = false;
                     foreach (var item in neighbourCells)
                     {
+                        if(item==null)
+                            continue;
                         if(item.cost!=byte.MaxValue)
                         {
                             isFoundDes = true;

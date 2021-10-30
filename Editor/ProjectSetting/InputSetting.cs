@@ -84,7 +84,7 @@ public partial class ProjectSetting
     {
         JsonManager.SaveData<List<Key>>(m_keyList, m_InputConfigPath);
         AssetDatabase.Refresh();
-        Log.Editor("Save Succesful !");
+        Log.Editor("Save Succesfully !");
     }
     private void LoadInputConfig()
     {

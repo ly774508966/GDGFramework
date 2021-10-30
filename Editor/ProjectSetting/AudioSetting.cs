@@ -61,7 +61,7 @@ public partial class ProjectSetting
         var audioHandle = new AudioHandle(s_EnableAudio, s_AllAudioVolume, s_MusicVolume, s_SoundVolume);
         JsonManager.SaveData<AudioHandle>(audioHandle, m_AudioConfigPath);
         AssetDatabase.Refresh();
-        Log.Editor("Save Succesful !");
+        Log.Editor("Save Succesfully !");
     }
     private void LoadAudioConfig()
     {

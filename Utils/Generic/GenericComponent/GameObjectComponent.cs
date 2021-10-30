@@ -9,6 +9,7 @@ namespace GDG.Utils
     public class GameObjectComponent : IComponent, IDestroyable, IRecyclable, IEnable, ISetNameable
     {
         public GameObject gameObject;
+        public Transform transform{ get => gameObject?.transform; }
         public void OnDestroy()
         {
             if (gameObject != null)

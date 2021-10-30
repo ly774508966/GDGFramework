@@ -45,8 +45,16 @@ public static class UnityExtension
     {
         SceneManager.MoveGameObjectToScene(gameObject, SceneManager.GetActiveScene());
     }
+    public static float Distance(this GameObject gameObject,GameObject other)
+    {
+        return Distance(gameObject.transform.position , other.transform.position);
+    }    
     #endregion
     #region  Transform
+    public static float Distance(this Transform trans,Transform other)
+    {
+        return Distance(trans.position , other.position);
+    }
     public static void ResetTransform(this Transform transform)
     {
         transform.position = Vector3.zero;
@@ -84,6 +92,12 @@ public static class UnityExtension
         rectTransform.localScale = Vector3.one;
         rectTransform.offsetMax = Vector2.zero;
         rectTransform.offsetMin = Vector2.zero;
+    }
+    #endregion
+    #region
+    public static float Distance(this Vector3 position,Vector3 other)
+    {
+        return (position - other).magnitude;
     }
     #endregion
 }

@@ -27,7 +27,6 @@ public class GUIStyleViewer : EditorWindow
 
          GUILayout.Label("Result", textStyle);
  
-
          GUILayout.BeginHorizontal("PopupCurveSwatchBackground");
          GUILayout.Label("Simple", textStyle, GUILayout.Width(300));
          GUILayout.Label("Name", textStyle, GUILayout.Width(300));
