@@ -47,7 +47,7 @@ namespace GDG.ECS
                 {
                     var baseType = item.BaseType;
 
-                    if (baseType?.Name == "AbsSystem`1")
+                    if (baseType?.Name == "SystemBase`1")
                     {
                         var info = baseType.GetMethod("GetInstance");
                         info.Invoke(null, null);

@@ -10,7 +10,7 @@ using UnityEngine.Events;
 
 namespace GDG.ECS
 {
-    public abstract class AbsSystem<ST> : ISystem where ST : AbsSystem<ST>, new()
+    public abstract class SystemBase<ST> : ISystem where ST : SystemBase<ST>, new()
     {
         #region 单例
         private static ST instance;
@@ -18,9 +18,6 @@ namespace GDG.ECS
         #endregion
         private bool isActived = true;
         private List<Entity> entities;
-        //private Dictionary<int, bool> selectMapping;
-        //private Dictionary<string, List<ulong>> eventMapping;
-        //private Dictionary<ulong, string> indexEventMapping;
         private Dictionary<ulong, List<ExcuteInfo>> indexExcuteListMapping;
         private Dictionary<int, ExcuteInfo> selectIdExcuteInfoListMapping;
         private Dictionary<ExcuteInfo, List<ulong>> excuteInfoEntityListMapping;
