@@ -98,7 +98,7 @@ namespace GDG.ECS
             if (entities == null)
                 return null;
             var result =
-            from obj in entities.AsParallel()
+            from obj in entities
             select obj as E;
             return AssembleSystemHandle<E>(result, callback);
         }
@@ -123,7 +123,7 @@ namespace GDG.ECS
             if (entities == null)
                 return SystemHandle<E, T>.None;
             var result =
-            from obj in entities.AsParallel()
+                from obj in entities
             where obj.IsExistComponent<T>()
             select obj as E;
 
@@ -150,7 +150,7 @@ namespace GDG.ECS
             if (entities == null)
                 return SystemHandle<E,T1,T2>.None;;
             var result =
-            from obj in entities.AsParallel()
+            from obj in entities
             where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>()
             select obj as E;
 
@@ -177,7 +177,7 @@ namespace GDG.ECS
             if (entities == null)
                 return SystemHandle<E, T1, T2, T3>.None;
             var result =
-            from obj in entities.AsParallel()
+            from obj in entities
             where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>()
             select obj as E;
 
@@ -204,7 +204,7 @@ namespace GDG.ECS
             if (entities == null)
                 return SystemHandle<E, T1, T2, T3, T4>.None;
             var result =
-            from obj in entities.AsParallel()
+            from obj in entities
             where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>()
             select obj as E;
 
@@ -231,7 +231,7 @@ namespace GDG.ECS
             if (entities == null)
                 return SystemHandle<E, T1, T2, T3, T4, T5>.None;
             var result =
-            from obj in entities.AsParallel()
+            from obj in entities
             where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>()
             select obj as E;
 
@@ -258,7 +258,7 @@ namespace GDG.ECS
             if (entities == null)
                 return SystemHandle<E, T1, T2, T3, T4, T5, T6>.None;
             var result =
-            from obj in entities.AsParallel()
+            from obj in entities
             where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>() && obj.IsExistComponent<T6>()
             select obj as E;
 
@@ -285,7 +285,7 @@ namespace GDG.ECS
             if (entities == null)
                 return SystemHandle<E, T1, T2, T3, T4, T5, T6, T7>.None;
             var result =
-            from obj in entities.AsParallel()
+            from obj in entities
             where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>() && obj.IsExistComponent<T6>() && obj.IsExistComponent<T7>()
             select obj as E;
 
@@ -312,7 +312,7 @@ namespace GDG.ECS
             if (entities == null)
                 return SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8>.None;
             var result =
-            from obj in entities.AsParallel()
+            from obj in entities
             where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>() && obj.IsExistComponent<T6>() && obj.IsExistComponent<T7>() && obj.IsExistComponent<T8>()
             select obj as E;
 

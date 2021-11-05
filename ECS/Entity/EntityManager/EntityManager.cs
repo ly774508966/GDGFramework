@@ -175,7 +175,7 @@ namespace GDG.ECS
                 else if(rename!=null)
                     gameObject.name = rename;
             }
-            entity.GetComponent<GameObjectComponent>().gameObject = gameObject;
+            entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = gameObject; });
             entity.Name = gameObject.name;
             return entity;
         }
@@ -212,13 +212,13 @@ namespace GDG.ECS
 
                 if (res is GameObject gameObject)
                 {
-                    entity.GetComponent<GameObjectComponent>().gameObject = GameObject.Instantiate(gameObject);
+                    entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = GameObject.Instantiate(gameObject); });
                     if (rename != null)
-                        entity.GetComponent<GameObjectComponent>().gameObject.name = rename;
+                        entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject.name = rename; });
                 }
 
                 entity.Name = res.name;
-                entity.GetComponent<AssetComponent>().asset = res;
+                entity.SetComponentData<AssetComponent>((Asset) => { Asset.asset = res; });
             }
             return entity;
         }
@@ -249,12 +249,12 @@ namespace GDG.ECS
 
                 if (asset is GameObject gameObject)
                 {
-                    entity.GetComponent<GameObjectComponent>().gameObject = gameObject;
+                     entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = GameObject.Instantiate(gameObject); });
                     if (rename != null)
-                        entity.GetComponent<GameObjectComponent>().gameObject.name = rename;
+                        entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject.name = rename; });
                 }
                 entity.Name = asset.name;
-                entity.GetComponent<AssetComponent>().asset = asset;
+                entity.SetComponentData<AssetComponent>((Asset) => { Asset.asset = asset; });
             }
             return entity;
         }

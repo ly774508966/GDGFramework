@@ -18,7 +18,7 @@ namespace GDG.ECS
     public delegate void SystemCallback<E, T1, T2, T3, T4, T5, T6>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent;
     public delegate void SystemCallback<E, T1, T2, T3, T4, T5, T6, T7>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6, T7 c7) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent;
     public delegate void SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8>(E entity, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6, T7 c7, T8 c8) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent;
-    public abstract class AbsSystemHandle<E> : IExcutable where E : Entity
+    public abstract class SystemHandleBase<E> : IExcutable where E : Entity
     {
         internal IEnumerable<E> result;
         internal ExcuteInfo excuteInfo = new ExcuteInfo();
@@ -43,6 +43,13 @@ namespace GDG.ECS
                     _excuteInfo = excuteInfo;
                     system.m_SelectId2ExcuteInfo.Add(excuteInfo.selectId, _excuteInfo);
                 }
+
+                if (system.m_Index2ExcuteInfoListMapping.TryGetValue(entity.Index,out List<ExcuteInfo> checkList))
+                {
+                    if(checkList.Contains(_excuteInfo))
+                        return;
+                }
+                
                 //检查是否注册了ExcuteInfo列表
                 if (!system.m_ExcuteInfo2EntityListMapping.TryGetValue(_excuteInfo, out List<ulong> indexList))
                 {
@@ -65,37 +72,51 @@ namespace GDG.ECS
                 //是否存在事件
                 if (!string.IsNullOrEmpty(_excuteInfo.eventName))
                 {
-                    //检查事件是否被注册了
-                    if (!_excuteInfo.isEventRegister && _excuteInfo.excuteTime > GDGTools.Timer.CurrentTime)
+                    UnityAction action = null;
+                    action = () =>
                     {
-                        _excuteInfo.isEventRegister = true;
-                        EventManager.Instance.AddActionListener(_excuteInfo.eventName, () =>
+                        if(!entity.IsActived)
                         {
+                            GDGTools.EventCenter.RemoveActionListener(_excuteInfo.eventName, action);
+                            system.m_Index2ExcuteInfoListMapping.Remove(entity.Index);
+                            system.m_ExcuteInfo2EntityListMapping[_excuteInfo].Remove(entity.Index);
+                        }
+                        else
                             callback();
-                            _excuteInfo.isEventRegister = false;
-                        }, true);
-                    }
-                    else
-                        return;
+                    };
+                    EventManager.Instance.AddActionListener(_excuteInfo.eventName, action);
                 }
                 //是否注册了延迟时间
-                if (!_excuteInfo.isTimeRegister && _excuteInfo.excuteTime != double.MaxValue)
+                if (_excuteInfo.excuteTime != double.MaxValue)
                 {
-                    _excuteInfo.isTimeRegister = true;
-                    GDGTools.Timer.DelayTimeExcute(_excuteInfo.delayTime, () =>
+                    ulong taskIndex = 0;
+                    taskIndex = GDGTools.Timer.DelayTimeExcute(_excuteInfo.delayTime,0, () =>
                     {
-                        callback();
-                        _excuteInfo.isTimeRegister = false;
+                        
+                        if(!entity.IsActived)
+                        {
+                            GDGTools.Timer.RemoveTask(taskIndex);
+                            system.m_Index2ExcuteInfoListMapping.Remove(entity.Index);
+                            system.m_ExcuteInfo2EntityListMapping[_excuteInfo].Remove(entity.Index);
+                        }
+                        else
+                            callback();
                     });
                 }
                 //是否注册了延迟帧
-                if (!_excuteInfo.isFrameRegister && _excuteInfo.excuteFrame != ulong.MaxValue)
+                if (_excuteInfo.excuteFrame != ulong.MaxValue)
                 {
-                    _excuteInfo.isFrameRegister = true;
-                    GDGTools.Timer.DelayFrameExcute(_excuteInfo.delayFrame, () =>
+                    ulong taskIndex = 0;
+                    taskIndex = GDGTools.Timer.DelayFrameExcute(_excuteInfo.delayFrame,0, () =>
                     {
-                        callback();
-                        _excuteInfo.isFrameRegister = false;
+                        if(!entity.IsActived)
+                        {
+                            GDGTools.Timer.RemoveTask(taskIndex);
+                            system.m_Index2ExcuteInfoListMapping.Remove(entity.Index);
+                            system.m_ExcuteInfo2EntityListMapping[_excuteInfo].Remove(entity.Index);
+                        }
+                        else
+                            callback();
                     });
                 }
             }
@@ -108,7 +129,7 @@ namespace GDG.ECS
         }
         internal static void CallbackExcute<E, T>(this E entity, ExcuteInfo excuteInfo, ISystem system, SystemCallback<E, T> callback, T t) where E : Entity where T : class, IComponent
         {
-            CallbackExcute(entity, excuteInfo, system, () => { callback(entity,t); });callback(entity, t);
+            CallbackExcute(entity, excuteInfo, system, () => { callback(entity,t); });
         }
         internal static void CallbackExcute<E, T1, T2>(this E entity, ExcuteInfo excuteInfo, ISystem system, SystemCallback<E, T1, T2> callback, T1 t1, T2 t2) where E : Entity where T1 : class, IComponent where T2 : class, IComponent
         {
@@ -139,7 +160,7 @@ namespace GDG.ECS
             CallbackExcute(entity, excuteInfo, system, () => { callback(entity,t1,t2,t3,t4,t5,t6,t7,t8); });
         }
     }
-    public class SystemHandle<E> : AbsSystemHandle<E> where E : Entity
+    public class SystemHandle<E> : SystemHandleBase<E> where E : Entity
     {
         public static SystemHandle<E> None = new SystemHandle<E>() { };
         public SystemCallback<E> callback;
@@ -153,9 +174,10 @@ namespace GDG.ECS
             {
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback);
             }
+            
         }
     }
-    public class SystemHandle<E, T> : AbsSystemHandle<E> where E : Entity where T : class, IComponent
+    public class SystemHandle<E, T> : SystemHandleBase<E> where E : Entity where T : class, IComponent
     {
         public static SystemHandle<E, T> None = new SystemHandle<E, T>() { };
         public SystemCallback<E, T> callback;
@@ -175,11 +197,11 @@ namespace GDG.ECS
                         break;
                     }
                 }
-
             }
+            
         }
     }
-    public class SystemHandle<E, T1, T2> : AbsSystemHandle<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent
+    public class SystemHandle<E, T1, T2> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent
     {
         public static SystemHandle<E, T1, T2> None = new SystemHandle<E, T1, T2>() { };
         public SystemCallback<E, T1, T2> callback;
@@ -200,10 +222,10 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2);
             }
-
+            
         }
     }
-    public class SystemHandle<E, T1, T2, T3> : AbsSystemHandle<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
+    public class SystemHandle<E, T1, T2, T3> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
     {
         public static SystemHandle<E, T1, T2, T3> None = new SystemHandle<E, T1, T2, T3>() { };
         public SystemCallback<E, T1, T2, T3> callback;
@@ -226,9 +248,10 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3);
             }
+            
         }
     }
-    public class SystemHandle<E, T1, T2, T3, T4> : AbsSystemHandle<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
+    public class SystemHandle<E, T1, T2, T3, T4> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
     {
         public static SystemHandle<E, T1, T2, T3, T4> None = new SystemHandle<E, T1, T2, T3, T4>() { };
         public SystemCallback<E, T1, T2, T3, T4> callback;
@@ -253,9 +276,10 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3, t4);
             }
+            
         }
     }
-    public class SystemHandle<E, T1, T2, T3, T4, T5> : AbsSystemHandle<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
+    public class SystemHandle<E, T1, T2, T3, T4, T5> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
     {
         public static SystemHandle<E, T1, T2, T3, T4, T5> None = new SystemHandle<E, T1, T2, T3, T4, T5>() { };
         public SystemCallback<E, T1, T2, T3, T4, T5> callback;
@@ -282,9 +306,10 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3, t4, t5);
             }
+            
         }
     }
-    public class SystemHandle<E, T1, T2, T3, T4, T5, T6> : AbsSystemHandle<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
+    public class SystemHandle<E, T1, T2, T3, T4, T5, T6> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
     {
         public static SystemHandle<E, T1, T2, T3, T4, T5, T6> None = new SystemHandle<E, T1, T2, T3, T4, T5, T6>() { };
         public SystemCallback<E, T1, T2, T3, T4, T5, T6> callback;
@@ -313,9 +338,10 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3, t4, t5, t6);
             }
+            
         }
     }
-    public class SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> : AbsSystemHandle<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
+    public class SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
     {
         public static SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> None = new SystemHandle<E, T1, T2, T3, T4, T5, T6, T7>() { };
         public SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback;
@@ -346,9 +372,10 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3, t4, t5, t6, t7);
             }
+            
         }
     }
-    public class SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> : AbsSystemHandle<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
+    public class SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
     {
         public static SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> None = new SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8>() { };
         public SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback;
@@ -379,6 +406,7 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3, t4, t5, t6, t7, t8);
             }
+            
         }
     }
 }

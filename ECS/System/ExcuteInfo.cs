@@ -14,8 +14,5 @@ namespace GDG.ECS
         public ushort delayFrame = 0;
         public double delayTime = 0;
         public string eventName;
-        public bool isEventRegister = false;
-        public bool isFrameRegister = false;
-        public bool isTimeRegister = false;
     }
 }
