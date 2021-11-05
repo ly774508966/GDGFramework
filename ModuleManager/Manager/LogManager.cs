@@ -192,7 +192,7 @@ namespace GDG.ModuleManager
             if (!EnableConsoleLog || !EnableLog)
                 return;
             var info = MessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
-            Debug.Log(string.Format("<color=#E2B652>{0}</color>", info));
+            Debug.LogWarning(string.Format("<color=#E2B652>{0}</color>", info));
         }
         public void LogError(
             object message,
@@ -204,7 +204,7 @@ namespace GDG.ModuleManager
             var info = MessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
 
             if (LogErrorOrThrowException && EnableLog && EnableConsoleLog)
-                Debug.Log(string.Format("<color=#C52252>{0}</color>", info));
+                Debug.LogError(string.Format("<color=#FF534A>{0}</color>", info));
             else
                 throw new CustomErrorException(info.ToString(), tag, invoker, callerFilePath, callerLineNumber);
         }
