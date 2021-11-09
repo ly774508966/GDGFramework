@@ -168,13 +168,11 @@ namespace GDG.ECS
         {
             if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count()==0 )
                 return;
-            
-            
             for (int index = 0; index < result.Count();index++)
             {
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback);
             }
-            
+            ObjectPool.Instance.Push<SystemHandle<E>>(this);
         }
     }
     public class SystemHandle<E, T> : SystemHandleBase<E> where E : Entity where T : class, IComponent
@@ -198,7 +196,7 @@ namespace GDG.ECS
                     }
                 }
             }
-            
+            ObjectPool.Instance.Push<SystemHandle<E,T>>(this);
         }
     }
     public class SystemHandle<E, T1, T2> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent
@@ -222,7 +220,7 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2);
             }
-            
+            ObjectPool.Instance.Push<SystemHandle<E,T1,T2>>(this);
         }
     }
     public class SystemHandle<E, T1, T2, T3> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
@@ -248,7 +246,7 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3);
             }
-            
+            ObjectPool.Instance.Push<SystemHandle<E,T1,T2,T3>>(this);
         }
     }
     public class SystemHandle<E, T1, T2, T3, T4> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
@@ -276,7 +274,7 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3, t4);
             }
-            
+            ObjectPool.Instance.Push<SystemHandle<E,T1,T2,T3,T4>>(this);
         }
     }
     public class SystemHandle<E, T1, T2, T3, T4, T5> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
@@ -306,7 +304,7 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3, t4, t5);
             }
-            
+            ObjectPool.Instance.Push<SystemHandle<E,T1,T2,T3,T4,T5>>(this);
         }
     }
     public class SystemHandle<E, T1, T2, T3, T4, T5, T6> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
@@ -338,7 +336,7 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3, t4, t5, t6);
             }
-            
+            ObjectPool.Instance.Push<SystemHandle<E,T1,T2,T3,T4,T5,T6>>(this);
         }
     }
     public class SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
@@ -372,7 +370,7 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3, t4, t5, t6, t7);
             }
-            
+            ObjectPool.Instance.Push<SystemHandle<E,T1,T2,T3,T4,T5,T6,T7>>(this);
         }
     }
     public class SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
@@ -406,7 +404,7 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3, t4, t5, t6, t7, t8);
             }
-            
+            ObjectPool.Instance.Push<SystemHandle<E,T1,T2,T3,T4,T5,T6,T7,T8>>(this);
         }
     }
 }
