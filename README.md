@@ -121,6 +121,10 @@ GDGFramework 内置了以下模块：
             }
         }
         ```
+    * ### 与 Unity 原生Mono组件的混合开发
+
+        当场景中的 GameObject 被加上一个`GameObjectToEntity` Mono组件时，它就成为一个挂载有 `GameObjectComponent`组件的实体，你可以通过给它加上一个代理（继承至`IEntityProxy`的 MonoBehaviour）来为其增加额外的ECS组件。
+
 * ## GDGTools 常用工具模块
     
     GDGTools 是一个静态工具类，内置了以下常用工具模块：
