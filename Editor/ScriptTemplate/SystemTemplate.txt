@@ -4,7 +4,6 @@ using UnityEngine;
 using GDG.ECS;
 using GDG.Utils;
 using GDG.Async;
-
 public class #SCRIPTNAME# : SystemBase<#SCRIPTNAME#>
 {
     public override void OnStart()

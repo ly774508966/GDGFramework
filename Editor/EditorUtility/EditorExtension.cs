@@ -99,6 +99,11 @@ namespace GDG.Editor
         {
             CreateCshapScriptFromTemplate("IInterface.cs", TemplatePath + "/InterfaceTemplate.txt");
         }
+        [MenuItem("Assets/Create/Enum", false, 32)]
+        private static void CreateEnum()
+        {
+            CreateCshapScriptFromTemplate("TestType.cs", TemplatePath + "/EnumTemplate.txt");
+        }
         #endregion
     }
 }

@@ -54,4 +54,36 @@ namespace GDG.ModuleManager
             }
 		}
     }
+	public class ObjectPool<T> : AbsLazySingleton<ObjectPool<T>> where T:new()
+	{
+        private Stack<T> objStack;
+        public T Pop()
+		{
+
+			if(objStack.Count == 0)
+			{
+				return new T();
+			}
+			else
+			{
+				return objStack.Pop();
+			}
+
+		}
+		public void Push(T value)
+		{
+            objStack.Push(value);
+		}
+		public void Clear()
+		{
+			foreach(var item in objStack )
+			{
+				if(item is IDisposable disposable)
+				{
+					disposable.Dispose();
+				}
+			}
+			objStack.Clear();
+		}
+    }
 }

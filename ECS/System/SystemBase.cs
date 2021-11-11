@@ -87,7 +87,7 @@ namespace GDG.ECS
         #region E
         private SystemHandle<E> AssembleSystemHandle<E>(IEnumerable<E> queryResult, SystemCallback<E> callback) where E : Entity
         {
-            SystemHandle<E> handle = ObjectPool.Instance.Pop<SystemHandle<E>>();
+            SystemHandle<E> handle = ObjectPool<SystemHandle<E>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
@@ -112,7 +112,7 @@ namespace GDG.ECS
         #region E,T
         private SystemHandle<E, T> AssembleSystemHandle<E, T>(IEnumerable<E> queryResult, SystemCallback<E, T> callback) where E : Entity where T : class, IComponent
         {
-            SystemHandle<E, T> handle = ObjectPool.Instance.Pop<SystemHandle<E,T>>();
+            SystemHandle<E, T> handle = ObjectPool<SystemHandle<E,T>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
@@ -139,7 +139,7 @@ namespace GDG.ECS
         #region E,T1,T2
         private SystemHandle<E, T1, T2> AssembleSystemHandle<E, T1, T2>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent
         {
-            SystemHandle<E, T1, T2> handle = ObjectPool.Instance.Pop<SystemHandle<E,T1,T2>>();
+            SystemHandle<E, T1, T2> handle = ObjectPool<SystemHandle<E,T1,T2>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
@@ -166,7 +166,7 @@ namespace GDG.ECS
         #region E,T1,T2,T3
         private SystemHandle<E, T1, T2, T3> AssembleSystemHandle<E, T1, T2, T3>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
         {
-            SystemHandle<E, T1, T2, T3> handle = ObjectPool.Instance.Pop<SystemHandle<E,T1,T2,T3>>();
+            SystemHandle<E, T1, T2, T3> handle = ObjectPool<SystemHandle<E,T1,T2,T3>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
@@ -193,7 +193,7 @@ namespace GDG.ECS
         #region E,T1,T2,T3,T4
         private SystemHandle<E, T1, T2, T3, T4> AssembleSystemHandle<E, T1, T2, T3, T4>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3, T4> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
         {
-            SystemHandle<E, T1, T2, T3, T4> handle = ObjectPool.Instance.Pop<SystemHandle<E,T1,T2,T3,T4>>();
+            SystemHandle<E, T1, T2, T3, T4> handle = ObjectPool<SystemHandle<E,T1,T2,T3,T4>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
@@ -220,7 +220,7 @@ namespace GDG.ECS
         #region E,T1,T2,T3,T4,T5
         private SystemHandle<E, T1, T2, T3, T4, T5> AssembleSystemHandle<E, T1, T2, T3, T4, T5>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3, T4, T5> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
         {
-            SystemHandle<E, T1, T2, T3, T4, T5> handle = ObjectPool.Instance.Pop<SystemHandle<E,T1,T2,T3,T4,T5>>();
+            SystemHandle<E, T1, T2, T3, T4, T5> handle = ObjectPool<SystemHandle<E,T1,T2,T3,T4,T5>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
@@ -247,7 +247,7 @@ namespace GDG.ECS
         #region E,T1,T2,T3,T4,T5,T6
         private SystemHandle<E, T1, T2, T3, T4, T5, T6> AssembleSystemHandle<E, T1, T2, T3, T4, T5, T6>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3, T4, T5, T6> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
         {
-            SystemHandle<E, T1, T2, T3, T4, T5, T6> handle = ObjectPool.Instance.Pop<SystemHandle<E,T1,T2,T3,T4,T5,T6>>();
+            SystemHandle<E, T1, T2, T3, T4, T5, T6> handle = ObjectPool<SystemHandle<E,T1,T2,T3,T4,T5,T6>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
@@ -274,7 +274,7 @@ namespace GDG.ECS
         #region E,T1,T2,T3,T4,T5,T6,T7
         private SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> AssembleSystemHandle<E, T1, T2, T3, T4, T5, T6, T7>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
         {
-            SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> handle = ObjectPool.Instance.Pop<SystemHandle<E,T1,T2,T3,T4,T5,T6,T7>>();
+            SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> handle = ObjectPool<SystemHandle<E,T1,T2,T3,T4,T5,T6,T7>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
@@ -301,7 +301,7 @@ namespace GDG.ECS
         #region E,T1,T2,T3,T4,T5,T6,T7,T8
         private SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> AssembleSystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
         {
-            SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> handle = ObjectPool.Instance.Pop<SystemHandle<E,T1,T2,T3,T4,T5,T6,T7,T8>>();
+            SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> handle = ObjectPool<SystemHandle<E,T1,T2,T3,T4,T5,T6,T7,T8>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;

@@ -324,7 +324,7 @@ public class EntitiesViewer : EditorWindow
                     
                     GUILayout.FlexibleSpace();
                     GUI.color = childColor;
-                    GUILayout.Label(value.ToString(), GDGEditorGUI.LargeLabelStyle);
+                    GUILayout.Label(value == null?"Null":value.ToString(), GDGEditorGUI.LargeLabelStyle);
                     GUI.color = beginColor;
                     GUILayout.Space(10);
                 }
@@ -354,7 +354,7 @@ public class EntitiesViewer : EditorWindow
 
                             GUILayout.Label($"{nameof(item)}: ");
                             GUILayout.FlexibleSpace();
-                            GUILayout.Label(item.ToString());
+                            GUILayout.Label(item == null?"Null":item.ToString());
 
                             GUILayout.Space(10);
                         }
