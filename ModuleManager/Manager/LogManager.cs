@@ -10,7 +10,7 @@ using GDG.Utils;
 using UnityEngine;
 namespace GDG.ModuleManager
 {
-    public class LogManager : AbsSingleton<LogManager>
+    public class LogManager : Singleton<LogManager>
     {
         private static string FilePath { get => $"{ UserFileManager.Path}/Logger/UnityLogger.txt"; }
         DataSet ds;

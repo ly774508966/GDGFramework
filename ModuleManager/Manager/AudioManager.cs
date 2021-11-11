@@ -7,7 +7,7 @@ using UnityEngine.Events;
 
 namespace GDG.ModuleManager
 {
-    public class AudioManager : AbsLazySingleton<AudioManager>
+    public class AudioManager : LazySingleton<AudioManager>
     {
         public AudioManager()
         {

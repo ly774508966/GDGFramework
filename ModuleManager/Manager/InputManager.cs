@@ -75,7 +75,7 @@ namespace GDG.ModuleManager
         }
     }
     #endregion
-    public class InputManager : AbsLazySingleton<InputManager>
+    public class InputManager : LazySingleton<InputManager>
     {
         private readonly List<Key> m_keyList = new List<Key>();
         private readonly static double m_DoubleClickInterval = 280;//双击时间间隔（毫秒）

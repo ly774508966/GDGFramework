@@ -7,7 +7,7 @@ using UnityEngine;
 namespace GDG.ModuleManager
 {
 
-    public class MessageManager : AbsLazySingleton<MessageManager>
+    public class MessageManager : LazySingleton<MessageManager>
     {
         private  Dictionary<string, List<MessageObserver>> m_MessageName2observerMapping = new Dictionary<string, List<MessageObserver>>();
         private readonly Dictionary<IMessageSource, List<MessageObserver>> m_MessageSource2observerMapping = new Dictionary<IMessageSource, List<MessageObserver>>();

@@ -19,7 +19,6 @@ namespace GDG.Utils
              });
             var gameObject = grid.GetComponent<GameObjectComponent>().gameObject;
             gameObject.transform.SetParent(ECS.World.monoWorld.transform);
-
 #endif
             bool isClass = typeof(T).IsClass;
             for (int i = 0; i < gridArray.GetLength(0); i++)

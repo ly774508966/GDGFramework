@@ -7,7 +7,7 @@ using System;
 
 namespace GDG.ModuleManager
 {
-    public class PanelManager : AbsLazySingleton<PanelManager>
+    public class PanelManager : LazySingleton<PanelManager>
     {
         private Dictionary<Type, IPanel> panelDic = new Dictionary<Type, IPanel>();
         private Stack<IPanel> panelStack = new Stack<IPanel>();

@@ -4,7 +4,7 @@ using GDG.Utils;
 
 namespace GDG.ModuleManager
 {
-	public class ObjectPool : AbsLazySingleton<ObjectPool>
+	public class ObjectPool : LazySingleton<ObjectPool>
 	{
         private Dictionary<Type, Stack<object>> poolDic = new Dictionary<Type, Stack<object>>();
 		public T Pop<T>() where T:new()
@@ -54,9 +54,9 @@ namespace GDG.ModuleManager
             }
 		}
     }
-	public class ObjectPool<T> : AbsLazySingleton<ObjectPool<T>> where T:new()
+	public class ObjectPool<T> : LazySingleton<ObjectPool<T>> where T:new()
 	{
-        private Stack<T> objStack;
+        private Stack<T> objStack = new Stack<T>();
         public T Pop()
 		{
 

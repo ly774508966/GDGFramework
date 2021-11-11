@@ -8,7 +8,7 @@ using GDG.ModuleManager;
 
 namespace GDG.AI
 {
-    internal class FlowFieldManager : AbsLazySingleton<FlowFieldManager>
+    internal class FlowFieldManager : LazySingleton<FlowFieldManager>
     {
         private readonly Dictionary<string, FlowField> m_Name2FlowFieldMapping = new Dictionary<string, FlowField>();
 

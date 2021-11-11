@@ -27,14 +27,12 @@ namespace GDG.Utils
                         gridArray[i, j] = Activator.CreateInstance<T>();
                     else
                         gridArray[i, j] = defaultValue;
-
-                    gridArray[i, j] = defaultValue;
 # if EDITOR_DEBUG
                     gridTextArray[i, j] = GDGTools.CreateWorldText(
                         out GameObject obj, 
                         gridArray[i, j].ToString(), 
                         35, 
-                        GetWorldPositionXY(i, j) + new Vector3(cellSize, cellSize) * 0.5f,
+                        GetWorldPositionXY(i, j) + new Vector3(cellSize, cellSize, 0) * 0.5f,
                         gameObject.transform,
                         (entity)=>{
                             this.textEntityList.Add(entity);

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace GDG.ModuleManager
 {
-    public abstract class AbsSingleton<T> where T : new()
+    public abstract class Singleton<T> where T : new()
     {
         private static  T instance;
         private static object syncRootObject = new object();

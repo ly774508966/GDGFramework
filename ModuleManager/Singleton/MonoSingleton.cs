@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace GDG.ModuleManager
 {
-    public abstract class AbsMonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
+    public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
     {
         private static volatile T instance;
         private static object initLock = new object();

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using GDG.ModuleManager;
 using UnityEngine;
 
-public class PersistManager : AbsLazySingleton<PersistManager>
+public class PersistManager : LazySingleton<PersistManager>
 {
         /// <summary>
         /// 

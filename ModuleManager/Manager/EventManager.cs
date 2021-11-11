@@ -6,7 +6,7 @@ using UnityEngine.Events;
 
 namespace GDG.ModuleManager
 {
-    public class EventManager : AbsLazySingleton<EventManager>
+    public class EventManager : LazySingleton<EventManager>
     {
         #region EventHandle
         private interface IEventHandle { }

@@ -7,7 +7,7 @@ using System;
 
 namespace GDG.ECS
 {
-    public class BaseWorld : AbsSingleton<BaseWorld>
+    public class BaseWorld : Singleton<BaseWorld>
     {
         public uint WorldID = 0;
         public string WorldName = "World";

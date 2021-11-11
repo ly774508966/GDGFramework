@@ -13,7 +13,7 @@ namespace GDG.ModuleManager
     /// IOS：IOS</param>
     /// PC：PC</param>
     /// </summary>
-    public class AssetManager : AbsLazySingleton<AssetManager>
+    public class AssetManager : LazySingleton<AssetManager>
     {
         //AB包文件夹路径
         public string Path { get => Application.streamingAssetsPath + "/"; }

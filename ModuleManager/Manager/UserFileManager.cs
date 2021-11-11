@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace GDG.ModuleManager
 {
-    internal class UserFileManager : AbsLazySingleton<UserFileManager>
+    internal class UserFileManager : LazySingleton<UserFileManager>
     {
         public static string Path
         {

@@ -8,7 +8,7 @@ using System;
 
 namespace GDG.ModuleManager
 {
-    public class ResourcesManager : AbsLazySingleton<ResourcesManager>
+    public class ResourcesManager : LazySingleton<ResourcesManager>
     {
         public T LoadResource<T>(string prefabpath) where T : Object
         {

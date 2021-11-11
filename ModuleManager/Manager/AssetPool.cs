@@ -6,7 +6,7 @@ using UnityEngine.Events;
 
 namespace GDG.ModuleManager
 {
-    public class AssetPool : AbsLazySingleton<AssetPool>
+    public class AssetPool : LazySingleton<AssetPool>
     {
         //对象池字典
         private Dictionary<string, IPoolList> PoolDic = new Dictionary<string, IPoolList>();

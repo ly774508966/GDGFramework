@@ -44,7 +44,7 @@ namespace GDG.ModuleManager
             this.loopTimes = loopTimes;
         }
     }
-    public class TimerManager:AbsLazySingleton<TimerManager>
+    public class TimerManager:LazySingleton<TimerManager>
     {
         private ulong maxIndex = 0;
         private static readonly object locker = new object();
