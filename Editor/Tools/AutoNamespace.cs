@@ -43,8 +43,12 @@ namespace GDG.Editor
                 using(new EditorGUILayout.HorizontalScope())
                 {
                     GUILayout.FlexibleSpace();
-                    if(GUILayout.Button("Apply",GUILayout.MinWidth(100f)) && !string.IsNullOrEmpty(tempNamespace))
+                    if(GUILayout.Button("Apply",GUILayout.MinWidth(100f)))
                     {
+                        if (!string.IsNullOrEmpty(tempNamespace))
+                        {
+                            CurrentNamespace = "";
+                        }
                         CurrentNamespace = tempNamespace;
                         EditorPrefs.SetString("CurrentNamespace", CurrentNamespace);
                         EditorPrefs.SetBool("EnableAutoNamespace", enable);

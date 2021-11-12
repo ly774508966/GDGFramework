@@ -148,7 +148,7 @@ GDGFramework 内置了以下模块：
         用于对Resources下 `UnityEngine.Object` 的加载与实例化。
     * ### AssetLoder AB包资源加载器
         用于对AB包中资源的加载与实例化。
-    * ### PanelController UI加载器
+    * ### PanelController UI管理器
         UI基于Panel管理，Panel需要继承至BasePanel，自动绑定了UI事件。支持对 Panel 暂停、重启、销毁、创建、隐藏、取消隐藏。
 
 * ## 日志打印模块
