@@ -13,7 +13,7 @@ namespace GDG.RTS
 	
 	public class DeleteMissingScripts
 	{
-	    [MenuItem("GDGFramework/Tools/Remove Missing Script",false,4)]
+	    [MenuItem("GDGFramework/Tools/Remove Missing Scripts",false,4)]
 	    static public void RemoveMissComponent()
 	    {
 	        var path = Application.dataPath;

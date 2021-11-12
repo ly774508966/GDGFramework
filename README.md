@@ -5,12 +5,13 @@ GDGFramework 是一个基于Unity引擎的游戏框架，内置了简易实用�
 GDGFramework 内置了以下模块：
 
 * ## ECS 实体组件系统
-    
+
     基于对象池实现，基本无GC。用法与 DOTS-ECS 类似，支持在 OnUpdate 中进行事件触发时、间隔时间时、间隔帧时对实体进行遍历和过滤。此外还设置了可视化的 EntitiesViewer，用于查看当前正在运行的系统、实体的状态、实体组件的详细信息。
 
     * ### Entity
-        
+
         每一个游戏对象（不仅仅是GameObject）都可以作为一个实体（Entity）。实体意味着它本身并不代表任何东西，只要被赋予了组件后，它才能拥有一些功能（可以去做什么），而系统则赋予实体具体的行为（怎么去做）。它的结构如下：
+
         ```C#
         public class Entity : IEquatable<Entity>
         {
@@ -148,15 +149,32 @@ GDGFramework 内置了以下模块：
     * ### AssetLoder AB包资源加载器
         用于对AB包中资源的加载与实例化。
     * ### PanelControl UI加载器
-        （由于打包 UnityEngine.UI 时出了点问题，这一项暂未被加入到发布版本中）UI基于Panel管理，Panel需要继承至BasePanel，自动绑定了UI事件。支持对 Panel 暂停、重启、销毁、创建、隐藏、取消隐藏。
+        UI基于Panel管理，Panel需要继承至BasePanel，自动绑定了UI事件。支持对 Panel 暂停、重启、销毁、创建、隐藏、取消隐藏。
+
+* ## 日志打印模块
+
+    支持为Log添加tag，方便过滤日志。内置两种模式：Game下的日志（通过`this.log`打印）、Console下日志（通过`Log.Info`打印）。包含了 Info、Sucess、Warning、Error、Editor、Custom 几种风格的打印信息。可以在ProjectSetting选择是否将日志写入文件，在`User/Logger/UnityLogger.txt`中找到被写入的日志文件，可以用于将客户端打印信息上传到服务器。
 
 * ## Async 异步模块
 
-    * ## AsyncRunner 异步执行器
+    * ### AsyncRunner 异步执行器
         通过 `AsyncRunner.RunAsync` 来开启一个多线程任务，支持取消令牌的使用。通过`AsyncRunner.SyncToMainThread`来将多线程任务中 unity 原生 mono 组件的逻辑加入到主线程中执行。
 
-    * ## AsyncWaiter 异步等待器
+    * ### AsyncWaiter 异步等待器
         功能与协程类似，但是是基于多线程的，通过获取 `Current` 属性来获得每一次 yield return 的返回值。你可以通过实现 `IYieldInstruction` 接口来实现具体的等待类，用于告知等待器何时开始下一次迭代。
 
-    * ## AsyncWebRequest 异步网络请求
+    * ### AsyncWebRequest 异步网络请求
         用于异步下载网络资源，并且支持 Get 或者 Post 方法向服务器发送请求并获取响应数据。
+
+* ## 其它编辑器拓展工具
+
+    * ### Auto Namespace
+        用户可以通过设置自定义命名空间来在每一次的 .cs 脚本创建时自动加上。
+    * ### Persist Tools
+        支持 Json、Xml、Excel 数据表之间的转换
+    * ### Remove Missing Scripts
+        自动删除场景中以及Assets文件夹下所有 Miss 的脚本
+    * ### ProjectSetting
+        项目设置，包括音量、输入（支持Editor模式下添加键盘输入映射）、全局宏管理、日志管理
+    * ### EntitiesViewer
+        实时地查看 ECS 相关信息
