@@ -4,7 +4,10 @@ using UnityEngine;
 using GDG.ECS;
 using GDG.Utils;
 
-public interface ISetNameable
+namespace GDG.ECS
 {
-    void SetName(Entity entity);
+    public interface ISetNameable
+    {
+        void SetName(Entity entity);
+    }
 }

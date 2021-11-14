@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 
 public class EntitiesViewer : EditorWindow
 {
-    [MenuItem("GDGFramework/EntitiesViewer", false, 1)]
+    [MenuItem("GDGFramework/EntitiesViewer", false, 0)]
     static void CreateWindow()
     {
         EditorWindow.GetWindow<EntitiesViewer>(false, "EntitiesViewer", true);

@@ -12,7 +12,7 @@ namespace GDG.AI
     {
         private readonly Dictionary<string, FlowField> m_Name2FlowFieldMapping = new Dictionary<string, FlowField>();
 
-        public FlowField GenerateFlowField(string flowFieldName, Vector3 startPos, Vector3 endPos, float cellSize, string impassibleLayerName, int roughTerrainLayer = 0, GridType gridType = GridType.Grid3D, params (string, byte)[] roughTerrainLayerName_Cost)
+        internal FlowField GenerateFlowField(string flowFieldName, Vector3 startPos, Vector3 endPos, float cellSize, string impassibleLayerName, int roughTerrainLayer = 0, GridType gridType = GridType.Grid3D, params (string, byte)[] roughTerrainLayerName_Cost)
         {
             FlowField flowField;
             if (m_Name2FlowFieldMapping.TryGetValue(flowFieldName, out FlowField ff))
@@ -24,11 +24,10 @@ namespace GDG.AI
                 flowField = new FlowField(startPos, endPos, cellSize, gridType);
                 m_Name2FlowFieldMapping.Add(flowFieldName, flowField);
             }
-
-            flowField.GenarateCostField(impassibleLayerName, roughTerrainLayer, roughTerrainLayerName_Cost);
+            flowField?.GenarateCostField(impassibleLayerName, roughTerrainLayer, roughTerrainLayerName_Cost);
             return flowField;
         }
-        public FlowField GenerateFlowField(string flowFieldName, Vector3 startPos, Vector3 endPos, float cellSize, GridType gridType = GridType.Grid3D)
+        internal FlowField GenerateFlowField(string flowFieldName, Vector3 startPos, Vector3 endPos, float cellSize, GridType gridType = GridType.Grid3D)
         {
             FlowField flowField;
             if (m_Name2FlowFieldMapping.TryGetValue(flowFieldName, out FlowField ff))
@@ -40,9 +39,10 @@ namespace GDG.AI
                 flowField = new FlowField(startPos, endPos, cellSize, gridType);
                 m_Name2FlowFieldMapping.Add(flowFieldName, flowField);
             }
+            flowField?.GenarateCostField();
             return flowField;
         }
-        public FlowField GenerateFlowField(string flowFieldName, int width, int height, int cellSize, Vector3 localPosition, string impassibleLayerName, int roughTerrainLayer = 0, GridType gridType = GridType.Grid3D, params (string, byte)[] roughTerrainLayerName_Cost)
+        internal FlowField GenerateFlowField(string flowFieldName, int width, int height, int cellSize, Vector3 localPosition, string impassibleLayerName, int roughTerrainLayer = 0, GridType gridType = GridType.Grid3D, params (string, byte)[] roughTerrainLayerName_Cost)
         {
             FlowField flowField;
             if (m_Name2FlowFieldMapping.TryGetValue(flowFieldName, out FlowField ff))
@@ -54,13 +54,10 @@ namespace GDG.AI
                 flowField = new FlowField(width, height, localPosition, cellSize, gridType);
                 m_Name2FlowFieldMapping.Add(flowFieldName, flowField);
             }
-
-
-            flowField.GenarateCostField(impassibleLayerName, roughTerrainLayer, roughTerrainLayerName_Cost);
-
+            flowField?.GenarateCostField(impassibleLayerName, roughTerrainLayer, roughTerrainLayerName_Cost);
             return flowField;
         }
-        public FlowField GenerateFlowField(string flowFieldName, int width, int height, int cellSize, Vector3 localPosition, GridType gridType = GridType.Grid3D)
+        internal FlowField GenerateFlowField(string flowFieldName, int width, int height, int cellSize, Vector3 localPosition, GridType gridType = GridType.Grid3D)
         {
             FlowField flowField;
             if (m_Name2FlowFieldMapping.TryGetValue(flowFieldName, out FlowField ff))
@@ -72,9 +69,10 @@ namespace GDG.AI
                 flowField = new FlowField(width, height, localPosition, cellSize, gridType);
                 m_Name2FlowFieldMapping.Add(flowFieldName, flowField);
             }
+            flowField?.GenarateCostField();
             return flowField;
         }
-        public void DestoryFlowField(string flowFieldName)
+        internal void DestoryFlowField(string flowFieldName)
         {
             if (m_Name2FlowFieldMapping.TryGetValue(flowFieldName, out FlowField flowField))
             {
@@ -82,7 +80,7 @@ namespace GDG.AI
                 flowField.Dispose();
             }
         }
-        public void DestoryFlowField(FlowField flowField)
+        internal void DestoryFlowField(FlowField flowField)
         {
             for (int i = 0; i < m_Name2FlowFieldMapping.Values.Count; i++)
             {
@@ -93,7 +91,7 @@ namespace GDG.AI
                 }
             }
         }
-        public bool TryDestoryFlowField(string flowFieldName)
+        internal bool TryDestoryFlowField(string flowFieldName)
         {
             if (m_Name2FlowFieldMapping.TryGetValue(flowFieldName, out FlowField flowField))
             {
@@ -103,7 +101,7 @@ namespace GDG.AI
             }
             return false;
         }
-        public bool TryDestoryFlowField(FlowField flowField)
+        internal bool TryDestoryFlowField(FlowField flowField)
         {
             for (int i = 0; i < m_Name2FlowFieldMapping.Values.Count; i++)
             {
@@ -116,7 +114,7 @@ namespace GDG.AI
             }
             return false;
         }
-        public FlowField GetFlowField(string flowFieldName)
+        internal FlowField GetFlowField(string flowFieldName)
         {
             if (flowFieldName!=null && m_Name2FlowFieldMapping.TryGetValue(flowFieldName, out FlowField flowField))
             {
@@ -128,7 +126,7 @@ namespace GDG.AI
     }
     public class FlowFieldController
     {
-        public int FlowFieldCount { get => FlowFieldManager.Instance.FlowFieldCount; }
+        public static int FlowFieldCount { get => FlowFieldManager.Instance.FlowFieldCount; }
         public static FlowField GenerateFlowField(string flowFieldName, Vector3 startPos, Vector3 endPos, float cellSize, string impassibleLayerName, int roughTerrainLayer = 0, GridType gridType = GridType.Grid3D, params (string, byte)[] roughTerrainLayerName_Cost)
         {
             return FlowFieldManager.Instance.GenerateFlowField(flowFieldName, startPos, endPos, cellSize, impassibleLayerName, roughTerrainLayer, gridType, roughTerrainLayerName_Cost);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using GDG.ECS;
 using UnityEngine.SceneManagement;
+using GDG.Base;
 
 namespace GDG.Utils
 {

@@ -8,6 +8,7 @@ using System;
 using GDG.ModuleManager;
 using GDG.Utils;
 using UnityEngine.Events;
+using GDG.Base;
 
 namespace GDG.ECS
 {

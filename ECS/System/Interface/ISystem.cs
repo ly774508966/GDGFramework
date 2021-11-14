@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using GDG.Base;
 using UnityEngine;
 
 namespace GDG.ECS

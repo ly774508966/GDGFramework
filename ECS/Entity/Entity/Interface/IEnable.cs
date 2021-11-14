@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GDG.ECS
+namespace GDG.Base
 {
     public interface IEnable
     {

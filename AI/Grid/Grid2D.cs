@@ -2,12 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using GDG.ECS;
+using GDG.ModuleManager;
+using GDG.Utils;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace GDG.Utils
+namespace GDG.AI
 {
-    public class Grid2D<T> : Grid<T>
+    public class Grid2D<T> : GridBase<T>
     {
         public Grid2D(int width, int height, float cellSize, T defaultValue = default(T), Vector3 localPosition = default(Vector3), UnityAction<T,int,int,Vector3> i_j_localPos_Callback = null) : base(width, height, cellSize, defaultValue, localPosition,i_j_localPos_Callback)
         {
@@ -24,14 +26,14 @@ namespace GDG.Utils
                 for (int j = 0; j < gridArray.GetLength(1); j++)
                 {
                     if(isClass)
-                        gridArray[i, j] = Activator.CreateInstance<T>();
+                        gridArray[i, j] = ObjectPool<T>.Instance.Pop();
                     else
                         gridArray[i, j] = defaultValue;
 # if EDITOR_DEBUG
                     gridTextArray[i, j] = GDGTools.CreateWorldText(
                         out GameObject obj, 
                         gridArray[i, j].ToString(), 
-                        35, 
+                        fontSize, 
                         GetWorldPositionXY(i, j) + new Vector3(cellSize, cellSize, 0) * 0.5f,
                         gameObject.transform,
                         (entity)=>{
@@ -52,12 +54,12 @@ namespace GDG.Utils
         }
         public void SetValue(Vector3 worldPosition, T value)
         {
-            GetXZ(worldPosition, out int x, out int y);
+            GetXY(worldPosition, out int x, out int y);
             SetValue(x, y, value);
         }
         public T GetValue(Vector3 worldPosition)
         {
-            GetXZ(worldPosition, out int x, out int y);
+            GetXY(worldPosition, out int x, out int y);
             return GetValue(x, y);
         }
     }

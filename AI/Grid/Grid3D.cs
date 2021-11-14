@@ -2,12 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using GDG.ECS;
+using GDG.Utils;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace GDG.Utils
+namespace GDG.AI
 {
-    public class Grid3D<T> : Grid<T>
+    public class Grid3D<T> : GridBase<T>
     {
         public Grid3D(int width, int height, float cellSize, T defaultValue = default(T), Vector3 localPosition = default(Vector3),UnityAction<T,int,int,Vector3> i_j_localPos_Callback = null) : base(width, height, cellSize, defaultValue, localPosition,i_j_localPos_Callback)
         {
@@ -32,7 +33,7 @@ namespace GDG.Utils
                     gridTextArray[i, j] = GDGTools.CreateWorldText(
                         out GameObject obj,
                         gridArray[i, j].ToString(), 
-                        35, 
+                        fontSize, 
                         GetWorldPositionXZ(i, j) + new Vector3(cellSize, 0, cellSize) * 0.5f , 
                         gameObject.transform,
                         (entity)=>{

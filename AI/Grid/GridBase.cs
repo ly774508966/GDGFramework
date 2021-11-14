@@ -5,10 +5,11 @@ using GDG.ECS;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace GDG.Utils
+namespace GDG.AI
 {
-    public class Grid<T>
+    public class GridBase<T>
     {
+        public static int fontSize = 35;
         protected int width;
         protected int height;
         public T[,] gridArray;
@@ -17,16 +18,16 @@ namespace GDG.Utils
         public Vector3 localPosition;
         public List<Entity> textEntityList = new List<Entity>();
 
-        public Grid(int width, int height, float cellSize,T defaultValue,Vector3 localPosition,UnityAction<T,int,int,Vector3> i_j_localPos_Callback)
+        public GridBase(int width, int height, float cellSize,T defaultValue,Vector3 localPosition,UnityAction<T,int,int,Vector3> i_j_localPos_Callback)
         {
             this.width = width;
             this.height = height;
             this.cellSize = cellSize;
             this.localPosition = localPosition;
             gridArray = new T[this.width, this.height];
-#if EDITOR_DEBUG
+# if EDITOR_DEBUG
             gridTextArray = new TextMesh[width, height];
-#endif
+# endif
         }
         protected Vector3 GetWorldPositionXY(int x, int y) => new Vector3(x, y) * cellSize + localPosition;
         protected Vector3 GetWorldPositionXZ(int x, int z, int y = 0) => new Vector3(x, y, z) * cellSize + localPosition;
