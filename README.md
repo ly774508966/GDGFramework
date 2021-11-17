@@ -97,7 +97,7 @@ GDGFramework 内置了以下模块：
                 {
                     Log.Info("每隔5帧打印");
                 })
-                .ExcuteDelayFrame(5,3);//右边的参数为Select的Id号，下同	
+                .ExcuteDelayFrame(5,3);
             }
         }
         ```
@@ -165,6 +165,8 @@ GDGFramework 内置了以下模块：
 
     * ### AsyncWebRequest 异步网络请求
         用于异步下载网络资源，并且支持 Get 或者 Post 方法向服务器发送请求并获取响应数据。
+
+* ## FlowFieldController 
 
 * ## 其它编辑器拓展工具
 

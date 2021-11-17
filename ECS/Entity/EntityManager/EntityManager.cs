@@ -62,12 +62,18 @@ namespace GDG.ECS
             m_TypeId2ComponentTypeMapping.Add(componentTypes.TypeId, componentTypes);
             return componentTypes.TypeId;
         }
+        /// <summary>
+        /// 回收实体
+        /// </summary>
         public void RecycleEntity(Entity entity)
         {
             AddTypeId2EntityPoolMapping(entity.TypeId, out EntityPool entityPool, (pool) => { pool.PushEntity(entity); }, (pool) => { pool.PushEntity(entity); });
             m_ActivedEntityList.Remove(entity);
             BaseWorld.Instance.UpdateEntitiesOfSystems(m_ActivedEntityList);
         }
+        /// <summary>
+        /// 销毁实体
+        /// </summary>
         public void DestroyEntity(Entity entity)
         {
             entity.SetActive(false);
@@ -83,6 +89,9 @@ namespace GDG.ECS
             }
             entity.OnDestroy();
         }
+        /// <summary>
+        /// 销毁未激活的实体
+        /// </summary>
         public void ClearInactiveEntities()
         {
             foreach (var pool in m_TypeId2EntityPoolMapping.Values)
@@ -192,6 +201,14 @@ namespace GDG.ECS
         }
         #endregion
         #region CreateEntityFromResources
+        /// <summary>
+        /// 从Resources文件夹中创建实体
+        /// </summary>
+        /// <param name="componentTypes">组件类型</param>
+        /// <param name="path">资源所在的Resources下路径</param>
+        /// <param name="rename">重命名</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public Entity CreateEntityFromResources<T>(ComponentTypes componentTypes, string path, string rename = null) where T : UnityEngine.Object
         {
             if (componentTypes == null)
@@ -206,23 +223,28 @@ namespace GDG.ECS
 
             if (entity.Version == 1)
             {
-                T res = Resources.Load<T>(path);
-                Log.Info(res.name);
+                T res = AssetPool.Instance.Pop<T>(path);
                 if (rename != null)
                     res.name = rename;
 
                 if (res is GameObject gameObject)
                 {
-                    entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = GameObject.Instantiate(gameObject); });
+                    entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = gameObject; });
                     if (rename != null)
                         entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject.name = rename; });
                 }
-
                 entity.Name = res.name;
                 entity.SetComponentData<AssetComponent>((Asset) => { Asset.asset = res; });
             }
             return entity;
         }
+        /// <summary>
+        /// 从Resources文件夹中创建实体
+        /// </summary>
+        /// <param name="path">资源所在的Resources下路径</param>
+        /// <param name="rename">重命名</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public Entity CreateEntityFromResources<T>(string path, string rename = null) where T : UnityEngine.Object
         {
             return CreateEntityFromResources<T>(null, path, rename);
@@ -230,6 +252,17 @@ namespace GDG.ECS
 
         #endregion
         #region CreateEntityFromAssetBundle
+        /// <summary>
+        /// 从AB包中创建实体
+        /// </summary>
+        /// <param name="componentTypes">组件类型</param>
+        /// <param name="assetName">资源名</param>
+        /// <param name="bundleName">包名</param>
+        /// <param name="mainABName">主包名</param>
+        /// <param name="path">主包所在文件夹路径</param>
+        /// <param name="rename">重命名</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string assetName, string bundleName, string mainABName, string path, string rename) where T : UnityEngine.Object
         {
             if (componentTypes == null)
@@ -243,14 +276,14 @@ namespace GDG.ECS
             var entity = CreateEntity(componentTypes);
             if (entity.Version == 1)
             {
-                var asset = AssetManager.Instance.LoadAsset<T>(assetName, bundleName, path, mainABName);
+                var asset = AssetPool.Instance.Pop<T>(assetName, bundleName, path, mainABName);
 
                 if (rename != null)
                     asset.name = rename;
 
                 if (asset is GameObject gameObject)
                 {
-                     entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = GameObject.Instantiate(gameObject); });
+                     entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = gameObject; });
                     if (rename != null)
                         entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject.name = rename; });
                 }

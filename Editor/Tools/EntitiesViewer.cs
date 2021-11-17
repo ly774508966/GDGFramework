@@ -10,6 +10,7 @@ using GDG.Editor;
 using IComponent = GDG.ECS.IComponent;
 using System;
 using System.Runtime.InteropServices;
+using GDG.Utils;
 
 public class EntitiesViewer : EditorWindow
 {
@@ -263,7 +264,6 @@ public class EntitiesViewer : EditorWindow
                                 using (new GUILayout.HorizontalScope())
                                 {
                                     MemberInfoViewer<FieldInfo>(info);
-                                    //GUILayout.FlexibleSpace();
                                     GUILayout.Space(position.width / 1.5f);
                                 }
                                 GUILayout.Space(2);
@@ -308,8 +308,6 @@ public class EntitiesViewer : EditorWindow
             type = propertyInfo.PropertyType;
         }
 
-
-        
         using (new GUILayout.VerticalScope())
         {
             if (GDG.Utils.GDGTools.IsBlittable(value) || type == typeof(string) || type == typeof(char) || type == typeof(bool) || type.IsEnum)
@@ -328,6 +326,24 @@ public class EntitiesViewer : EditorWindow
                     GUI.color = beginColor;
                     GUILayout.Space(10);
                 }
+            }
+            else if (value is UnityEngine.Object obj)
+            {
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUI.color = TypeColor;
+                    GUILayout.Label($"[{type.Name}]  " , GDGEditorGUI.LargeLabelStyle);
+                    GUI.color = beginColor;
+                    GUILayout.Label($"{info.Name}: ", GDGEditorGUI.LargeLabelStyle);
+                    
+                    
+                    GUILayout.FlexibleSpace();
+                    GUI.color = childColor;
+                    var name = obj?.name;
+                    GUILayout.Label(name == null?"Null":name, GDGEditorGUI.LargeLabelStyle);
+                    GUI.color = beginColor;
+                    GUILayout.Space(10);
+                }                
             }
             else if (value is IEnumerable enumerable)
             {
@@ -370,7 +386,7 @@ public class EntitiesViewer : EditorWindow
 
                             GUILayout.Label($"{nameof(item)}: ");
                             GUILayout.FlexibleSpace();
-                            GUILayout.Label("[Invisible]");
+                            GUILayout.Label(item == null?"Null":item.ToString());
 
                             GUILayout.Space(10);
                         }
@@ -378,11 +394,27 @@ public class EntitiesViewer : EditorWindow
                 }
                 GUI.color = beginColor;
             }
+            else if (value is Vector3 vector)
+            {
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUI.color = TypeColor;
+                    GUILayout.Label($"[{type.Name}]  " , GDGEditorGUI.LargeLabelStyle);
+                    GUI.color = beginColor;
+                    GUILayout.Label($"{info.Name}: ", GDGEditorGUI.LargeLabelStyle);
+                    
+                    
+                    GUILayout.FlexibleSpace();
+                    GUI.color = childColor;
+                    GUILayout.Label(vector.ToString(), GDGEditorGUI.LargeLabelStyle);
+                    GUI.color = beginColor;
+                    GUILayout.Space(10);
+                }                
+            }
             else
             {
                 using (new GUILayout.HorizontalScope())
                 {
-
                     GUI.color = TypeColor;
                     GUILayout.Label($"[{type.Name}]  " , GDGEditorGUI.LargeLabelStyle);
                     GUI.color = beginColor;
@@ -390,7 +422,7 @@ public class EntitiesViewer : EditorWindow
                     
                     GUILayout.FlexibleSpace();
                     GUI.color = childColor;
-                    GUILayout.Label("[Invisible]", GDGEditorGUI.LargeLabelStyle);
+                    GUILayout.Label(info == null?"Null":info.ToString(), GDGEditorGUI.LargeLabelStyle);
                     GUI.color = beginColor;
                     GUILayout.Space(10);
                 }

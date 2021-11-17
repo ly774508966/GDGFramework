@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using GDG.ECS;
 using UnityEngine.SceneManagement;
+using GDG.Utils;
+
 
 public static class UnityExtension
 {
@@ -49,6 +51,35 @@ public static class UnityExtension
     {
         return Distance(gameObject.transform.position , other.transform.position);
     }    
+    public static Entity GetEntity(this GameObject gameObject)
+    {
+        foreach(var item in World.EntityManager.GetAllEntity())
+        {
+            if(item.TryGetComponent<GameObjectComponent>(out GameObjectComponent game))
+            {
+                if(game.gameObject == gameObject)
+                    return item;
+            }
+        }
+        return null;
+    }
+    public static bool TryGetEntity(this GameObject gameObject,out Entity entity)
+    {
+        entity = null;
+        foreach(var item in World.EntityManager.GetAllEntity())
+        {
+            if(item.TryGetComponent<GameObjectComponent>(out GameObjectComponent game))
+            {
+                if(game.gameObject == gameObject)
+                {
+                    entity = item;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     #endregion
     #region  Transform
     public static float Distance(this Transform trans,Transform other)
@@ -84,6 +115,15 @@ public static class UnityExtension
         var pos = trans.position + direction;
         trans.LookAt(pos);
     }
+    public static Entity GetEntity(this Transform transform)
+    {
+        return transform.gameObject.GetEntity();
+    }
+    public static bool TryGetEntity(this Transform transform,out Entity entity)
+    {
+        return transform.gameObject.TryGetEntity(out entity);
+    }
+    
     #endregion
     #region RectTransform
     public static void Reset(this RectTransform rectTransform)

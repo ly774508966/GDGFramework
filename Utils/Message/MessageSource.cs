@@ -7,6 +7,9 @@ namespace GDG.Utils
 {
     public interface IMessageSource
     {
+        /// <summary>
+        /// 广播时消息源的回调
+        /// </summary>
         void Call();
     }
 

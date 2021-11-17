@@ -10,6 +10,9 @@ namespace GDG.Utils
     {
         internal bool isAutoRemoveAfterCallback = false;
         internal IMessageSource messageSource;
+        /// <summary>
+        /// 观察者被广播后执行的回调
+        /// </summary>
         public abstract void Callback();
     }
     public class Observer : MessageObserver
@@ -20,6 +23,10 @@ namespace GDG.Utils
         {
             this.action = action;
         }
+        /// <summary>
+        /// 取消监听
+        /// </summary>
+        /// <param name="messageSource">消息源</param>
         public void CancelListening(MessageSource messageSource)
         {
             MessageManager.Instance.RemoveMessageObserver(messageSource, this);

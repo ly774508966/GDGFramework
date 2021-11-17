@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEngine.Events;
 using GDG.ModuleManager;
 using GDG.Utils;
+using GDG.Base;
 
 namespace GDG.ECS
 {

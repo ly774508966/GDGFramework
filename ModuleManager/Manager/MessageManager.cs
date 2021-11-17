@@ -11,6 +11,12 @@ namespace GDG.ModuleManager
     {
         private  Dictionary<string, List<MessageObserver>> m_MessageName2observerMapping = new Dictionary<string, List<MessageObserver>>();
         private readonly Dictionary<IMessageSource, List<MessageObserver>> m_MessageSource2observerMapping = new Dictionary<IMessageSource, List<MessageObserver>>();
+        /// <summary>
+        /// 添加消息观察者
+        /// </summary>
+        /// <param name="source">消息源</param>
+        /// <param name="observer">观察者</param>
+        /// <param name="isAutoRemoveAfterCallback">是否在消息广播后移除观察者</param>
         public void AddMessageObserver(IMessageSource source, MessageObserver observer,bool isAutoRemoveAfterCallback = false)
         {
             if (m_MessageSource2observerMapping.TryGetValue(source, out List<MessageObserver> observerList))
@@ -26,6 +32,11 @@ namespace GDG.ModuleManager
                 observer.isAutoRemoveAfterCallback = isAutoRemoveAfterCallback;
             }
         }
+        /// <summary>
+        /// 移除消息观察者
+        /// </summary>
+        /// <param name="source">消息源</param>
+        /// <param name="observer">观察者</param>
         public void RemoveMessageObserver(IMessageSource source, MessageObserver observer)
         {
             if (m_MessageSource2observerMapping.TryGetValue(source, out List<MessageObserver> observerList))
@@ -37,6 +48,10 @@ namespace GDG.ModuleManager
                 Utils.Log.Error($"There is no MessageSource here");
             }
         }
+        /// <summary>
+        /// 消息广播
+        /// </summary>
+        /// <param name="messageSource">消息源</param>
         public void Broadcast(IMessageSource messageSource)
         {
             if (m_MessageSource2observerMapping.TryGetValue(messageSource, out List<MessageObserver> observerList))

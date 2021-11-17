@@ -14,28 +14,259 @@ namespace GDG.ModuleManager
         private bool enableSmartClean = true;
         private double GCtime = -1;
         private ulong currentTaskIndex;
-        #region 取obj
-        /// <summary>
-        /// 从对象池中获得一个GameObject，若对象池中不存在该Object则返回一个新的实例
-        /// </summary>
-        /// <param name="bundlepath">Asset所在AB包的路径</param>
-        /// <param name="assetpath">Asset在AB包下Asset路径</param>
-        /// <param name="callback"></param>
-        public void Pop<T>(string bundlepath, string assetpath, UnityAction<T> callback = null, string tag = "") where T : UnityEngine.Object
+        #region Pop
+        public T Pop<T>(string bundlepath, string assetname, string path, string mainABName, string tag = "") where T : UnityEngine.Object
+        {
+            SmartClean();
+            if (tag == "")
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(assetname) && (PoolDic[assetname] as PoolListContainer<T>)?.poolList.poolstack.Count > 0)
+                {
+                    return (PoolDic[assetname] as PoolListContainer<T>).poolList.Get();
+                }
+                else
+                {
+                    var o = AssetManager.Instance.LoadAsset<T>(bundlepath, assetname, path, mainABName);
+                    o.name = assetname;
+                    return o;
+                }
+            }
+            else
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(tag) && (PoolDic[tag] as PoolListContainer<T>)?.poolList.poolstack.Count > 0)
+                {
+                    return (PoolDic[tag] as PoolListContainer<T>).poolList.Get();
+                }
+                else
+                {
+                    var o = AssetManager.Instance.LoadAsset<T>(bundlepath, assetname, path, mainABName);
+                    o.name = assetname;
+                    return o;
+                }
+            }
+        }
+        public T Pop<T>(string bundlepath, string assetname, string tag = "") where T : UnityEngine.Object
+        {
+            SmartClean();
+            if (tag == "")
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(assetname) && (PoolDic[assetname] as PoolListContainer<T>)?.poolList.poolstack.Count > 0)
+                {
+                    return (PoolDic[assetname] as PoolListContainer<T>).poolList.Get();
+                }
+                else
+                {
+                    var o = AssetManager.Instance.LoadAsset<T>(bundlepath, assetname);
+                    o.name = assetname;
+                    return o;
+                }
+            }
+            else
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(tag) && (PoolDic[tag] as PoolListContainer<T>)?.poolList.poolstack.Count > 0)
+                {
+                    return (PoolDic[tag] as PoolListContainer<T>).poolList.Get();
+                }
+                else
+                {
+                    var o = AssetManager.Instance.LoadAsset<T>(bundlepath, assetname);
+                    o.name = assetname;
+                    return o;
+                }
+            }
+        }
+        public T Pop<T>(string resourcepath, string tag = "") where T : UnityEngine.Object
+        {
+            SmartClean();
+            if (tag == "")
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(resourcepath) && (PoolDic[resourcepath] as PoolListContainer<T>)?.poolList.poolstack.Count > 0)
+                {
+                    return (PoolDic[resourcepath] as PoolListContainer<T>).poolList.Get();
+                }
+                else
+                {
+                    var o = ResourcesManager.Instance.LoadResource<T>(resourcepath);
+                    o.name = resourcepath;
+                    return o;
+
+                }
+            }
+            else
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(tag) && (PoolDic[tag] as PoolListContainer<T>)?.poolList.poolstack.Count > 0)
+                {
+                    return (PoolDic[tag] as PoolListContainer<T>).poolList.Get();
+                }
+                else
+                {
+                    var o = ResourcesManager.Instance.LoadResource<T>(resourcepath);
+                    o.name = tag;
+                    return o;
+
+                }
+            }
+        }
+        public Object Pop(string resourcepath, string tag = "")
+        {
+            SmartClean();
+            if (tag == "")
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(resourcepath) && (PoolDic[resourcepath] as PoolListContainer<UnityEngine.Object>)?.poolList.poolstack.Count > 0)
+                {
+                    return (PoolDic[resourcepath] as PoolListContainer<Object>).poolList.Get();
+                }
+                else
+                {
+                    var o = ResourcesManager.Instance.LoadResource<Object>(resourcepath);
+                    o.name = resourcepath;
+                    return o;
+                }
+            }
+            else
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(tag) && (PoolDic[tag] as PoolListContainer<Object>)?.poolList.poolstack.Count > 0)
+                {
+                    return (PoolDic[tag] as PoolListContainer<Object>).poolList.Get();
+                }
+                else
+                {
+                    var o = ResourcesManager.Instance.LoadResource<Object>(resourcepath);
+                    o.name = tag;
+                    return o;
+
+                }
+            }
+        }
+        public Object Pop(string bundlepath, string assetname, string tag = "")
+        {
+            SmartClean();
+            if (tag == "")
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(assetname) && (PoolDic[assetname] as PoolListContainer<Object>)?.poolList.poolstack.Count > 0)
+                {
+                    return (PoolDic[assetname] as PoolListContainer<Object>).poolList.Get();
+                }
+                else
+                {
+                    var o = AssetManager.Instance.LoadAsset<Object>(bundlepath, assetname);
+                    o.name = assetname;
+                    return o;
+                }
+            }
+            else
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(tag) && (PoolDic[tag] as PoolListContainer<Object>)?.poolList.poolstack.Count > 0)
+                {
+                    return (PoolDic[tag] as PoolListContainer<Object>).poolList.Get();
+                }
+                else
+                {
+                    var o = AssetManager.Instance.LoadAsset<Object>(bundlepath, assetname);
+                    o.name = tag;
+                    return o;
+                }
+            }
+        }
+        public Object Pop(string bundlepath, string assetname, string path, string mainABName, string tag = "")
+        {
+            SmartClean();
+            if (tag == "")
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(assetname) && (PoolDic[assetname] as PoolListContainer<Object>)?.poolList.poolstack.Count > 0)
+                {
+                    return (PoolDic[assetname] as PoolListContainer<Object>).poolList.Get();
+                }
+                else
+                {
+                    var o = AssetManager.Instance.LoadAsset<Object>(bundlepath, assetname, path, mainABName);
+                    o.name = assetname;
+                    return o;
+
+                }
+            }
+            else
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(tag) && (PoolDic[tag] as PoolListContainer<Object>)?.poolList.poolstack.Count > 0)
+                {
+                    return (PoolDic[tag] as PoolListContainer<Object>).poolList.Get();
+                }
+                else
+                {
+                    var o = AssetManager.Instance.LoadAsset<Object>(bundlepath, assetname, path, mainABName);
+                    o.name = tag;
+                    return o;
+                }
+            }
+        }
+
+        #endregion
+        #region PopAsync
+        public void PopAsync<T>(string bundlepath, string assetname, string path, string mainABName, UnityAction<T> callback = null, string tag = "") where T : UnityEngine.Object
         {
             if (tag == "")
             {
                 //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
-                if (PoolDic.ContainsKey(assetpath) && (PoolDic[assetpath] as PoolListContainer<T>)?.poolList.poolstack.Count > 0)
+                if (PoolDic.ContainsKey(assetname) && (PoolDic[assetname] as PoolListContainer<T>)?.poolList.poolstack.Count > 0)
                 {
-                    callback?.Invoke((PoolDic[assetpath] as PoolListContainer<T>).poolList.Get());
+                    callback?.Invoke((PoolDic[assetname] as PoolListContainer<T>).poolList.Get());
                 }
                 else
                 {
-                    AssetManager.Instance.LoadAssetAsync<T>(bundlepath, assetpath, (o) =>
+                    AssetManager.Instance.LoadAssetAsync<T>(bundlepath, assetname, path, mainABName, (o) =>
+                        {
+                            if (o is GameObject)
+                                o.name = assetname;
+                            callback?.Invoke(o);
+                        });
+                }
+            }
+            else
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(tag) && (PoolDic[tag] as PoolListContainer<T>)?.poolList.poolstack.Count > 0)
+                {
+                    callback?.Invoke((PoolDic[tag] as PoolListContainer<T>).poolList.Get());
+                }
+                else
+                {
+                    AssetManager.Instance.LoadAssetAsync<T>(bundlepath, assetname, path, mainABName, (o) =>
+                        {
+                            if (o is GameObject)
+                                o.name = tag;
+                            callback?.Invoke(o);
+                        });
+                }
+            }
+            SmartClean();
+        }
+        public void PopAsync<T>(string bundlepath, string assetname, UnityAction<T> callback = null, string tag = "") where T : UnityEngine.Object
+        {
+            if (tag == "")
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(assetname) && (PoolDic[assetname] as PoolListContainer<T>)?.poolList.poolstack.Count > 0)
+                {
+                    callback?.Invoke((PoolDic[assetname] as PoolListContainer<T>).poolList.Get());
+                }
+                else
+                {
+                    AssetManager.Instance.LoadAssetAsync<T>(bundlepath, assetname, (o) =>
                       {
                           if (o is GameObject)
-                              o.name = assetpath;
+                              o.name = assetname;
                           callback?.Invoke(o);
                       });
                 }
@@ -49,7 +280,7 @@ namespace GDG.ModuleManager
                 }
                 else
                 {
-                    AssetManager.Instance.LoadAssetAsync<T>(bundlepath, assetpath, (o) =>
+                    AssetManager.Instance.LoadAssetAsync<T>(bundlepath, assetname, (o) =>
                       {
                           if (o is GameObject)
                               o.name = tag;
@@ -58,14 +289,8 @@ namespace GDG.ModuleManager
                 }
             }
             SmartClean();
-
         }
-        /// <summary>
-        /// 从对象池中获得一个Object，若对象池中不存在该GameObject则返回一个新的实例
-        /// </summary>
-        /// <param name="resourcepath">为预制体在Resources下的路径</param>
-        /// <param name="callback"></param>
-        public void Pop<T>(string resourcepath, UnityAction<T> callback = null, string tag = "") where T : UnityEngine.Object
+        public void PopAsync<T>(string resourcepath, UnityAction<T> callback = null, string tag = "") where T : UnityEngine.Object
         {
             if (tag == "")
             {
@@ -103,7 +328,7 @@ namespace GDG.ModuleManager
             }
             SmartClean();
         }
-        public void Pop(string resourcepath, UnityAction<UnityEngine.Object> callback = null, string tag = "")
+        public void PopAsync(string resourcepath, UnityAction<Object> callback = null, string tag = "")
         {
             if (tag == "")
             {
@@ -141,21 +366,21 @@ namespace GDG.ModuleManager
             }
             SmartClean();
         }
-        public void Pop(string bundlepath, string assetpath, UnityAction<Object> callback = null, string tag = "")
+        public void PopAsync(string bundlepath, string assetname, UnityAction<Object> callback = null, string tag = "")
         {
             if (tag == "")
             {
                 //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
-                if (PoolDic.ContainsKey(assetpath) && (PoolDic[assetpath] as PoolListContainer<Object>)?.poolList.poolstack.Count > 0)
+                if (PoolDic.ContainsKey(assetname) && (PoolDic[assetname] as PoolListContainer<Object>)?.poolList.poolstack.Count > 0)
                 {
-                    callback?.Invoke((PoolDic[assetpath] as PoolListContainer<Object>).poolList.Get());
+                    callback?.Invoke((PoolDic[assetname] as PoolListContainer<Object>).poolList.Get());
                 }
                 else
                 {
-                    AssetManager.Instance.LoadAssetAsync<Object>(bundlepath, assetpath, (o) =>
+                    AssetManager.Instance.LoadAssetAsync<Object>(bundlepath, assetname, (o) =>
                       {
                           if (o is GameObject)
-                              o.name = assetpath;
+                              o.name = assetname;
                           callback?.Invoke(o);
                       });
                 }
@@ -169,7 +394,7 @@ namespace GDG.ModuleManager
                 }
                 else
                 {
-                    AssetManager.Instance.LoadAssetAsync<Object>(bundlepath, assetpath, (o) =>
+                    AssetManager.Instance.LoadAssetAsync<Object>(bundlepath, assetname, (o) =>
                       {
                           if (o is GameObject)
                               o.name = tag;
@@ -180,10 +405,49 @@ namespace GDG.ModuleManager
             SmartClean();
 
         }
+        public void PopAsync(string bundlepath, string assetname, string path, string mainABName, UnityAction<Object> callback = null, string tag = "")
+        {
+            if (tag == "")
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(assetname) && (PoolDic[assetname] as PoolListContainer<Object>)?.poolList.poolstack.Count > 0)
+                {
+                    callback?.Invoke((PoolDic[assetname] as PoolListContainer<Object>).poolList.Get());
+                }
+                else
+                {
+                    AssetManager.Instance.LoadAssetAsync<Object>(bundlepath, assetname, path, mainABName, (o) =>
+                        {
+                            if (o is GameObject)
+                                o.name = assetname;
+                            callback?.Invoke(o);
+                        });
+                }
+            }
+            else
+            {
+                //若 字典有PoolList 且 PoolList栈不为空则从栈中拿出一个对象
+                if (PoolDic.ContainsKey(tag) && (PoolDic[tag] as PoolListContainer<Object>)?.poolList.poolstack.Count > 0)
+                {
+                    callback?.Invoke((PoolDic[tag] as PoolListContainer<Object>).poolList.Get());
+                }
+                else
+                {
+                    AssetManager.Instance.LoadAssetAsync<Object>(bundlepath, assetname, path, mainABName, (o) =>
+                        {
+                            if (o is GameObject)
+                                o.name = tag;
+                            callback?.Invoke(o);
+                        });
+                }
+            }
+            SmartClean();
+        }
+
         #endregion
-        #region 放obj
+        #region Push
         /// <summary>
-        /// 从将一个Object对象放入对象池，默认的回调方式是：如果是GameObject则setActive为false，否则调用Destory
+        /// 从将一个Object对象放入对象池
         /// </summary>
         /// <param name="path">在AB包下Asset路径或预制体在Resources下的路径（取决于pop时传入的assetpath或prefabpath）</param>
         /// <param name="obj">需要放入对象池的Object</param>
@@ -215,7 +479,6 @@ namespace GDG.ModuleManager
             }
             SmartClean();
         }
-
         public void Push(string path, Object obj, UnityAction callback = null, string tag = "")
         {
             if (tag != "")
@@ -260,19 +523,19 @@ namespace GDG.ModuleManager
             }
             else
             {
-                currentTaskIndex = GDGTools.Timer.DelayTimeExcute(secondTime,0,ClearAll);
+                currentTaskIndex = GDGTools.Timer.DelayTimeExcute(secondTime, 0, ClearAll);
             }
 
         }
         void SmartClean()
         {
-            if (!enableSmartClean || GCtime==-1)
+            if (!enableSmartClean || GCtime == -1)
                 return;
-            
-            if(currentTaskIndex!=0)
+
+            if (currentTaskIndex != 0)
                 GDGTools.Timer.RemoveTask(currentTaskIndex);
 
-            currentTaskIndex = GDGTools.Timer.DelayTimeExcute(GCtime,ClearAll);
+            currentTaskIndex = GDGTools.Timer.DelayTimeExcute(GCtime, ClearAll);
 
 
         }
@@ -342,7 +605,7 @@ namespace GDG.ModuleManager
             if (obj is GameObject o)
             {
                 if (o.GetComponent<ECS.GameObjectToEntity>() != null)
-                            throw new CustomErrorException("Can't push GameObject with GameObjectToEntity component into the pool!");
+                    throw new CustomErrorException("Can't push GameObject with GameObjectToEntity component into the pool!");
                 callback();
                 o.SetActive(false);
                 o.transform.parent = parentobj.transform;

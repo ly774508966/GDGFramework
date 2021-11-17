@@ -182,6 +182,7 @@ namespace GDG.AI
             }
             return minCell;
         }
+        //比较两个网格的大小
         private Cell GetMinCell(Cell cell1, Cell cell2)
         {
             if (cell1.CompareTo(cell2) < 0)

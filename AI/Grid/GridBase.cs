@@ -17,7 +17,15 @@ namespace GDG.AI
         public float cellSize;
         public Vector3 localPosition;
         public List<Entity> textEntityList = new List<Entity>();
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="width">网格的宽</param>
+        /// <param name="height">网格的长度</param>
+        /// <param name="cellSize">每一格的大小</param>
+        /// <param name="defaultValue">每一格的默认值</param>
+        /// <param name="localPosition">网格的本地位置</param>
+        /// <param name="i_j_localPos_Callback">创建每一个格子时的回调，参数分别为：当前格子的值、第i行、第j列、网格所在的坐标</param>
         public GridBase(int width, int height, float cellSize,T defaultValue,Vector3 localPosition,UnityAction<T,int,int,Vector3> i_j_localPos_Callback)
         {
             this.width = width;

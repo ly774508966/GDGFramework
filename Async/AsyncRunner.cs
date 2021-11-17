@@ -16,6 +16,12 @@ namespace GDG.Async
         static object locker = new object();
         static event SyncToMainThreadEventHandle mainThreadEvent;
         static event SyncToMainThreadEventHandle current_MainThreadEvent;
+        /// <summary>
+        /// 开启一个异步执行
+        /// </summary>
+        /// <param name="action">执行回调</param>
+        /// <param name="errorAction">异常回调</param>
+        /// <returns></returns>
         public static Task RunAsync(Action action, Action errorAction = null)
         {
             var task = Task.Run(() =>
@@ -43,6 +49,14 @@ namespace GDG.Async
             }, TaskContinuationOptions.OnlyOnFaulted);
             return task;
         }
+        /// <summary>
+        /// 开启一个异步执行
+        /// </summary>
+        /// <param name="action">执行回调</param>
+        /// <param name="cancellationTokenSource">取消令牌</param>
+        /// <param name="cancelledAction">取消回调</param>
+        /// <param name="errorAction">异常回调</param>
+        /// <returns></returns>
         public static Task RunAsync(Action action, CancellationTokenSource cancellationTokenSource, Action cancelledAction, Action errorAction = null)
         {
             var task = Task.Run(() =>
@@ -81,6 +95,9 @@ namespace GDG.Async
             }, TaskContinuationOptions.OnlyOnFaulted);
             return task;
         }
+        /// <summary>
+        /// 将回调函数与Unity主线程通信
+        /// </summary>
         public static void SyncToMainThread(SyncToMainThreadEventHandle action)
         {
             lock (locker)

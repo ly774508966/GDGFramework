@@ -16,7 +16,7 @@ namespace GDG.ModuleManager
     public class AssetManager : LazySingleton<AssetManager>
     {
         //AB包文件夹路径
-        public string Path { get => Application.streamingAssetsPath + "/"; }
+        public string Path { get => Application.streamingAssetsPath; }
         //主包路径
         private string MainABName
         {
@@ -41,28 +41,27 @@ namespace GDG.ModuleManager
         private AssetBundleManifest manifest;
 
         //加载主包和描述文件
-        private void LoadMainAndManifest(string bundlename,string path = null,string mainABName = null)
+        private void LoadMainAndManifest(string bundlename, string path = null, string mainABName = null)
         {
-            if(mainABName==null)
+            if (mainABName == null)
                 mainABName = MainABName;
-
+            if (path == null)
+                path = Path;
             //加载主包和描述文件
             if (mainAB == null)
             {
-                mainAB = AssetBundle.LoadFromFile(path==null?Path + mainABName:path);
+                mainAB = AssetBundle.LoadFromFile(path + "/" + mainABName);
                 manifest = mainAB.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
             }
             //加载目标包
             AssetBundle bundle = null;
             if (!ABDic.ContainsKey(bundlename))
             {
-                bundle = AssetBundle.LoadFromFile(path==null?Path + bundlename:path);
+                bundle = AssetBundle.LoadFromFile(path + "/" + bundlename);
                 if (bundle == null)
                     Log.Error($"Load bundle'{path}{bundlename}' failed");
                 ABDic.Add(bundlename, bundle);
             }
-
-
             //从描述文件获得目标包依赖
             string[] infos = manifest.GetAllDependencies(bundlename);
 
@@ -71,25 +70,16 @@ namespace GDG.ModuleManager
             {
                 if (!ABDic.ContainsKey(item))
                 {
-                    AssetBundle.LoadFromFile(path + item);
+                    AssetBundle.LoadFromFile(path + "/" + item);
                     ABDic.Add(item, bundle);
                 }
             }
         }
-
-        //同步加载
-        /// <summary>
-        /// 通过泛型同步加载Asset
-        /// bundlename: Asset所在包名
-        /// asset：asset名称(为了避免因为重名情况导致的问题，建议添加文件后缀名)
-        /// </summary>
-        /// <param name="bundlename"></param>
-        /// <param name="assetname"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public T LoadAsset<T>(string bundlename, string assetname,string path = null,string mainABName = null) where T : Object
+        
+        #region 同步加载
+        public T LoadAsset<T>(string bundlename, string assetname, string path = null, string mainABName = null) where T : Object
         {
-            LoadMainAndManifest(bundlename,path,mainABName);
+            LoadMainAndManifest(bundlename, path, mainABName);
 
             //加载目标包
             AssetBundle bundle = ABDic[bundlename];
@@ -98,19 +88,9 @@ namespace GDG.ModuleManager
             T obj = bundle.LoadAsset(assetname) as T;
             return obj is GameObject ? GameObject.Instantiate<T>(obj) : obj;
         }
-        /// <summary>
-        /// 通过参数指定类型同步加载Asset
-        /// bundlename: Asset所在包名
-        /// asset：asset名称(为了避免因为重名情况导致的问题，建议添加文件后缀名)
-        /// type：asset的类型
-        /// </summary>
-        /// <param name="bundlename"></param>
-        /// <param name="assetname"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public Object LoadAsset(string bundlename, string assetname, System.Type type,string path = null,string mainABName = null)
+        public Object LoadAsset(string bundlename, string assetname, System.Type type, string path = null, string mainABName = null)
         {
-            LoadMainAndManifest(bundlename,path,mainABName);
+            LoadMainAndManifest(bundlename, path, mainABName);
 
             //加载目标包
             AssetBundle bundle = ABDic[bundlename];
@@ -120,16 +100,23 @@ namespace GDG.ModuleManager
             return obj is GameObject ? GameObject.Instantiate(obj) : obj;
 
         }
-
-
-        //异步加载
+        #endregion
+        #region 异步加载
         public void LoadAssetAsync<T>(string bundlename, string assetname, UnityAction<T> callback) where T : Object
         {
             World.monoWorld.StartCoroutine(CoroutineLoadAssetAsync<T>(bundlename, assetname, callback));
         }
+        public void LoadAssetAsync<T>(string bundlename, string assetname, string path, string mainABName, UnityAction<T> callback) where T : Object
+        {
+            World.monoWorld.StartCoroutine(CoroutineLoadAssetAsync<T>(bundlename, assetname, path, mainABName, callback));
+        }
         public void LoadAssetAsync(string bundlename, string assetname, System.Type type, UnityAction<Object> callback)
         {
             World.monoWorld.StartCoroutine(CoroutineLoadAssetAsync(bundlename, assetname, type, callback));
+        }
+        public void LoadAssetAsync(string bundlename, string assetname, string path, string mainABName, System.Type type, UnityAction<Object> callback)
+        {
+            World.monoWorld.StartCoroutine(CoroutineLoadAssetAsync(bundlename, assetname, path, mainABName, type, callback));
         }
         IEnumerator CoroutineLoadAssetAsync<T>(string bundlename, string assetname, UnityAction<T> callback) where T : Object
         {
@@ -144,7 +131,20 @@ namespace GDG.ModuleManager
                 callback(GameObject.Instantiate(request.asset as T));
             else
                 callback(request.asset as T);
+        }
+        IEnumerator CoroutineLoadAssetAsync<T>(string bundlename, string assetname, string path, string mainABName, UnityAction<T> callback) where T : Object
+        {
+            LoadMainAndManifest(bundlename, path, mainABName);
 
+            //异步加载目标包资源
+            AssetBundleRequest request = ABDic[bundlename].LoadAssetAsync(assetname);
+            yield return request;
+            if (request.asset == null)
+                Log.Error($"Load asset failed ! Bundle：'{bundlename}' Asset：'{assetname}'");
+            if (request.asset is GameObject)
+                callback(GameObject.Instantiate(request.asset as T));
+            else
+                callback(request.asset as T);
         }
         IEnumerator CoroutineLoadAssetAsync(string bundlename, string assetname, System.Type type, UnityAction<Object> callback)
         {
@@ -161,6 +161,22 @@ namespace GDG.ModuleManager
                 callback(request.asset);
 
         }
+        IEnumerator CoroutineLoadAssetAsync(string bundlename, string assetname, string path, string mainABName, System.Type type, UnityAction<Object> callback)
+        {
+            LoadMainAndManifest(bundlename, path, mainABName);
+
+            //异步加载目标包资源
+            AssetBundleRequest request = ABDic[bundlename].LoadAssetAsync(assetname, type);
+            yield return request;
+            if (request.asset == null)
+                Log.Error($"Load asset failed ! Bundle：'{bundlename}' Asset：'{assetname}'");
+            if (request.asset is GameObject)
+                callback(GameObject.Instantiate(request.asset));
+            else
+                callback(request.asset);
+
+        }
+        #endregion
         //卸载Asset
         public void UnloadAssetbundle(string bundlename)
         {

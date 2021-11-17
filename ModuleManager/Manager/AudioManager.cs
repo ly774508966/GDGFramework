@@ -116,7 +116,7 @@ namespace GDG.ModuleManager
                 musicplayer.transform.parent = GameObject.Find("MonoController").transform;
             }
             //从对象池中加载音频切片
-            AssetPool.Instance.Pop<AudioClip>($"Audio/Sound/{resourcename}", (clip) =>
+            AssetPool.Instance.PopAsync<AudioClip>($"Audio/Sound/{resourcename}", (clip) =>
             {
                 AudioSource sound = musicplayer.AddComponent<AudioSource>();
 
@@ -145,7 +145,7 @@ namespace GDG.ModuleManager
                 musicplayer = new GameObject("MusicPlayer");
                 musicplayer.transform.parent = GameObject.Find("MonoController").transform;
             }
-            AssetPool.Instance.Pop<AudioClip>(bundlename, assetname, (clip) =>
+            AssetPool.Instance.PopAsync<AudioClip>(bundlename, assetname, (clip) =>
             {
                 AudioSource sound = musicplayer.AddComponent<AudioSource>();
                 sound.clip = clip;
@@ -209,7 +209,7 @@ namespace GDG.ModuleManager
             string file = Regex.Match(resourcespath, pattern).ToString();
 
             //从对象池中加载音频切片
-            AssetPool.Instance.Pop<AudioClip>($"Audio/Sound/{resourcespath}", (clip) =>
+            AssetPool.Instance.PopAsync<AudioClip>($"Audio/Sound/{resourcespath}", (clip) =>
             {
                 AudioSource sound = null;
 
@@ -231,7 +231,7 @@ namespace GDG.ModuleManager
         }
         public void Play3DSound(string bundlename, string assetname, GameObject gameobject, bool isLoop = false, float volume = 2f,UnityAction<AudioSource> callback = null)
         {
-            AssetPool.Instance.Pop<AudioClip>(bundlename, assetname, (clip) =>
+            AssetPool.Instance.PopAsync<AudioClip>(bundlename, assetname, (clip) =>
             {
                 AudioSource[] sources = gameobject.GetComponents<AudioSource>();
                 AudioSource sound = null;

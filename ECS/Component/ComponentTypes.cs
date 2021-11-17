@@ -34,6 +34,9 @@ namespace GDG.ECS
         public bool IsReadOnly { get; }
         internal void SetTypeId(uint typeId) => this.typeId = typeId;
         internal void SetEntityRefCount(int entityRefCount) => this.entityRefCount = entityRefCount;
+        /// <summary>
+        /// 重新请求一个TypeId
+        /// </summary>
         public void RequestTypeId()
         {
             var tempTypeId = BaseWorld.Instance.EntityManager.GetTypeId(this);
