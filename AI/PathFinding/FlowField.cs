@@ -90,6 +90,8 @@ namespace GDG.AI
         private GridType gridType;
         private int impasableCellCount;
         internal bool EnableSmartPathFinding = true;
+        public Vector3 startPos { get; private set; }
+        public Vector3 endPos { get; private set; }
         public FlowField(Vector3 startPos, Vector3 endPos, float cellSize, GridType gridType = GridType.Grid3D)
         {
             this.cellSize = cellSize;
@@ -116,33 +118,46 @@ namespace GDG.AI
                      cell.worldPos = pos;
                      cell.index = new Vector2Int(i, j);
                  });
+            this.startPos = startPos;
+            this.endPos = endPos;
         }
         public FlowField(int width, int height, Vector3 localPosition, int cellSize, GridType gridType = GridType.Grid3D)
         {
             this.cellSize = cellSize;
             this.gridType = gridType;
-            if (gridType == GridType.Grid3D) grid = new Grid3D<Cell>(
-                 width,
-                 height,
-                 cellSize,
-                 null,
-                 localPosition,
-                 (cell, i, j, pos) =>
-                 {
-                     cell.worldPos = pos;
-                     cell.index = new Vector2Int(i, j);
-                 });
-            else grid = new Grid2D<Cell>(
-                 width,
-                 height,
-                 cellSize,
-                 null,
-                 localPosition,
-                 (cell, i, j, pos) =>
-                 {
-                     cell.worldPos = pos;
-                     cell.index = new Vector2Int(i, j);
-                 });
+            if (gridType == GridType.Grid3D) 
+            {
+                grid = new Grid3D<Cell>(
+                                width,
+                                height,
+                                cellSize,
+                                null,
+                                localPosition,
+                                (cell, i, j, pos) =>
+                                {
+                                    cell.worldPos = pos;
+                                    cell.index = new Vector2Int(i, j);
+                                });
+                this.startPos = grid.GetWorldPositionXZ(0, 0);
+                this.endPos = grid.GetWorldPositionXZ(grid.gridArray.GetLength(0), grid.gridArray.GetLength(1));   
+            }
+            else 
+            {
+                grid = new Grid2D<Cell>(
+                                width,
+                                height,
+                                cellSize,
+                                null,
+                                localPosition,
+                                (cell, i, j, pos) =>
+                                {
+                                    cell.worldPos = pos;
+                                    cell.index = new Vector2Int(i, j);
+                                });
+                this.startPos = grid.GetWorldPositionXY(0, 0);
+                this.endPos = grid.GetWorldPositionXY(grid.gridArray.GetLength(0), grid.gridArray.GetLength(1));
+            }
+            
         }
 
         private Cell[] GetNeighborCells_4Directions(Vector2Int index)
@@ -182,7 +197,6 @@ namespace GDG.AI
             }
             return minCell;
         }
-        //比较两个网格的大小
         private Cell GetMinCell(Cell cell1, Cell cell2)
         {
             if (cell1.CompareTo(cell2) < 0)

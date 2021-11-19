@@ -151,6 +151,10 @@ GDGFramework 内置了以下模块：
     * ### PanelController UI管理器
         UI基于Panel管理，Panel需要继承至BasePanel，自动绑定了UI事件。支持对 Panel 暂停、重启、销毁、创建、隐藏、取消隐藏。
 
+* ## FlowFieldController 流场寻路
+
+    基q于流场的AI寻路系统，支持2D和3D两种网格。使用 `FlowFieldController.GenerateFlowField` 来生成一个流场，默认障碍物Layer为 “Impassible”。通过`SetDestination` 方法来为流场设置一个目的地，通过 `GetFieldDirection` 方法来获得流场上某一网格的
+
 * ## 日志打印模块
 
     支持为Log添加tag，方便过滤日志。内置两种模式：Game下的日志（通过`this.log`打印）、Console下日志（通过`Log.Info`打印）。包含了 Info、Sucess、Warning、Error、Editor、Custom 几种风格的打印信息。可以在ProjectSetting选择是否将日志写入文件，在`User/Logger/UnityLogger.txt`中找到被写入的日志文件，可以用于将客户端打印信息上传到服务器。
@@ -166,12 +170,10 @@ GDGFramework 内置了以下模块：
     * ### AsyncWebRequest 异步网络请求
         用于异步下载网络资源，并且支持 Get 或者 Post 方法向服务器发送请求并获取响应数据。
 
-* ## FlowFieldController 
-
 * ## 其它编辑器拓展工具
 
     * ### Auto Namespace
-        用户可以通过设置自定义命名空间来在每一次的 .cs 脚本创建时自动加上。
+        用户可以通过设置自定义命名空间来在每一次的 .cs 脚本创建时自动加上。（在创建非.cs资源时如果发生导致编辑器卡在"Application.Message.LeftButtonDown"，应关闭AutoNamespace）
     * ### Persist Tools
         支持 Json、Xml、Excel 数据表之间的转换
     * ### Remove Missing Scripts

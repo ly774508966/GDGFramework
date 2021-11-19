@@ -533,7 +533,7 @@ namespace GDG.ECS
                 Log.Error($"AddComponent failed ! Cant't Find Index in m_Index2ComponentMapping, Index: {entity.Index}");
                 return null;
             }
-            return Components;
+            return GetComponents(entity);
         }
         public T AddComponent<T>(Entity entity) where T : class, IComponent, new()
         {
@@ -542,7 +542,8 @@ namespace GDG.ECS
                 LogManager.Instance.LogError("Illegal Operation! Entity is not actived");
                 return default(T);
             }
-            return AddComponentTypes<T>(entity);
+            AddComponentTypes<T>(entity);
+            return entity.GetComponent<T>();
         }
         public bool RemoveComponet(Entity entity, ComponentTypes componentTypes)
         {

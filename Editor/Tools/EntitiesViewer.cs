@@ -310,7 +310,23 @@ public class EntitiesViewer : EditorWindow
 
         using (new GUILayout.VerticalScope())
         {
-            if (GDG.Utils.GDGTools.IsBlittable(value) || type == typeof(string) || type == typeof(char) || type == typeof(bool) || type.IsEnum)
+            if(value == null)
+            {
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUI.color = TypeColor;
+                    GUILayout.Label($"[{type.Name}]  " , GDGEditorGUI.LargeLabelStyle);
+                    GUI.color = beginColor;
+                    GUILayout.Label($"{info.Name}: ", GDGEditorGUI.LargeLabelStyle);
+                    
+                    GUILayout.FlexibleSpace();
+                    GUI.color = childColor;
+                    GUILayout.Label("null", GDGEditorGUI.LargeLabelStyle);
+                    GUI.color = beginColor;
+                    GUILayout.Space(10);
+                }                
+            }
+            else if (GDG.Utils.GDGTools.IsBlittable(value) || type == typeof(string) || type == typeof(char) || type == typeof(bool) || type.IsEnum)
             {
                 using (new GUILayout.HorizontalScope())
                 {
@@ -322,7 +338,7 @@ public class EntitiesViewer : EditorWindow
                     
                     GUILayout.FlexibleSpace();
                     GUI.color = childColor;
-                    GUILayout.Label(value == null?"Null":value.ToString(), GDGEditorGUI.LargeLabelStyle);
+                    GUILayout.Label(value.ToString(), GDGEditorGUI.LargeLabelStyle);
                     GUI.color = beginColor;
                     GUILayout.Space(10);
                 }
@@ -340,7 +356,7 @@ public class EntitiesViewer : EditorWindow
                     GUILayout.FlexibleSpace();
                     GUI.color = childColor;
                     var name = obj?.name;
-                    GUILayout.Label(name == null?"Null":name, GDGEditorGUI.LargeLabelStyle);
+                    GUILayout.Label(name, GDGEditorGUI.LargeLabelStyle);
                     GUI.color = beginColor;
                     GUILayout.Space(10);
                 }                
@@ -370,7 +386,7 @@ public class EntitiesViewer : EditorWindow
 
                             GUILayout.Label($"{nameof(item)}: ");
                             GUILayout.FlexibleSpace();
-                            GUILayout.Label(item == null?"Null":item.ToString());
+                            GUILayout.Label(item == null?"null":item.ToString());
 
                             GUILayout.Space(10);
                         }
@@ -386,7 +402,7 @@ public class EntitiesViewer : EditorWindow
 
                             GUILayout.Label($"{nameof(item)}: ");
                             GUILayout.FlexibleSpace();
-                            GUILayout.Label(item == null?"Null":item.ToString());
+                            GUILayout.Label(item == null?"null":item.ToString());
 
                             GUILayout.Space(10);
                         }
@@ -422,7 +438,7 @@ public class EntitiesViewer : EditorWindow
                     
                     GUILayout.FlexibleSpace();
                     GUI.color = childColor;
-                    GUILayout.Label(info == null?"Null":info.ToString(), GDGEditorGUI.LargeLabelStyle);
+                    GUILayout.Label(info.ToString(), GDGEditorGUI.LargeLabelStyle);
                     GUI.color = beginColor;
                     GUILayout.Space(10);
                 }

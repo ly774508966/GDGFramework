@@ -66,6 +66,8 @@ namespace GDG.Utils
         }
         public static bool IsBlittable(object obj)
         {
+            if(obj == null)
+                return false;
             var type = obj.GetType();
             if(type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) ||
                type == typeof(ushort) || type == typeof(int) || type == typeof(uint) ||

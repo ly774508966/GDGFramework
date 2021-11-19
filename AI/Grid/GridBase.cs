@@ -37,8 +37,8 @@ namespace GDG.AI
             gridTextArray = new TextMesh[width, height];
 # endif
         }
-        protected Vector3 GetWorldPositionXY(int x, int y) => new Vector3(x, y) * cellSize + localPosition;
-        protected Vector3 GetWorldPositionXZ(int x, int z, int y = 0) => new Vector3(x, y, z) * cellSize + localPosition;
+        public Vector3 GetWorldPositionXY(int x, int y) => new Vector3(x, y) * cellSize + localPosition;
+        public Vector3 GetWorldPositionXZ(int x, int z, int y = 0) => new Vector3(x, y, z) * cellSize + localPosition;
         protected void GetXY(Vector3 worldPosition, out int x, out int y)
         {
             x = Mathf.FloorToInt((worldPosition - localPosition).x / cellSize);
