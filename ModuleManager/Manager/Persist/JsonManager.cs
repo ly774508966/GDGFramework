@@ -10,7 +10,9 @@ using System;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Converters;
 using GDG.Utils;
+using System.Linq;
 using Log = GDG.Utils.Log;
+using JsonToken = Newtonsoft.Json.JsonToken;
 
 namespace GDG.ModuleManager
 {
@@ -64,7 +66,7 @@ namespace GDG.ModuleManager
 
             if (!File.Exists(filepath))
             {
-                return default(T);
+                throw new Exception("Error file ath!");
             }
 
             string jsonStr = string.Empty;
@@ -82,8 +84,23 @@ namespace GDG.ModuleManager
             }
             return default(T);
         }
+        public static string WriteJson(string filepath, string jsonStr)
+        {
+            var reg = Regex.Replace(filepath, @".json", "");
 
-        public static List<Dictionary<string, object>> JsonReader(string filepath)
+            //如果不是一个完整的路径
+            if (!UserFileManager.IsCompletePath(filepath))
+            {
+                filepath = $"{Path}/{reg}.json";
+            }
+
+            using (StreamWriter writer = new StreamWriter(filepath))
+            {
+                writer.Write(jsonStr);
+            }
+            return filepath;
+        }
+        public static string ReadJson(string filepath)
         {
             var reg = Regex.Replace(filepath, @".json", "");
 
@@ -95,7 +112,8 @@ namespace GDG.ModuleManager
 
             if (!File.Exists(filepath))
             {
-                return Activator.CreateInstance<List<Dictionary<string, object>>>();
+                Log.Error($"There is no JSON file in this path. Path :{filepath}");
+                return "";
             }
 
             string jsonStr = string.Empty;
@@ -104,37 +122,206 @@ namespace GDG.ModuleManager
             {
                 jsonStr = reader.ReadToEnd();
             }
-
-            return JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(jsonStr);
+            return jsonStr;
         }
-
-        public static void JsonWriter(List<Dictionary<string, object>> data, string filepath)
+        /// <summary>
+        /// 用于解析class类型数组类型的Json，返回一个字典数组，键值对名分别为对象名称、值
+        /// </summary>
+        public static List<Dictionary<string,string>> JsonStringToObjectArray(string jsonStr)
         {
-            var reg = Regex.Replace(filepath, @".json", "");
+            var objectArray = new List<Dictionary<string, string>>();
+            JsonTextReader reader = new JsonTextReader(new StringReader(jsonStr));
 
-            //如果不是一个完整的路径
-            if (!UserFileManager.IsCompletePath(filepath))
+            List<string> result = new List<string>();
+            StringBuilder sb = new StringBuilder();
+            int dicIndex = -1;
+            string currentPropertyName = null;
+
+            while (reader.Read())
             {
-                filepath = $"{Path}/{reg}.json";
+                if (reader.Value != null) // 有内容
+                {
+                    if(reader.TokenType == JsonToken.PropertyName)
+                    {
+                        var objDic = objectArray[dicIndex];
+                        currentPropertyName = reader.Value.ToString();
+                        objDic.Add(currentPropertyName, "");
+                        continue;
+                    }
+                    if (reader.TokenType == JsonToken.String || reader.TokenType == JsonToken.Integer || reader.TokenType == JsonToken.Boolean
+                        || reader.TokenType == JsonToken.Integer || reader.TokenType == JsonToken.Null)
+                    {
+                        if(currentPropertyName!=null)
+                        {                            
+                            objectArray[dicIndex][currentPropertyName] = reader.Value.ToString();
+                        }
+                    }
+                }
+                else
+                {
+                    //对象开始
+                    if(reader.TokenType==JsonToken.StartObject)
+                    {
+                        var objDic = new Dictionary<string, string>();
+                        objectArray.Add(objDic);
+                        dicIndex++;
+                        continue;
+                    }
+                }
             }
-
-            string jsonStr = string.Empty;
-
-            jsonStr = JsonConvert.SerializeObject(data);
-
-            using (StreamWriter writer = new StreamWriter(filepath))
-            {
-                writer.Write(jsonStr);
-            }
-
-            Log.Sucess($"Json file is completed, path: {filepath}");
+            return objectArray;
         }
+        /// <summary>
+        /// 用于解析值类型数组类型的Json，返回一个string数组
+        /// </summary>
+        public static List<string> JsonStringToValueArray(string jsonStr)
+        {
+            List<string> result = new List<string>();
+            JsonTextReader reader = new JsonTextReader(new StringReader(jsonStr));
 
+            while (reader.Read())
+            {
+                if(reader.Value!=null)
+                {
+                    if (reader.TokenType == JsonToken.String || reader.TokenType == JsonToken.Integer || reader.TokenType == JsonToken.Boolean
+                        || reader.TokenType == JsonToken.Integer || reader.TokenType == JsonToken.Null)
+                    {
+                        result.Add(reader.Value.ToString());
+                    }    
+                }
+            }
+            return result;
+        }
+        /// <summary>
+        /// 用于解析值为class类型的字典的Json，返回一个字典，键为字典的key，值为对象字典，对象字典的键值对名分别为对象名称、值
+        /// </summary>
+        public static Dictionary<string,Dictionary<string,string>> JsonStringToObjectDictionary(string jsonStr)
+        {
+            var result = new Dictionary<string, Dictionary<string, string>>();
+            var reader = new JsonTextReader(new StringReader(jsonStr));
+
+            string currentKey = null;
+            string currentPropertyName = null;
+            bool isBegin = true;
+
+            while (reader.Read())
+            {
+                if(reader.Value!=null)
+                {
+                    if(reader.TokenType == JsonToken.PropertyName)
+                    {
+                        var property = reader.Value.ToString();
+                        if(currentKey == null)
+                        {
+                            currentKey = property;
+                            continue;                            
+                        }
+                        currentPropertyName = property;
+                        result[currentKey].Add(property, "");
+                    }
+                    else
+                    {
+                        result[currentKey][currentPropertyName] = reader.Value.ToString();
+                    }
+                }
+                else
+                {
+                    if(isBegin)
+                    {
+                        isBegin = false;
+                        continue;
+                    }
+                    if(reader.TokenType == JsonToken.StartObject)
+                    {
+                        result.Add(currentKey,new Dictionary<string, string>());
+                    }
+                    else if (reader.TokenType == JsonToken.EndObject)
+                    {
+                        currentKey = null;
+                    }
+                }
+            }
+
+            return result;
+        }
+        /// <summary>
+        /// 用于解析值为非class类型类型的字典的Json，返回一个字典，键值对名分别为对象名称、值
+        /// </summary>
+        public static Dictionary<string,string> JsonStringToValueDictionary(string jsonStr)
+        {
+            var result = new Dictionary<string, string>();
+            var reader = new JsonTextReader(new StringReader(jsonStr));
+            string currentKey = "";
+            while (reader.Read())
+            {
+                if (reader.Value != null)
+                {
+                    if (reader.TokenType == JsonToken.PropertyName)
+                    {
+                        currentKey = reader.Value.ToString();
+                        result.Add(currentKey, "");
+                    }
+                    else
+                    {
+                        result[currentKey] = reader.Value.ToString();
+                    }
+                }
+            }
+            return result;
+        }
+        /// <summary>
+        /// 用于解析class类型的Json（不支持成员变量为 ICollection 的解析），返回一个字典，键值对名分别为变量名称、值
+        /// </summary>
+        public static Dictionary<string, string> JsonStringToObject(string jsonStr)
+        {
+            var result = new Dictionary<string, string>();
+            var reader = new JsonTextReader(new StringReader(jsonStr));
+            string currentVarName = null;
+            while (reader.Read())
+            {
+                if (reader.Value != null)
+                {
+                    if (reader.TokenType == JsonToken.PropertyName)
+                    {
+                        currentVarName = reader.Value.ToString();
+                        result.Add(currentVarName, null);
+                        continue;
+                    }
+                    else
+                    {
+                        result[currentVarName] = reader.Value.ToString();
+                    }
+                }
+            }
+            return result;
+        }
+        public static bool IsDictionary(string jsonStr)
+        {
+            bool isList = false;
+            if (jsonStr.Contains('['))
+            {
+                isList = true;
+            }
+            if (!isList)
+            {
+                if(Regex.IsMatch(jsonStr, "\":\\s.*{"))
+                    return  true;
+            }
+            return false;
+        }
+        public static bool IsList(string jsonStr)
+        {
+            if (jsonStr.Contains('['))
+            {
+                return true;
+            }
+            return false;
+        }
     }
     /// <summary>
-    /// 通用时间特性，用法：[JsonConverter(typeof(UniversalDateTimeConverter))]
+    /// 通用时间特性，用法：[JsonConverter(typeof(UDTConverter))]
     /// </summary>
-    public class UniversalDateTimeConverter : DateTimeConverterBase
+    public class UDTConverter : DateTimeConverterBase
     {
         private static IsoDateTimeConverter isoConverter = new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-dd HH:mm:ss" };
 

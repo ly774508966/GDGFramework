@@ -10,7 +10,7 @@ namespace GDG.Editor
 {
     public class AutoNamespace : EditorWindow
     {
-        [MenuItem("GDGFramework/Tools/Auto Namespace", false, 13)]
+        [MenuItem("GDGFramework/Tools/AutoNamespace", false, 13)]
         static void CreateWindow()
         {
             Rect rect=new Rect(500,500,350,100);

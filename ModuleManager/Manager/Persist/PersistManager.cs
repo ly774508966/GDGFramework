@@ -97,7 +97,7 @@ public class PersistManager : LazySingleton<PersistManager>
         /// <param name="startline">开始行（包括表头）</param>
         /// <param name="sheetIndex">Sheet序号</param>
         /// <typeparam name="T"></typeparam>
-        public void SaveData_Excel<T>(T data, string filepath, int startline = 1, int sheetIndex = 0)
+        public void SaveData_Excel<T>(T data, string filepath, int startline = 1, int sheetIndex = 0)where T:new()
         => ExcelManager.SaveData<T>(data, filepath, startline, sheetIndex);
 
         /// <summary>

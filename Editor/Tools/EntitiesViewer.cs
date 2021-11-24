@@ -326,7 +326,7 @@ public class EntitiesViewer : EditorWindow
                     GUILayout.Space(10);
                 }                
             }
-            else if (GDG.Utils.GDGTools.IsBlittable(value) || type == typeof(string) || type == typeof(char) || type == typeof(bool) || type.IsEnum)
+            else if (GDG.Utils.GDGTools.IsBaseType(type))
             {
                 using (new GUILayout.HorizontalScope())
                 {
@@ -376,7 +376,7 @@ public class EntitiesViewer : EditorWindow
                 GUI.color = childColor;
                 foreach (var item in enumerable)
                 {
-                    if (GDG.Utils.GDGTools.IsBlittable(item) || type == typeof(string) || type == typeof(char) || type == typeof(bool) || type.IsEnum)
+                    if (GDG.Utils.GDGTools.IsBaseType(type))
                     {
                         using (new GUILayout.HorizontalScope())
                         {
@@ -409,23 +409,6 @@ public class EntitiesViewer : EditorWindow
                     }
                 }
                 GUI.color = beginColor;
-            }
-            else if (value is Vector3 vector)
-            {
-                using (new GUILayout.HorizontalScope())
-                {
-                    GUI.color = TypeColor;
-                    GUILayout.Label($"[{type.Name}]  " , GDGEditorGUI.LargeLabelStyle);
-                    GUI.color = beginColor;
-                    GUILayout.Label($"{info.Name}: ", GDGEditorGUI.LargeLabelStyle);
-                    
-                    
-                    GUILayout.FlexibleSpace();
-                    GUI.color = childColor;
-                    GUILayout.Label(vector.ToString(), GDGEditorGUI.LargeLabelStyle);
-                    GUI.color = beginColor;
-                    GUILayout.Space(10);
-                }                
             }
             else
             {

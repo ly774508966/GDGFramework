@@ -46,7 +46,7 @@ namespace GDG.ModuleManager
             }
             if (!File.Exists(filepath))
             {
-                return new T();
+                throw new Exception("Error file ath!");
             }
             using (StreamReader reader = new StreamReader(filepath))
             {
@@ -74,58 +74,76 @@ namespace GDG.ModuleManager
                 serializer.Serialize(writer, data);
             }
         }
-        public static List<Dictionary<string, object>> XmlReader(string filepath)
+        public static string JsonToXml(string jsonStr,string filepath,string ArrayName = "ArrayData")
         {
+            string root = "\"root\":";
+            bool isList = JsonManager.IsList(jsonStr);
+            //如果文件不存在则返回一个新实例
+            var reg = Regex.Replace(filepath, @".xml", "");
+            //如果是一个完整的路径
+            if (UserFileManager.IsCompletePath(filepath))
+            {
+                filepath = $"{Path}/{reg}.xml";
+            }
+
+            if(isList)
+            {
+                root = "\"ArrayOfUnitData\":{\"@xmlns:xsd\":\"http://www.w3.org/2001/XMLSchema\",\"@xmlns:xsi\":\"http://www.w3.org/2001/XMLSchema-instance\",\""+ ArrayName +"\":" ;
+                jsonStr = "{\"?xml\":{\"@version\":\"1.0\",\"@standalone\":\"no\"}," + root + jsonStr + "}}";
+            }
+            else
+                jsonStr = "{\"?xml\":{\"@version\":\"1.0\",\"@standalone\":\"no\"}," + root + jsonStr + "}";
+            
+            using (StreamWriter writer = new StreamWriter(filepath))
+            {
+                var doc = JsonConvert.DeserializeXmlNode(jsonStr);
+                writer.Write(doc.OuterXml);
+            }
+            return filepath;
+        }
+        public static string XmlToJson(string filepath)
+        {
+            string jsonStr = "";
+
             //如果文件不存在则返回一个新实例
             var reg = Regex.Replace(filepath, @".xml", "");
 
-            //如果不是一个完整的路径
-            if (!UserFileManager.IsCompletePath(filepath))
+            //如果是一个完整的路径
+            if (UserFileManager.IsCompletePath(filepath))
             {
                 filepath = $"{Path}/{reg}.xml";
             }
-
             if (!File.Exists(filepath))
             {
-                return new List<Dictionary<string, object>>();
+                throw new Exception("Error file ath!");
             }
-            using (StreamReader reader = new StreamReader($"{Path}/{reg}.xml"))
+
+            using (StreamReader reader = new StreamReader(filepath))
             {
-                var xmlStr = reader.ReadToEnd();
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(reader.ReadToEnd());
+                
+                jsonStr = JsonConvert.SerializeXmlNode(doc);
 
-                XmlDocument xmlDoc = new XmlDocument();
-                xmlDoc.LoadXml(xmlStr);
+                bool isArray = Regex.IsMatch(jsonStr, "\"ArrayOfUnitData\"");
+                if(isArray)
+                {
+                    jsonStr = Regex.Replace(jsonStr, "\"ArrayOfUnitData\".*?:\\[" , "[");
+                    jsonStr = jsonStr.Substring(0, jsonStr.Length - 2);
+                }
+                else
+                    jsonStr = jsonStr.Substring(0, jsonStr.Length - 1);
+                
+                //去除root和xml信息
+                jsonStr = Regex.Replace(jsonStr, "{?\"\\?xml\":.*?}," , "");
+                jsonStr = Regex.Replace(jsonStr, "\"root\":", "");
 
-                string jsonStr = JsonConvert.SerializeXmlNode(xmlDoc);
-
-                jsonStr = Regex.Replace(jsonStr, "^{\"head\":{\"root\":", "");
-                jsonStr = Regex.Replace(jsonStr, "}}$", "");
-                return JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(jsonStr);
+                //格式化，把是数字和布尔的部分去除双引号
+                string pattern = ":\"((\\d+(.\\d+)?)|(true)|(false))\"";
+                string replacement = ":$1";
+                jsonStr = Regex.Replace(jsonStr, pattern,replacement);
             }
-        }
-        public static void XmlWriter(List<Dictionary<string, object>> data, string filepath)
-        {
-            var jsonStr = JsonConvert.SerializeObject(data);
-
-            if (Regex.IsMatch(jsonStr, @"^\[|\]$"))
-            {
-                jsonStr = "{\"root\":" + jsonStr + "}";
-            }
-
-            var xmlDoc = JsonConvert.DeserializeXmlNode(jsonStr, "head");
-
-            var reg = Regex.Replace(filepath, @".xml", "");
-
-            if (!UserFileManager.IsCompletePath(filepath))
-            {
-                filepath = $"{Path}/{reg}.xml";
-            }
-
-            using (StreamWriter writer = new StreamWriter(filepath))
-            {
-                writer.Write(xmlDoc.OuterXml);
-            }
-            Log.Sucess($"Xml file is completed, path: {filepath}");
+            return jsonStr;
         }
     }
 

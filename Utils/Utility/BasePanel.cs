@@ -16,7 +16,7 @@ namespace GDG.Utils
         void OnDestory();
         void OnPause();
         void OnResume();
-        List<T> GetControl<T>() where T : UIBehaviour;
+        List<T> GetControls<T>() where T : UIBehaviour;
         T GetControl<T>(string controlname) where T : UIBehaviour;
         List<T> GetControls<T>(string controlname, int count) where T : UIBehaviour;
         void LogAllControlName();
@@ -108,7 +108,7 @@ namespace GDG.Utils
             Log.Warning($"Can't find control：'{controlname}'！");
             return null;
         }
-        public List<T> GetControl<T>() where T : UIBehaviour
+        public List<T> GetControls<T>() where T : UIBehaviour
         {
             var list = new List<T>();
             foreach (var uilist in controlDic.Values)

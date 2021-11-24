@@ -64,18 +64,37 @@ namespace GDG.Utils
             var pos = new Vector3(UnityEngine.Input.mousePosition.x, UnityEngine.Input.mousePosition.y, playerPos.z);
             return camera.ScreenToWorldPoint(pos);
         }
-        public static bool IsBlittable(object obj)
+        public static bool IsBlittable(Type type)
         {
-            if(obj == null)
-                return false;
-            var type = obj.GetType();
             if(type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) ||
                type == typeof(ushort) || type == typeof(int) || type == typeof(uint) ||
                type == typeof(long) || type == typeof(ulong) || type == typeof(Single) || type == typeof(double))
                 return true;
             return false;
         }
-        
+        public static bool IsBaseType(Type type)
+        {
+            if(IsBlittable(type))
+            {
+                return true;
+            }
+            else
+            {
+                if(type == typeof(string) || type == typeof(char) || type == typeof(bool) || type.IsEnum || type == typeof(Vector3))
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
+        public static bool IsBlittable<T>()
+        {
+            return IsBlittable(typeof(T));
+        }
+        public static bool IsBaseType<T>()
+        {
+            return IsBaseType(typeof(T));
+        }
         #endregion
     }
 }

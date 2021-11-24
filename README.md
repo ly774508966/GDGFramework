@@ -174,7 +174,7 @@ GDGFramework 内置了以下模块：
 
     * ### Auto Namespace
         用户可以通过设置自定义命名空间来在每一次的 .cs 脚本创建时自动加上。（在创建非.cs资源时如果发生导致编辑器卡在"Application.Message.LeftButtonDown"，应关闭AutoNamespace）
-    * ### Persist Tools
+    * ### DataTableConversion
         支持 Json、Xml、Excel 数据表之间的转换
     * ### Remove Missing Scripts
         自动删除场景中以及Assets文件夹下所有 Miss 的脚本

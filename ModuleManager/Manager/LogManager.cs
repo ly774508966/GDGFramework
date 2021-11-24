@@ -78,9 +78,7 @@ namespace GDG.ModuleManager
             btnstyle.padding = new RectOffset(0, 0, 0, 2);
 
             UserFileManager.BuildFile_Async("Logger", "UnityLogger.txt");
-#if EDITOR_DEBUG
             World.monoWorld.AddOrRemoveListener(OnGUI, "OnGUI");
-#endif
         }
         public static bool EnableConsoleLog = true;
         public static bool EnableRuntimeLog = true;

@@ -62,7 +62,9 @@ namespace GDG.ModuleManager
             }
 
             if (!File.Exists(filepath))
-                return data;
+            {
+                throw new Exception("Error file ath!");
+            }
 
             BinaryFormatter bf = new BinaryFormatter();
 
