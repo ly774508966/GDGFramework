@@ -451,8 +451,7 @@ namespace GDG.ModuleManager
         /// </summary>
         /// <param name="path">在AB包下Asset路径或预制体在Resources下的路径（取决于pop时传入的assetpath或prefabpath）</param>
         /// <param name="obj">需要放入对象池的Object</param>
-
-        public void Push<T>(string path, T obj, UnityAction callback = null, string tag = "") where T : UnityEngine.Object
+        public void Push<T>(string path, T obj, UnityAction callback = null, bool isCreateParent = true,string tag = "") where T : UnityEngine.Object
         {
             if (callback == null)
                 callback = () => { };
@@ -462,13 +461,17 @@ namespace GDG.ModuleManager
             if (obj is GameObject o)
             {
                 //场景中若没用对象池则创建一个
-                if (objPool == null)
+                if (objPool == null && isCreateParent)
                     objPool = new GameObject("GameObjectPool");
 
                 //若 字典不存在PoolList 则 创建PoolList
                 if (!PoolDic.ContainsKey(path))
-                    PoolDic.Add(path, new PoolListContainer<GameObject>(objPool, o));
-
+                {
+                    if(isCreateParent)
+                        PoolDic.Add(path, new PoolListContainer<GameObject>(objPool, o));
+                    else
+                        PoolDic.Add(path, new PoolListContainer<GameObject>(null, o));
+                }
                 (PoolDic[path] as PoolListContainer<GameObject>).poolList.Add(o, callback);
             }
             else
@@ -479,7 +482,7 @@ namespace GDG.ModuleManager
             }
             SmartClean();
         }
-        public void Push(string path, Object obj, UnityAction callback = null, string tag = "")
+        public void Push(string path, Object obj, UnityAction callback = null, bool isCreateParent = true,string tag = "")
         {
             if (tag != "")
                 path = tag;
@@ -487,13 +490,17 @@ namespace GDG.ModuleManager
             if (obj is GameObject o)
             {
                 //场景中若没用对象池则创建一个
-                if (objPool == null)
+                if (objPool == null && isCreateParent)
                     objPool = new GameObject("GameObjectPool");
 
                 //若 字典不存在PoolList 则 创建PoolList
                 if (!PoolDic.ContainsKey(path))
-                    PoolDic.Add(path, new PoolListContainer<GameObject>(objPool, o));
-
+                {
+                    if(isCreateParent)
+                        PoolDic.Add(path, new PoolListContainer<GameObject>(objPool, o));
+                    else
+                        PoolDic.Add(path, new PoolListContainer<GameObject>(null, o));
+                }
                 (PoolDic[path] as PoolListContainer<GameObject>).poolList.Add(o, callback);
             }
             else
@@ -568,15 +575,20 @@ namespace GDG.ModuleManager
     {
         public PoolList(GameObject objPool, GameObject obj)
         {
-            parentobj = new GameObject(obj.name + "_Pool");
-            parentobj.transform.parent = objPool.transform;
+            if(objPool!=null)
+            {
+                parentobj = new GameObject(obj.name + "_Pool");
+                parentobj.transform.parent = objPool.transform;                
+            }
             poolstack = new Stack<T>();
-            this.objPool = objPool;
         }
         public PoolList(GameObject objPool)
         {
+            if(objPool!=null)
+            {
+                parentobj.transform.parent = objPool.transform;
+            }
             poolstack = new Stack<T>();
-            this.objPool = objPool;
         }
         public PoolList()
         {
@@ -584,7 +596,6 @@ namespace GDG.ModuleManager
         }
         public Stack<T> poolstack;
         public GameObject parentobj = null;
-        public GameObject objPool = null;
 
         //从栈中pop
         public T Get()
@@ -608,7 +619,7 @@ namespace GDG.ModuleManager
                     throw new CustomErrorException("Can't push GameObject with GameObjectToEntity component into the pool!");
                 callback();
                 o.SetActive(false);
-                o.transform.parent = parentobj.transform;
+                o.transform.parent = parentobj?.transform;
                 poolstack.Push(o as T);
                 return;
             }

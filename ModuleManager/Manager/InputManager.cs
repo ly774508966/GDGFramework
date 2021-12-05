@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using GDG.Utils;
+using GDG.Config;
 
 /*
 需求：
@@ -17,6 +18,12 @@ namespace GDG.ModuleManager
     {
         public string keyName;
         public List<KeyCode> keyCodes;
+        public Key() => keyCodes = new List<KeyCode>();
+        public Key(string keyName, List<KeyCode> keyCodes)
+        {
+            this.keyName = keyName;
+            this.keyCodes = keyCodes;
+        }
 
         public bool Equals(Key other)
         {
@@ -80,7 +87,7 @@ namespace GDG.ModuleManager
         private readonly List<Key> m_keyList = new List<Key>();
         private readonly static double m_DoubleClickInterval = 280;//双击时间间隔（毫秒）
         private double m_CurrentTime;
-        private string m_InputConfigPath = "/GDGFramework/Config/InputConfig.json";
+        private string m_InputConfigPath = Configurations.ConfigPath + "/InputConfig.json";
         
         public InputManager()
         {
@@ -94,6 +101,50 @@ namespace GDG.ModuleManager
             var inputConfig = JsonManager.LoadData<List<Key>>(m_InputConfigPath);
             if (inputConfig != null)
                 m_keyList = inputConfig;
+        }
+        public void AddKeyMapping(Key key)
+        {
+            bool canAdd = true;
+            foreach(var item in m_keyList)
+            {
+                if(item.keyName == key.keyName)
+                {
+                    Log.Error($"AddKeyMapping failed ! Repeated key name :{key.keyName}");
+                    canAdd = false;
+                }
+            }
+            if(canAdd)
+            {
+                m_keyList.Add(key);
+            }
+        }
+        public void AddKeyMapping(string keyName, List<KeyCode> keyCodes)
+        {
+            bool canAdd = true;
+            foreach(var item in m_keyList)
+            {
+                if(item.keyName == keyName)
+                {
+                    Log.Error($"AddKeyMapping failed ! Repeated key name :{keyName}");
+                    canAdd = false;
+                }
+            }
+            if(canAdd)
+            {
+                m_keyList.Add(new Key(keyName,keyCodes));
+            }
+        }
+        public bool RemoveKeyMapping(string KeyName)
+        {
+            foreach(var key in m_keyList)
+            {
+                if(key.keyName.Equals(key.keyName))
+                {
+                    m_keyList.Remove(key);
+                    return true;
+                }
+            }
+            return false;
         }
         public bool GetKeyDown(string keyName)
         {

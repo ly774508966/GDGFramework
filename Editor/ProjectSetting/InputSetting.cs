@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using GDG.Config;
 using GDG.Editor;
 using GDG.ModuleManager;
 using GDG.Utils;
@@ -21,7 +22,7 @@ public partial class ProjectSetting
         }
         void OnGUI()
         {
-            using (new GUILayout.VerticalScope(WindowStyles.DarkBackground))
+            using (new GUILayout.VerticalScope(WindowStyles.CreateSolidColorStyle(new Color(0.1f, 0.1f, 0.1f))))
             {
                 var keyEvent = Event.current;
 
@@ -75,7 +76,7 @@ public partial class ProjectSetting
             this.Repaint();
         }
     }
-    private string m_InputConfigPath = "/GDGFramework/Config/InputConfig.json";
+    private string m_InputConfigPath = Configurations.ConfigPath + "\\InputConfig.json";
     public List<Key> m_keyList = new List<Key>();
     private GUITable m_InputTable;
     private string m_NewKeyName;
@@ -84,7 +85,7 @@ public partial class ProjectSetting
     {
         JsonManager.SaveData<List<Key>>(m_keyList, m_InputConfigPath);
         AssetDatabase.Refresh();
-        Log.Editor("Save Succesfully !");
+        Log.Sucess("Save Succesfully !");
     }
     private void LoadInputConfig()
     {

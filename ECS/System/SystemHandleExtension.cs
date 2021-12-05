@@ -115,10 +115,8 @@ namespace GDG.ECS
         /// <param name="selectId">指定的 Select 的唯一id，不能与其他 SelectId 重复，且不能为 int.MinValue</param>
         public static void ExcuteDelayTime<E>(this SystemHandleBase<E> handle, float secondTime,int selectId)where E:Entity
         {
-            if (handle.system.m_SelectId2ExcuteInfo.TryGetValue(selectId, out ExcuteInfo _excuteInfo))
+            if (handle.system.TryGetExcuteInfo(selectId, out ExcuteInfo _excuteInfo))
             {
-                _excuteInfo.excuteTime = GDGTools.Timer.CurrentTime + secondTime;
-                _excuteInfo.delayTime = secondTime;
                 handle.excuteInfo = _excuteInfo;
             }
             else
@@ -137,11 +135,8 @@ namespace GDG.ECS
         /// <param name="selectId">指定的 Select 的唯一id，不能与其他 SelectId 重复，且不能为 int.MinValue</param>
         public static void ExcuteDelayFrame<E>(this SystemHandleBase<E> handle, ushort frame,int selectId)where E:Entity
         {
-
-            if (handle.system.m_SelectId2ExcuteInfo.TryGetValue(selectId, out ExcuteInfo _excuteInfo))
+            if (handle.system.TryGetExcuteInfo(selectId, out ExcuteInfo _excuteInfo))
             {
-                _excuteInfo.excuteFrame = GDGTools.Timer.CurrentFrame + frame;
-                _excuteInfo.delayFrame = frame;
                 handle.excuteInfo = _excuteInfo;
             }
             else
@@ -160,9 +155,8 @@ namespace GDG.ECS
         /// <param name="selectId">指定的 Select 的唯一id，不能与其他 SelectId 重复，且不能为 int.MinValue</param>/// 
         public static void ExcuteWithEvent<E>(this SystemHandleBase<E> handle, string eventName,int selectId)where E:Entity
         {
-            if (handle.system.m_SelectId2ExcuteInfo.TryGetValue(selectId, out ExcuteInfo _excuteInfo))
+            if (handle.system.TryGetExcuteInfo(selectId, out ExcuteInfo _excuteInfo))
             {
-                _excuteInfo.eventName = eventName;
                 handle.excuteInfo = _excuteInfo;
             }
             else

@@ -8,6 +8,7 @@ using GDG.ModuleManager;
 using GDG.Editor;
 using GUIElementType = GDG.Editor.GUIElementType;
 using System;
+using GDG.Config;
 
 public class Macro
 {
@@ -30,7 +31,7 @@ public partial class ProjectSetting
     private string m_CurrentCategoriesName = "Default";
     private Vector2 m_CurrentScrollPosition = Vector2.zero;
     private GUITable m_MacroTable;
-    private string m_MacroConfigPath = "/GDGFramework/Config/MacroConfig.json";
+    private string m_MacroConfigPath = Configurations.ConfigPath + "\\MacroConfig.json";
 
     private void SaveMacroConfig()
     {
@@ -52,7 +53,7 @@ public partial class ProjectSetting
         var macroStr = string.Join(";", defineList.ToArray());
         PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, macroStr);
         AssetDatabase.Refresh();
-        Log.Editor("Save Succesfully !");
+        Log.Sucess("Save Succesfully !");
     }
     private void LoadMacroConfig()
     {

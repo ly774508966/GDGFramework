@@ -25,7 +25,7 @@ namespace GDG.ModuleManager
             var reg = Regex.Replace(filepath, @".txt", "");
 
             //如果不是一个完整的路径
-            if (!UserFileManager.IsCompletePath(filepath))
+            if (!filepath.IsFormatPath())
             {
                 if (isTxt)
                     filepath = $"{Path}/{reg}.txt";
@@ -53,7 +53,7 @@ namespace GDG.ModuleManager
             var reg = Regex.Replace(filepath, @".txt", "");
 
             //如果不是一个完整的路径
-            if (!UserFileManager.IsCompletePath(filepath))
+            if (!filepath.IsFormatPath())
             {
                 if (isTxt)
                     filepath = $"{Path}/{reg}.txt";
@@ -63,7 +63,7 @@ namespace GDG.ModuleManager
 
             if (!File.Exists(filepath))
             {
-                throw new Exception("Error file ath!");
+                throw new Exception($"Error file path!:{filepath}");
             }
 
             BinaryFormatter bf = new BinaryFormatter();
@@ -73,54 +73,6 @@ namespace GDG.ModuleManager
                 data = (T)bf.Deserialize(stream);
             }
             return data;
-        }
-        public static List<Dictionary<string, object>> BinaryReader(string filepath)
-        {
-            var data = new List<Dictionary<string, object>>();
-            bool isTxt = Regex.IsMatch(filepath, @".txt");
-            var reg = Regex.Replace(filepath, @".txt", "");
-
-            //如果不是一个完整的路径
-            if (!UserFileManager.IsCompletePath(filepath))
-            {
-                if (isTxt)
-                    filepath = $"{Path}/{reg}.txt";
-                else
-                    filepath = $"{Path}/{reg}";
-            }
-
-            if (!File.Exists(filepath))
-                return data;
-
-            BinaryFormatter bf = new BinaryFormatter();
-
-            using (FileStream stream = new FileStream(filepath, FileMode.Open, FileAccess.Read))
-            {
-                data = (List<Dictionary<string, object>>)bf.Deserialize(stream);
-            }
-            return data;
-        }
-        public static void BinaryWriter(List<Dictionary<string, object>> data, string filepath)
-        {
-            bool isTxt = Regex.IsMatch(filepath, @".txt");
-            var reg = Regex.Replace(filepath, @".txt", "");
-
-            //如果不是一个完整的路径
-            if (!UserFileManager.IsCompletePath(filepath))
-            {
-                if (isTxt)
-                    filepath = $"{Path}/{reg}.txt";
-                else
-                    filepath = $"{Path}/{reg}";
-            }
-
-            BinaryFormatter bf = new BinaryFormatter();
-
-            using (FileStream stream = new FileStream(filepath, FileMode.OpenOrCreate, FileAccess.Write))
-            {
-                // bf.Serialize(stream, data.ToObject<List<SelectableEnumItem>>());
-            }
-            Log.Sucess($"Binary file is completed, path: {filepath}");
         }
     }
 }

@@ -12,18 +12,6 @@ namespace GDG.ECS
         /// </summary>
         List<Entity> Entities{ get;}
         /// <summary>
-        /// SelectId到执行信息的映射
-        /// </summary>
-        Dictionary<int, ExcuteInfo> m_SelectId2ExcuteInfo { get; }
-        /// <summary>
-        /// 实体到执行信息的映射
-        /// </summary>
-        Dictionary<ulong, List<ExcuteInfo>> m_Index2ExcuteInfoListMapping{ get; }
-        /// <summary>
-        /// 执行信息到实体的映射
-        /// </summary>
-        Dictionary<ExcuteInfo, List<ulong>> m_ExcuteInfo2EntityListMapping{ get; }
-        /// <summary>
         /// 设置可遍历的实体集合
         /// </summary>
         void SetEntities(List<Entity> entities);
@@ -43,5 +31,11 @@ namespace GDG.ECS
         /// 向Entities移除实体
         /// </summary>
         bool RemoveEntity(Entity entity);
+        bool TryGetExcuteInfos(ulong index, out List<int> excuteInfos);
+        bool TryGetExcuteInfo(int selectedId, out ExcuteInfo excuteInfo);
+        void AddSelectId2ExcuteInfoMapping(int selectedId, ExcuteInfo excuteInfo);
+        bool RemoveSelectId2ExcuteInfoMapping(int selectedId);
+        void AddEntity2SelectIdMapping(ulong index,List<int> excuteInfos);
+        bool RemoveEntity2ExcuteInfosMapping(ulong index);
     }
 }

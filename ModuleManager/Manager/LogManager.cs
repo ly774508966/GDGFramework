@@ -101,7 +101,7 @@ namespace GDG.ModuleManager
             if (new FileInfo(FilePath)?.Length > LogManager.LoggerMaxMBSize * 1024 * 1024)
             {
                 UserFileManager.ClearFile("Logger/UnityLogger.txt");
-                LogManager.Instance.LogWarning("清空了一次日志");
+                LogManager.LogWarning("清空了一次日志");
             }
 
             if (!LogManager.EnableTime)
@@ -120,7 +120,7 @@ namespace GDG.ModuleManager
         }
 
         #region 控制台日志
-        public string MessageFormat(object message, string tag, string invoker, string callerFilePath, int callerLineNumber)
+        public static string MessageFormat(object message, string tag, string invoker, string callerFilePath, int callerLineNumber)
         {
             if (!EnableLog)
                 return "";
@@ -145,7 +145,7 @@ namespace GDG.ModuleManager
             }
             return info;
         }
-        public void LogCustom(object message,
+        public static void LogCustom(object message,
             string tag,
             Color color,
             [CallerMemberNameAttribute] string invoker = "unknown",
@@ -157,7 +157,7 @@ namespace GDG.ModuleManager
             var info = MessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
             Debug.LogFormat(string.Format($"<color=#{ColorToHex(color)}>" + "{0}</color>", info));
         }
-        public void LogSucess(object message,
+        public static void LogSucess(object message,
             string tag = "SUCESS",
             [CallerMemberNameAttribute] string invoker = "unknown",
             [CallerFilePath] string callerFilePath = "unknown",
@@ -168,7 +168,7 @@ namespace GDG.ModuleManager
             var info = MessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
             Debug.LogFormat(string.Format("<color=#8BBF41>{0}</color>", info));
         }
-        public void LogInfo(
+        public static void LogInfo(
             object message,
             string tag = "INFO",
             [CallerMemberNameAttribute] string invoker = "unknown",
@@ -180,7 +180,7 @@ namespace GDG.ModuleManager
             var info = MessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
             Debug.Log(info);
         }
-        public void LogWarning(
+        public static void LogWarning(
             object message,
             string tag = "WARNING",
             [CallerMemberNameAttribute] string invoker = "unknown",
@@ -192,7 +192,7 @@ namespace GDG.ModuleManager
             var info = MessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
             Debug.LogWarning(string.Format("<color=#E2B652>{0}</color>", info));
         }
-        public void LogError(
+        public static void LogError(
             object message,
             string tag = "ERROR",
             [CallerMemberNameAttribute] string invoker = "unknown",

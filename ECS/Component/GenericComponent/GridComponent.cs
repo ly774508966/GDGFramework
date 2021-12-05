@@ -1,6 +1,6 @@
 using GDG.ECS;
 
-namespace GDG.Utils
+namespace GDG.ECS
 {
     public class GridComponent : IComponent
     {

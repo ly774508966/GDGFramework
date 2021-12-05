@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using GDG.ModuleManager;
+using GDG.Utils;
+
 namespace GDG.ECS
 {
     public class ComponentTypes : ICollection<Type>,IEquatable<ComponentTypes>
@@ -17,7 +19,7 @@ namespace GDG.ECS
                     continue;
 
                 if(!typeof(IComponent).IsAssignableFrom(item))
-                    LogManager.Instance.LogError($"Try to add a wrong type into ComponentTypes! Type:{item.GetType()}");
+                    Log.Error($"Try to add a wrong type into ComponentTypes! Type:{item.GetType()}");
                 ComponentTypesList.Add(item);
             }
 

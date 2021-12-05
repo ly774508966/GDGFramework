@@ -33,9 +33,7 @@ namespace GDG.AI
             this.cellSize = cellSize;
             this.localPosition = localPosition;
             gridArray = new T[this.width, this.height];
-# if EDITOR_DEBUG
             gridTextArray = new TextMesh[width, height];
-# endif
         }
         public Vector3 GetWorldPositionXY(int x, int y) => new Vector3(x, y) * cellSize + localPosition;
         public Vector3 GetWorldPositionXZ(int x, int z, int y = 0) => new Vector3(x, y, z) * cellSize + localPosition;

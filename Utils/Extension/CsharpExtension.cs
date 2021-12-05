@@ -34,132 +34,150 @@ public static class CsharpExtension
     }
 
     #endregion
-    #region 验证
-    private static readonly Regex RegNumber = new Regex("^\\d+$");
-    private static readonly Regex RegEmail = new Regex("^[\\w-]+@[\\w-]+\\.(com|net|org|edu|mil|tv|biz|info)$");
-    private static readonly Regex RegIp = new Regex("((25[0-5]|2[0-4]\\d|1?\\d?\\d)\\.){3}(25[0-5]|2[0-4]\\d|1?\\d?\\d)");
-    public static bool IsBoolean(this string str) => str.Equals("true") || str.Equals("false");
-    public static bool IsNumber(this string str) => RegNumber.Match(str).Success;
-    public static bool IsEmail(this string str) => RegEmail.Match(str).Success;
-    public static bool IsIPAddress(this string str) => RegEmail.Match(str).Success;
-    public static bool IsCompletePath(this string filepath)
-    {
-        filepath = Regex.Replace(filepath, @"\\", @"/");
-        filepath = Regex.Replace(filepath, @"//", @"/");
-        return (Regex.IsMatch(filepath, @"([A-Za-z]+:\/|\/\/)([^\/^\/:*?""<>|].*\/)*([^\^\/:*?""<>|]+)$")//Windows下
-        || Regex.IsMatch(filepath, @"(.\/|\/){1}([^\/^\/:*?""<>|].*)*(\/[^\^\/:*?""<>|]+)$"));//Linux下
-    }
-    #endregion
-    #region 类型转换
-    public static int? ToInt(this object obj)
-    {
-        if (int.TryParse(obj.ToString(), out int value))
+         #region 验证
+        private static readonly Regex RegNumber = new Regex("^\\d+$");
+        private static readonly Regex RegEmail = new Regex("^[\\w-]+@[\\w-]+\\.(com|net|org|edu|mil|tv|biz|info)$");
+        private static readonly Regex RegIp = new Regex("((25[0-5]|2[0-4]\\d|1?\\d?\\d)\\.){3}(25[0-5]|2[0-4]\\d|1?\\d?\\d)");
+        public static bool IsBoolean(this string str) => str.Equals("true") || str.Equals("false");
+        public static bool IsNumber(this string str) => RegNumber.Match(str).Success;
+        public static bool IsEmail(this string str) => RegEmail.Match(str).Success;
+        public static bool IsIPAddress(this string str) => RegEmail.Match(str).Success;
+        public static bool IsFormatPath(this string filepath)
         {
-            return value;
+            return (Regex.IsMatch(filepath, @"(([A-Za-z]+:\/|\/\/)([^\/^\/:*?""<>|].*\/)*([^\^\/:*?""<>|]+))|([A-Za-z]+:\\|\\\\)([^\\^\\:*?""<>|].*\\)*([^\\^\\:*?""<>|]+)$")//Windows下
+            || Regex.IsMatch(filepath, @"(.\/|\/){1}([^\/^\/:*?""<>|].*)*(\/[^\^\/:*?""<>|]+)$"));//Linux下
         }
-        return null;
-    }
-    public static Int32? ToInt32(this object obj)
-    {
-        if (Int32.TryParse(obj.ToString(), out Int32 value))
+        /// <summary>
+        /// 检测是否为文件路径（非文件夹）
+        /// </summary>
+        /// <param name="filepath">文件路径</param>
+        /// <param name="checkExtension">是否必须存在文件后缀</param>
+        /// <returns></returns>
+        public static bool IsFilePath(this string filepath,bool checkExtension = true)
         {
-            return value;
+            if(filepath.IsFormatPath())
+            {
+                if(checkExtension)
+                    return Regex.IsMatch(filepath, @"(.*\\.+\..+)|(.*\/.+\..+)");
+                else
+                    return true;
         }
-        return null;
+            return false;
     }
-    public static Int64? ToInt64(this object obj)
-    {
-        if (Int64.TryParse(obj.ToString(), out Int64 value))
+        #endregion
+        #region 类型转换
+        public static int? ToInt(this object obj)
         {
-            return value;
+            if (int.TryParse(obj.ToString(), out int value))
+            {
+                return value;
+            }
+            return null;
         }
-        return null;
-    }
-    public static bool? ToBool(this object obj)
-    {
-        if (bool.TryParse(obj.ToString(), out bool value))
+        public static Int32? ToInt32(this object obj)
         {
-            return value;
+            if (Int32.TryParse(obj.ToString(), out Int32 value))
+            {
+                return value;
+            }
+            return null;
         }
-        return null;
-    }
-    public static double? ToDouble(this object obj)
-    {
-        if (double.TryParse(obj.ToString(), out double value))
+        public static Int64? ToInt64(this object obj)
         {
-            return value;
+            if (Int64.TryParse(obj.ToString(), out Int64 value))
+            {
+                return value;
+            }
+            return null;
         }
-        return null;
-    }
-    public static float? ToFloat(this object obj)
-    {
-        if (float.TryParse(obj.ToString(), out float value))
+        public static bool? ToBool(this object obj)
         {
-            return value;
+            if (bool.TryParse(obj.ToString(), out bool value))
+            {
+                return value;
+            }
+            return null;
         }
-        return null;
-    }
+        public static double? ToDouble(this object obj)
+        {
+            if (double.TryParse(obj.ToString(), out double value))
+            {
+                return value;
+            }
+            return null;
+        }
+        public static float? ToFloat(this object obj)
+        {
+            if (float.TryParse(obj.ToString(), out float value))
+            {
+                return value;
+            }
+            return null;
+        }
 
-    #endregion
-    #region 文件
-    public static string GetFileName(this string filepath, bool withExtension = true)
-    {
-        if (filepath.IsCompletePath())
+        #endregion
+        #region 文件
+        public static string GetFileName(this string filepath, bool withExtension = true)
         {
-            filepath = Regex.Replace(filepath, @"\\", @"\");
-            filepath = Regex.Replace(filepath, @"//", @"\");
-            Match match = Regex.Match(filepath, @".+\\(.+)");
-            if (withExtension)
+            if (filepath.IsFormatPath())
+            {
+                filepath = Regex.Replace(filepath, @"\\", @"\");
+                filepath = Regex.Replace(filepath, @"//", @"\");
+                filepath = Regex.Replace(filepath, @"/", @"\");
+                Match match = Regex.Match(filepath, @".+\\(.+)");
+                if (withExtension)
+                    return match.Groups[1].Value;
+                else
+                    return Regex.Match(match.Groups[1].Value, @"(.*)\.").Groups[1].Value;
+
+            }
+            return null;
+        }
+        public static string GetFileName(this string filepath, out string extension, bool withExtension = true)
+        {
+            extension = "";
+            if (filepath.IsFormatPath())
+            {
+                filepath = Regex.Replace(filepath, @"\\", @"\");
+                filepath = Regex.Replace(filepath, @"//", @"\");
+                filepath = Regex.Replace(filepath, @"/", @"\");
+                Match match = Regex.Match(filepath, @".+\\(.+)");
+
+                var result = match.Groups[1].Value;
+                extension = Regex.Match(result, @"(.*)\.(.*)").Groups[2].Value;
+
+                if (withExtension)
+                    return result;
+                else
+                    return Regex.Match(result, @"(.*)\.").Groups[1].Value;
+
+            }
+            return null;
+        }
+        public static string GetFolderPath(this string filepath)
+        {
+            if (filepath.IsFormatPath())
+            {
+                filepath = Regex.Replace(filepath, @"\\", @"\");
+                filepath = Regex.Replace(filepath, @"//", @"\");
+                filepath = Regex.Replace(filepath, @"/", @"\");
+                Match match = Regex.Match(filepath, @"(.*)\\");
                 return match.Groups[1].Value;
-            else
-                return Regex.Match(match.Groups[1].Value, @"(.*)\.").Groups[1].Value;
-
+            }
+            return null;
         }
-        return null;
-    }
-    public static string GetFileName(this string filepath, out string extension, bool withExtension = true)
-    {
-        extension = "";
-        if (filepath.IsCompletePath())
+        public static string GetFolderName(this string filepath)
         {
-            filepath = Regex.Replace(filepath, @"\\", @"\");
-            filepath = Regex.Replace(filepath, @"//", @"\");
-            filepath = Regex.Replace(filepath, @"/", @"\");
-            Match match = Regex.Match(filepath, @".+\\(.+)");
+            if (filepath.IsFormatPath())
+            {
+                filepath = Regex.Replace(filepath, @"\\", @"\");
+                filepath = Regex.Replace(filepath, @"//", @"\");
+                filepath = Regex.Replace(filepath, @"/", @"\");
+                Match match = Regex.Match(filepath, @"([^\\]*?)\\?[^\\]*$");
 
-            var result = match.Groups[1].Value;
-            extension = Regex.Match(result, @"(.*)\.(.*)").Groups[2].Value;
-
-            if (withExtension)
-                return result;
-            else
-                return Regex.Match(result, @"(.*)\.").Groups[1].Value;
-
+                return match.Groups[1].Value;
+            }
+            return null;
         }
-        return null;
-    }
-    public static string GetParentFolderPath(this string filepath)
-    {
-        if (filepath.IsCompletePath())
-        {
-            filepath = Regex.Replace(filepath, @"\\", @"\");
-            filepath = Regex.Replace(filepath, @"//", @"\");
-            Match match = Regex.Match(filepath, @"(.*)\\");
-            return match.Groups[1].Value;
-        }
-        return null;
-    }
-    public static string GetParentFolderName(this string filepath)
-    {
-        if (filepath.IsCompletePath())
-        {
-            filepath = Regex.Replace(filepath, @"\\", @"\");
-            filepath = Regex.Replace(filepath, @"//", @"\");
-            Match match = Regex.Match(filepath, @"([^\\]*?)\\?[^\\]*$");
-
-            return match.Groups[1].Value;
-        }
-        return null;
-    }
-    #endregion
+        #endregion
 }

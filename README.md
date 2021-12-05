@@ -1,8 +1,13 @@
 # GDGFramework
 
-GDGFramework 是一个基于Unity引擎的游戏框架，内置了简易实用的 ECS 架构，且支持原生的 Unity Mono 开发。打包好的 unitypackage 可以在发布版本中进行下载。
+GDGFramework（.Net4.7） 是一个基于 Unity3D 引擎的游戏框架，内置了简易实用的 ECS 架构，且支持原生的 Unity Mono 开发。打包好的 unitypackage 可以在[发布版本](https://github.com/Gatongone/GDGFramework/releases)中进行下载。
 
-GDGFramework 内置了以下模块：
+* ## 依赖插件：
+
+    1. [LitJson](https://github.com/LitJSON/litjson)
+    2. [JsonNet](https://github.com/JamesNK/Newtonsoft.Json)
+    3. [EPPlus](https://github.com/EPPlusSoftware/EPPlus)
+    4. [SerializableDictionary](https://github.com/azixMcAze/Unity-SerializableDictionary)
 
 * ## ECS 实体组件系统
 
@@ -23,7 +28,9 @@ GDGFramework 内置了以下模块：
         }
         ```
 
-        Entity 可以由 EntityManager 创建，EntityManager 提供了绑定了 GameObject 的实体的创建、绑定了从AB包中获取的资源的实体创建、绑定了从 Resources 文件夹中获取的资源的实体的创建。
+        Entity 可以由 EntityManager 创建，EntityManager 提供了以下实体的创建方式：
+        
+        GameObject 的实体的创建、从AB包中获取的资源的实体创建、从 Resources 文件夹中获取的资源的实体的创建。
 
         ```C#        
         //创建空实体
@@ -126,9 +133,38 @@ GDGFramework 内置了以下模块：
 
         当场景中的 GameObject 被加上一个`GameObjectToEntity` Mono组件时，它就成为一个挂载有 `GameObjectComponent`组件的实体，你可以通过给它加上一个代理（继承至`IEntityProxy`的 MonoBehaviour）来为其增加额外的ECS组件。
 
+* ## ProjectSetting 项目管理
+  
+  在 GDGFramework/ProjectSetting 中打开项目管理界面。
+
+  * ### Logger：日志管理
+
+        为了开发测试与游戏发布分离，可以在游戏发布前将日志关闭，所有的 `Log.XXX` 和 `this.logxxx` 都将不再生效
+
+  * ### Input 输入键位设置
+
+        可以快速的增加一个键名，并且可以像游戏中一样监听键盘按键并快速设置键位，至多支持三个组合键的绑定。
+
+  * ### Audio 音量管理
+
+        静音，或者修改全局音量、BGM音量、音效音量。
+
+  * ### Marco 全局宏管理
+
+        快速设置宏，并且可以选择是否启用。
+
+  * ### Locale：本地化管理方案
+
+        一键切换 UI 语言版本，支持 Text、TMP_Text、Image 的本地化方案，本地化配置表在 Config 文件夹下可以被找到。在 UI 中添加 `LocalizationImage` 或 `LocalizationText` 或 `LocalizationTMPText` 脚本，并设置key值，在 ProjectSetting 中即可为各个语言的 key 值设置不同的 value。这里的 key 指的是每一个 UI 的唯一 handle，value 的含义根据不同的 UI 有不同的含义：
+
+        1. 若为 Text，则 Value 指的是在该语言版本下的文字信息
+        2. 若为 Image，则 Value 指的是在 Resources 文件夹下的 Sprite 路径，或者是 AB 包资源路径（格式为 bundleName/assetName）
+
+        `LocalizationText` 和 `LocalizationTMPText` 都可以自定义文字样式，包括字体、间距等。`LocalizationImage` 若设置了 SpriteStyle 则将以 SpriteStyle 中的图片为最终效果，但在该语言版本下必须有至少一个任意内容，否则 SpriteStyle 将无效。
+
 * ## GDGTools 常用工具模块
     
-    GDGTools 是一个静态工具类，内置了以下常用工具模块：
+    GDGTools 是一个静态工具类，内置了以下游戏中常用工具模块：
 
     * ### Timer 计时器
         隔帧、或隔时间段执行回调方法。
@@ -149,15 +185,17 @@ GDGFramework 内置了以下模块：
     * ### AssetLoder AB包资源加载器
         用于对AB包中资源的加载与实例化。
     * ### PanelController UI管理器
-        UI基于Panel管理，Panel需要继承至BasePanel，自动绑定了UI事件。支持对 Panel 暂停、重启、销毁、创建、隐藏、取消隐藏。
+        UI基于Panel管理，Panel需要继承至BasePanel，自动绑定了UI事件。支持对 Panel 加载、暂停、重启、销毁、创建、隐藏、取消隐藏。
+    * ### LocalLanguage 本地化语言管理
+        通过设置 `CurrentLanguage` 即可立即切换语言版本
 
 * ## FlowFieldController 流场寻路
 
-    基q于流场的AI寻路系统，支持2D和3D两种网格。使用 `FlowFieldController.GenerateFlowField` 来生成一个流场，默认障碍物Layer为 “Impassible”。通过`SetDestination` 方法来为流场设置一个目的地，通过 `GetFieldDirection` 方法来获得流场上某一网格的
+    基于流场的AI寻路系统，支持2D和3D两种网格。使用 `FlowFieldController.GenerateFlowField` 来生成一个流场，默认障碍物Layer为 “Impassible”。通过`SetDestination` 方法来为流场设置一个目的地，通过 `GetFieldDirection` 方法来获得某一网格的流场方向。
 
 * ## 日志打印模块
 
-    支持为Log添加tag，方便过滤日志。内置两种模式：Game下的日志（通过`this.log`打印）、Console下日志（通过`Log.Info`打印）。包含了 Info、Sucess、Warning、Error、Editor、Custom 几种风格的打印信息。可以在ProjectSetting选择是否将日志写入文件，在`User/Logger/UnityLogger.txt`中找到被写入的日志文件，可以用于将客户端打印信息上传到服务器。
+    支持为Log添加tag，方便过滤日志。内置两种模式：Game下的日志（通过`this.log`打印）、Console下日志（通过`Log.Info`打印）。包含了 Info、Sucess、Warning、Error、Editor、Custom 几种风格的打印信息。可以在ProjectSetting选择是否将日志写入文件，在`StreamingAssets/User/Logger/UnityLogger.txt`中找到被写入的日志文件，可以用于将客户端打印信息上传到服务器。
 
 * ## Async 异步模块
 
@@ -165,7 +203,7 @@ GDGFramework 内置了以下模块：
         通过 `AsyncRunner.RunAsync` 来开启一个多线程任务，支持取消令牌的使用。通过`AsyncRunner.SyncToMainThread`来将多线程任务中 unity 原生 mono 组件的逻辑加入到主线程中执行。
 
     * ### AsyncWaiter 异步等待器
-        功能与协程类似，但是是基于多线程的，通过获取 `Current` 属性来获得每一次 yield return 的返回值。你可以通过实现 `IYieldInstruction` 接口来实现具体的等待类，用于告知等待器何时开始下一次迭代。
+        功能与协程类似，但是是基于多线程的，可以配合AsyncRunner使用。通过获取 `Current` 属性来获得每一次 yield return 的返回值。你可以通过实现 `IYieldInstruction` 接口来实现具体的等待类，用于告知等待器何时开始下一次迭代。
 
     * ### AsyncWebRequest 异步网络请求
         用于异步下载网络资源，并且支持 Get 或者 Post 方法向服务器发送请求并获取响应数据。
@@ -178,7 +216,3 @@ GDGFramework 内置了以下模块：
         支持 Json、Xml、Excel 数据表之间的转换
     * ### Remove Missing Scripts
         自动删除场景中以及Assets文件夹下所有 Miss 的脚本
-    * ### ProjectSetting
-        项目设置，包括音量、输入（支持Editor模式下添加键盘输入映射）、全局宏管理、日志管理
-    * ### EntitiesViewer
-        实时地查看 ECS 相关信息

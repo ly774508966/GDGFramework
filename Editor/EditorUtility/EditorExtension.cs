@@ -9,7 +9,7 @@ namespace GDG.Editor
 {
     public class EditorExtension
     {
-        public static string TemplatePath = "Assets/GDGFramework/Editor/ScriptTemplate";
+        public static string TemplatePath = "Assets/GDGFramework/ScriptTemplate";
 
         #region Hierarchy
         [MenuItem("GameObject/Create GameEntity", false, 0)]
@@ -103,6 +103,11 @@ namespace GDG.Editor
         private static void CreateEnum()
         {
             CreateCshapScriptFromTemplate("TestType.cs", TemplatePath + "/EnumTemplate.txt");
+        }
+        [MenuItem("Assets/Create/Singleton", false, 68)]
+        private static void CreateSingleton()
+        {
+            CreateCshapScriptFromTemplate("TestController.cs", TemplatePath + "/SingletonTemplate.txt");
         }
         #endregion
     }

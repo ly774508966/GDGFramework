@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using GDG.ECS;
+using GDG.Utils;
 using UnityEngine;
 
 namespace GDG.ModuleManager
 {
     internal class UserFileManager : LazySingleton<UserFileManager>
     {
+        internal static string AssetPath{ get => Application.dataPath; }
         public static string Path
         {
             get
@@ -16,7 +18,7 @@ namespace GDG.ModuleManager
 #if UNITY_ANDROID
                 return $"{Application.persistentDataPath}/User";
 #else
-                return $"{Application.dataPath}/User";
+                return $"{Application.streamingAssetsPath}/User";
 #endif
             }
         }
@@ -42,7 +44,7 @@ namespace GDG.ModuleManager
             if (!Directory.Exists($"{Path}/{foldername}"))
             {
                 DirectoryInfo info = Directory.CreateDirectory($"{Path}/{foldername}");
-                LogManager.Instance.LogWarning($"创建了文件夹{Path}/{foldername}");
+                Log.Warning($"创建了文件夹{Path}/{foldername}");
             }
         }
         public static void BuildFolder(string foldername, string path)
@@ -50,7 +52,7 @@ namespace GDG.ModuleManager
             if (!Directory.Exists($"{path}/{foldername}"))
             {
                 DirectoryInfo info = Directory.CreateDirectory($"{path}/{foldername}");
-                LogManager.Instance.LogWarning($"创建了文件夹{path}/{foldername}");
+                Log.Warning($"创建了文件夹{path}/{foldername}");
             }
         }
         /// <summary>
@@ -79,7 +81,7 @@ namespace GDG.ModuleManager
             {
                 using (FileStream fs = File.Create($"{Path}/{foldername}/{filename}"))
                 {
-                    LogManager.Instance.LogWarning($"创建了文件{Path}/{foldername}/{filename}");
+                    Log.Warning($"创建了文件{Path}/{foldername}/{filename}");
                 }
             }
         }
@@ -90,7 +92,7 @@ namespace GDG.ModuleManager
             {
                 using (FileStream fs = File.Create($"{path}/{foldername}/{filename}"))
                 {
-                    LogManager.Instance.LogWarning($"创建了文件{path}/{foldername}/{filename}");
+                    Log.Warning($"创建了文件{path}/{foldername}/{filename}");
                 }
             }
         }
@@ -125,7 +127,7 @@ namespace GDG.ModuleManager
             {
                 DirectoryInfo info = Directory.CreateDirectory($"{Path}/{foldername}");
                 yield return info;
-                LogManager.Instance.LogWarning($"创建了文件夹{Path}/{foldername}");
+                Log.Warning($"创建了文件夹{Path}/{foldername}");
             }
         }
         static IEnumerator BuildFoldAsync(string foldername, string path)
@@ -134,7 +136,7 @@ namespace GDG.ModuleManager
             {
                 DirectoryInfo info = Directory.CreateDirectory($"{path}/{foldername}");
                 yield return info;
-                LogManager.Instance.LogWarning($"创建了文件夹{path}/{foldername}");
+                Log.Warning($"创建了文件夹{path}/{foldername}");
             }
         }
         static IEnumerator BuildFileAsync(string foldername, string filename)
@@ -146,7 +148,7 @@ namespace GDG.ModuleManager
                 using (FileStream fs = File.Create($"{Path}/{foldername}/{filename}"))
                 {
                     yield return fs;
-                    LogManager.Instance.LogWarning($"创建了文件{Path}/{foldername}/{filename}");
+                    Log.Warning($"创建了文件{Path}/{foldername}/{filename}");
                 }
             }
         }
@@ -158,16 +160,9 @@ namespace GDG.ModuleManager
                 using (FileStream fs = File.Create($"{path}/{foldername}/{filename}"))
                 {
                     yield return fs;
-                    LogManager.Instance.LogWarning($"创建了文件{path}/{foldername}/{filename}");
+                    Log.Warning($"创建了文件{path}/{foldername}/{filename}");
                 }
             }
-        }
-
-        public static bool IsCompletePath(string filepath)
-        {
-            filepath = Regex.Replace(filepath, @"\\", @"/");
-            return (Regex.IsMatch(filepath, @"([A-Za-z]+:\/|\/\/)([^\/^\/:*?""<>|].*\/)*([^\^\/:*?""<>|]+)$")//Windows下
-            || Regex.IsMatch(filepath, @"(.\/|\/){1}([^\/^\/:*?""<>|].*)*(\/[^\^\/:*?""<>|]+)$"));//Linux下
         }
     }
 }

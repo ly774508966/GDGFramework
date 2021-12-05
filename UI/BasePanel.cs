@@ -7,7 +7,7 @@ using TMPro;
 using System.Text.RegularExpressions;
 using GDG.Utils;
 
-namespace GDG.Utils
+namespace GDG.UI
 {
     public interface IPanel
     {

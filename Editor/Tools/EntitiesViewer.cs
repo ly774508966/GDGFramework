@@ -35,6 +35,10 @@ public class EntitiesViewer : EditorWindow
     {
         beginColor = GUI.color;
     }
+    void  OnInspectorUpdate()
+    {
+        Repaint();
+    }
     void OnGUI()
     {   
         beginColor = GUI.color;
@@ -51,7 +55,7 @@ public class EntitiesViewer : EditorWindow
 
         using (new GUILayout.VerticalScope(WindowStyles.DarkBackground))
         {
-            using (new GUILayout.HorizontalScope(WindowStyles.DarkBackground, GUILayout.Height(position.height / 1.5f)))
+            using (new GUILayout.HorizontalScope(WindowStyles.CreateSolidColorStyle(new Color(0.1f, 0.1f, 0.1f)), GUILayout.Height(position.height / 1.5f)))
             {
                 DrawSystem();
                 DrawEntities();
@@ -62,11 +66,11 @@ public class EntitiesViewer : EditorWindow
     }
     void DrawSystem()
     {
-        using (new GUILayout.VerticalScope(WindowStyles.GrayBackground, GUILayout.MinWidth(100), GUILayout.MaxWidth(250)))
+        using (new GUILayout.VerticalScope(WindowStyles.CreateSolidColorStyle(new Color(0.15f, 0.15f, 0.15f)), GUILayout.MinWidth(100), GUILayout.MaxWidth(250)))
         {
             using (new GUILayout.HorizontalScope(WindowStyles.GrayBackground))
             {
-                GUILayout.Label("System", EditorStyles.boldLabel);
+                GUILayout.Label("Systems", EditorStyles.boldLabel);
             }
             using (new GUILayout.VerticalScope())
             {
@@ -96,9 +100,9 @@ public class EntitiesViewer : EditorWindow
     }
     void DrawEntities()
     {
-        using (new GUILayout.VerticalScope(WindowStyles.LightBackground,GUILayout.MaxWidth(310)))//, GUILayout.MinWidth(120), GUILayout.MaxWidth(150), GUILayout.ExpandHeight(true)))
+        using (new GUILayout.VerticalScope(WindowStyles.CreateSolidColorStyle(new Color(0.2f, 0.2f, 0.2f)),GUILayout.MaxWidth(310)))//, GUILayout.MinWidth(120), GUILayout.MaxWidth(150), GUILayout.ExpandHeight(true)))
         {
-            using (new GUILayout.HorizontalScope(WindowStyles.LightBackground))
+            using (new GUILayout.HorizontalScope(WindowStyles.CreateSolidColorStyle(new Color(0.2f, 0.2f, 0.2f))))
             {
                 GUILayout.Label("Entities", EditorStyles.boldLabel,GUILayout.Width(60));
                 searchText = GUILayout.TextField(searchText,new GUIStyle("SearchTextField"));
@@ -139,7 +143,7 @@ public class EntitiesViewer : EditorWindow
                         {
                             if (m_CurrentIndex == i)
                             {
-                                using (new GUILayout.HorizontalScope(WindowStyles.GrayBackground))
+                                using (new GUILayout.HorizontalScope(WindowStyles.CreateSolidColorStyle(new Color(0.15f, 0.15f, 0.15f))))
                                 {
                                     if (entities[i].IsActived)
                                     {
@@ -163,7 +167,7 @@ public class EntitiesViewer : EditorWindow
                             }
                             else
                             {
-                                using (new GUILayout.HorizontalScope(WindowStyles.LightBackground))
+                                using (new GUILayout.HorizontalScope(WindowStyles.CreateSolidColorStyle(new Color(0.2f, 0.2f, 0.2f))))
                                 {
                                     if (entities[i].IsActived)
                                     {
@@ -193,11 +197,11 @@ public class EntitiesViewer : EditorWindow
     }
     void DrawComponent()
     {
-        using (new GUILayout.VerticalScope(WindowStyles.GrayBackground))//,GUILayout.MinWidth(200), GUILayout.MaxWidth(250)))
+        using (new GUILayout.VerticalScope(WindowStyles.CreateSolidColorStyle(new Color(0.15f, 0.15f, 0.15f))))//,GUILayout.MinWidth(200), GUILayout.MaxWidth(250)))
         {
-            using (new GUILayout.HorizontalScope(WindowStyles.GrayBackground))
+            using (new GUILayout.HorizontalScope(WindowStyles.CreateSolidColorStyle(new Color(0.15f, 0.15f, 0.15f))))
             {
-                GUILayout.Label("Component", EditorStyles.boldLabel);
+                GUILayout.Label("Components", EditorStyles.boldLabel);
             }
             //GUILayout.Space(10);
             using (new GUILayout.VerticalScope())
@@ -239,11 +243,11 @@ public class EntitiesViewer : EditorWindow
     }
     void DrawInspector()
     {
-        using (new GUILayout.VerticalScope(WindowStyles.DarkBackground))
+        using (new GUILayout.VerticalScope(WindowStyles.CreateSolidColorStyle(new Color(0.1f, 0.1f, 0.1f))))
         {
             using (new GUILayout.VerticalScope(GUILayout.ExpandHeight(true)))
             {
-                using (new GUILayout.HorizontalScope(WindowStyles.DarkBackground, GUILayout.ExpandWidth(true)))
+                using (new GUILayout.HorizontalScope(WindowStyles.CreateSolidColorStyle(new Color(0.1f, 0.1f, 0.1f)), GUILayout.ExpandWidth(true)))
                 {
                     GUILayout.Label("ComponentData Inspector", EditorStyles.boldLabel);
                 }
@@ -355,7 +359,11 @@ public class EntitiesViewer : EditorWindow
                     
                     GUILayout.FlexibleSpace();
                     GUI.color = childColor;
-                    var name = obj?.name;
+                    string name = "null";
+                    if(obj!=null)
+                    {
+                       name = obj.name;
+                    }
                     GUILayout.Label(name, GDGEditorGUI.LargeLabelStyle);
                     GUI.color = beginColor;
                     GUILayout.Space(10);

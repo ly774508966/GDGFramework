@@ -1,36 +1,86 @@
-﻿using System.Collections;
+﻿using System.Text.RegularExpressions;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using GDG.ECS;
 using GDG.Utils;
 using System;
+using GDG.UI;
 
 namespace GDG.ModuleManager
 {
     public class PanelManager : LazySingleton<PanelManager>
     {
-        private Dictionary<Type, IPanel> panelDic = new Dictionary<Type, IPanel>();
+        private Dictionary<string, IPanel> panelDic = new Dictionary<string, IPanel>();
         private Stack<IPanel> panelStack = new Stack<IPanel>();
         public IPanel TopPanel{ get ; private set; }
+        public Canvas Canvas;
+        public PanelManager()
+        {
+            var canvasComponent = GameObject.FindObjectOfType<Canvas>();
+            if(canvasComponent !=null)
+                Canvas = canvasComponent;
+            else
+            {
+                Log.Warning("Can't find Canvas in the scene !");
+            }
+        }
+        public BasePanel LoadAndRegisterPanelFromResources(string panelPath)
+        {
+            var obj = GDGTools.ResourceLoder.LoadResource<GameObject>(panelPath);
+            obj.transform.SetParent(Canvas.transform);
+            if(obj.TryGetComponent<BasePanel>(out BasePanel panel))
+            {
+                RegisterPanel(obj.name,panel);
+                return panel;
+            }
+            else
+            {
+                Log.Error("This GameObject does't exist any BasePanel component");
+                return null;
+            }
+        }
+        public BasePanel LoadAndRegisterPanelFromAssetBundle(string bundlename, string assetname, string path = null, string mainABName = null) 
+        {
+            var obj = GDGTools.AssetLoder.LoadAsset<GameObject>(bundlename,assetname,path,mainABName);
+            obj.transform.SetParent(Canvas.transform);
+            if(obj.TryGetComponent<BasePanel>(out BasePanel panel))
+            {
+                RegisterPanel(obj.name,panel);
+                return panel;
+            }
+            else
+            {
+                Log.Error("This GameObject does't exist any BasePanel component");
+                return null;
+            }
+        }
         /// <summary>
         /// 注册Panel
         /// </summary>
-        public void RegisterPanel(IPanel panel)
+        public void RegisterPanel(BasePanel panel)
         {
-            panelDic.Add(panel.GetType(), panel);
+            panel.gameObject.ClearNameWithClone();
+            if(Canvas!=null)
+                panel.transform.SetParent(Canvas.transform);
+            panelDic.Add(panel.gameObject.name,panel);
+        }
+        public void RegisterPanel(string panelName, BasePanel panel)
+        {
+            panelDic.Add(panelName,panel);
         }
         /// <summary>
         /// 注销Panel
         /// </summary>
-        public bool LogoutPanel<T>()where T:IPanel
+        public bool LogoutPanel(string panelName)
         {
-            if (panelDic.ContainsKey(typeof(T)))
+            if (panelDic.ContainsKey(panelName))
             {
-                return panelDic.Remove(typeof(T));
+                return panelDic.Remove(panelName);
             }
             else
             {
-                Log.Error($"LogoutPanel Failed ! This type of Panel has never been registered ! Type :{typeof(T)}");
+                Log.Error($"LogoutPanel Failed ! This Panel has never been registered ! PanelName :{panelName}");
             }
             return false;
         }
@@ -38,37 +88,42 @@ namespace GDG.ModuleManager
         /// 移除Panel
         /// </summary>
         /// <param name="panel"></param>
-        public void DestoryPanel(IPanel panel)
+        public void DestoryPanel(BasePanel panel)
         {
-            panelDic.Remove(panel.GetType());
+            panelDic.Remove(panel.gameObject.name);
             panel.OnDestory();
+        }
+        public void DestoryPanel(string panelName)
+        {
+            panelDic[panelName].OnDestory();
+            panelDic.Remove(panelName);
         }
         /// <summary>
         /// 显示Panel
         /// </summary>
-        public void ShowPanel<T>()where T:IPanel
+        public void ShowPanel(string panelName)
         {
-            if (panelDic.TryGetValue(typeof(T),out IPanel panel))
+            if (panelDic.TryGetValue(panelName,out IPanel panel))
             {
                 panel.OnShow();
             }
             else
             {
-                Log.Error($"ShowPanel Failed ! This type of Panel has never been registered ! Type :{typeof(T)}");
+                Log.Error($"ShowPanel Failed ! This Panel has never been registered ! PanelName :{panelName}");
             }
         }
         /// <summary>
         /// 隐藏Panel
         /// </summary>
-        public void HidePanel<T>()where T:IPanel
+        public void HidePanel(string panelName)
         {
-            if (panelDic.TryGetValue(typeof(T),out IPanel panel))
+            if (panelDic.TryGetValue(panelName,out IPanel panel))
             {
                 panel.OnHide();
             }
             else
             {
-                Log.Error($"HidePanel Failed ! This type of Panel has never been registered ! Type :{typeof(T)}");
+                Log.Error($"HidePanel Failed ! This Panel has never been registered ! PanelName :{panelName}");
             }
         }
         /// <summary>
@@ -99,10 +154,17 @@ namespace GDG.ModuleManager
             TopPanel = panel;
             return panel;
         }
+        public T PopPanel<T>()where T:BasePanel
+        {
+            var panel =  panelStack.Pop() as T;
+            panel?.OnResume();
+            TopPanel = panel;
+            return panel;
+        }
         /// <summary>
         /// 使panel，并入栈
         /// </summary>
-        public void PushPanel(IPanel panel)
+        public void PushPanel(BasePanel panel)
         {
             if(panel==null)
                 return;

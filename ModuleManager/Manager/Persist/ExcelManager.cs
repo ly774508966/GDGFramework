@@ -305,7 +305,7 @@ namespace GDG.ModuleManager
             var reg = Regex.Replace(filepath, @".xlsx", "");
 
             //如果不是一个完整的路径
-            if (!UserFileManager.IsCompletePath(filepath))
+            if (!filepath.IsFormatPath())
             {
                 filepath = $"{Path}/{reg}.xlsx";
             }
@@ -337,7 +337,7 @@ namespace GDG.ModuleManager
             var reg = Regex.Replace(filepath, @".xlsx", "");
 
             //如果不是一个完整的路径
-            if (!UserFileManager.IsCompletePath(filepath))
+            if (!filepath.IsFormatPath())
             {
                 filepath = $"{Path}/{reg}.xlsx";
             }
@@ -345,7 +345,7 @@ namespace GDG.ModuleManager
 
             if (!File.Exists(filepath))
             {
-                throw new Exception("Error file path!");
+                throw new Exception($"Error file path!:{filepath}");
                 
             }
                 
@@ -368,13 +368,13 @@ namespace GDG.ModuleManager
         {
             var reg = Regex.Replace(filepath, @".xlsx", "");
             //如果不是一个完整的路径
-            if (!UserFileManager.IsCompletePath(filepath))
+            if (!filepath.IsFormatPath())
             {
                 filepath = $"{Path}/{reg}.xlsx";
             }
             if (!File.Exists(filepath))
             {
-                throw new Exception("Error file ath!");
+                throw new Exception($"Error file path!:{filepath}");
             }
 
             using (ExcelPackage excelPackage = new ExcelPackage(new FileInfo(filepath)))
@@ -494,7 +494,7 @@ namespace GDG.ModuleManager
             }
             //如果不是一个完整的路径
             var reg = Regex.Replace(filePath, @".xlsx", "");
-            if (!UserFileManager.IsCompletePath(filePath))
+            if (!filePath.IsFormatPath())
             {
                 filePath = $"{Path}/{reg}.xlsx";
             }

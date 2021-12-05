@@ -11,12 +11,6 @@ using System.Collections;
 using Newtonsoft.Json;
 using GDG.Utils;
 using Log = GDG.Utils.Log;
-/*
-* @Author: 关东关 
-* @Date: 2021-03-16 12:24:25 
-* @Last Modified by: 关东关
-* @Last Modified time: 2021-05-22 21:59:57
-*/
 
 namespace GDG.ModuleManager
 {
@@ -40,13 +34,13 @@ namespace GDG.ModuleManager
             var reg = Regex.Replace(filepath, @".xml", "");
 
             //如果是一个完整的路径
-            if (UserFileManager.IsCompletePath(filepath))
+            if (filepath.IsFormatPath())
             {
                 filepath = $"{Path}/{reg}.xml";
             }
             if (!File.Exists(filepath))
             {
-                throw new Exception("Error file ath!");
+                throw new Exception($"Error file path!:{filepath}");
             }
             using (StreamReader reader = new StreamReader(filepath))
             {
@@ -63,7 +57,7 @@ namespace GDG.ModuleManager
         {
             var reg = Regex.Replace(filepath, @".xml", "");
 
-            if (!UserFileManager.IsCompletePath(filepath))
+            if (!filepath.IsFormatPath())
             {
                 filepath = $"{Path}/{reg}.xml";
             }
@@ -81,7 +75,7 @@ namespace GDG.ModuleManager
             //如果文件不存在则返回一个新实例
             var reg = Regex.Replace(filepath, @".xml", "");
             //如果是一个完整的路径
-            if (UserFileManager.IsCompletePath(filepath))
+            if (filepath.IsFormatPath())
             {
                 filepath = $"{Path}/{reg}.xml";
             }
@@ -109,13 +103,13 @@ namespace GDG.ModuleManager
             var reg = Regex.Replace(filepath, @".xml", "");
 
             //如果是一个完整的路径
-            if (UserFileManager.IsCompletePath(filepath))
+            if (filepath.IsFormatPath())
             {
                 filepath = $"{Path}/{reg}.xml";
             }
             if (!File.Exists(filepath))
             {
-                throw new Exception("Error file ath!");
+                throw new Exception($"Error file path!:{filepath}");
             }
 
             using (StreamReader reader = new StreamReader(filepath))
@@ -144,49 +138,6 @@ namespace GDG.ModuleManager
                 jsonStr = Regex.Replace(jsonStr, pattern,replacement);
             }
             return jsonStr;
-        }
-    }
-
-    /// <summary>
-    /// 支持xml序列化的字典
-    /// </summary>
-    /// <typeparam name="TKey"></typeparam>
-    /// <typeparam name="TValue"></typeparam>
-    public class XmlDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IXmlSerializable
-    {
-        public XmlSchema GetSchema()
-        {
-            return null;
-        }
-
-        //反序列化时
-        public void ReadXml(XmlReader reader)
-        {
-            XmlSerializer keySerializer = new XmlSerializer(typeof(TKey));
-            XmlSerializer valueSerializer = new XmlSerializer(typeof(TValue));
-
-            //跳过父节点
-            reader.Read();
-
-            //如果不是</>节点则持续反序列化
-            while (reader.NodeType != XmlNodeType.EndElement)
-            {
-                keySerializer.Deserialize(reader);
-                valueSerializer.Deserialize(reader);
-            }
-        }
-        //序列化时
-        public void WriteXml(XmlWriter writer)
-        {
-            XmlSerializer keySerializer = new XmlSerializer(typeof(TKey));
-            XmlSerializer valueSerializer = new XmlSerializer(typeof(TValue));
-            //序列化时遍历本类字典
-            foreach (KeyValuePair<TKey, TValue> kv in this)
-            {
-                //分别对键值序列化
-                keySerializer.Serialize(writer, kv.Key);
-                valueSerializer.Serialize(writer, kv.Value);
-            }
         }
     }
 }

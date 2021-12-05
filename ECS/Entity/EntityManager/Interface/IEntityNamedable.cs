@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using GDG.ECS;
-namespace GDG.Utils
+using GDG.Utils;
+
+namespace GDG.ECS
 {
-    public class AssetComponent : IComponent
+    public interface IEntityNamedable
     {
-        public Object asset;
+        void SetName(Entity entity);
     }
 }

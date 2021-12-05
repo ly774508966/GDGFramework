@@ -92,15 +92,9 @@ namespace GDG.ModuleManager
             }
         }
         # endregion
-        public EventManager()
-        {
-#if UNITY_EDITOR
-            UserFileManager.BuildFile_Async("User", "EventTable.txt");
-#endif
-        }
+
         //事件字典
         private readonly Dictionary<string, IEventHandle> EventDic = new Dictionary<string, IEventHandle>();
-        //private Dictionary<string,bool> boolDic = new Dictionary<string, bool>();
         public static bool EnableEventLog = false;
         #region 清空事件
         public void ClearEvent(string eventName)
@@ -301,7 +295,7 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName))
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
                 return;
             }
             (EventDic[eventName] as EventHandle).actions -= Event;
@@ -311,7 +305,7 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName))
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
                 return;
             }
             (EventDic[eventName] as EventHandle<T>).actions -= Event;
@@ -321,7 +315,7 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName))
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
                 return;
             }
             (EventDic[eventName] as EventHandle<T1, T2>).actions -= Event;
@@ -331,7 +325,7 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName))
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
                 return;
             }
             (EventDic[eventName] as EventHandle<T1, T2, T3>).actions -= Event;
@@ -341,7 +335,7 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName))
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
                 return;
             }
             (EventDic[eventName] as EventHandle<T1, T2, T3, T4>).actions -= Event;
@@ -351,7 +345,7 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName))
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
                 return;
             }
             (EventDic[eventName] as EventHandle<R>).funcs -= Event;
@@ -361,7 +355,7 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName))
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
                 return;
             }
             (EventDic[eventName] as EventHandle<T1, R>).funcs -= Event;
@@ -371,7 +365,7 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName))
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
                 return;
             }
             (EventDic[eventName] as EventHandle<T1, T2, R>).funcs -= Event;
@@ -381,7 +375,7 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName))
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
                 return;
             }
             (EventDic[eventName] as EventHandle<T1, T2, T3, R>).funcs -= Event;
@@ -391,7 +385,7 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName))
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
                 return;
             }
             (EventDic[eventName] as EventHandle<T1, T2, T3, T4, R>).funcs -= Event;
@@ -403,13 +397,13 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName) || EventDic[eventName] == null)
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
             }
             else
             {
                 callback(eventName);
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"Excute event :  {eventName}", "Event");
+                    Log.Warning($"Excute event :  {eventName}", "Event");
             }
         }
         public R FuncTriggerCallback<R>(string eventName, Func<R> callback)
@@ -417,11 +411,11 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName) || EventDic[eventName] == null)
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
                 return default(R);
             }
             if (EnableEventLog)
-                LogManager.Instance.LogWarning($"Excute event :  {eventName}", "Event");
+                Log.Warning($"Excute event :  {eventName}", "Event");
 
             return callback();
         }
@@ -492,7 +486,7 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName) || EventDic[eventName] == null)
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
                 return;
             }
             (EventDic[eventName] as VLArgEventHandle).actions -= Event;
@@ -502,7 +496,7 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName) || EventDic[eventName] == null)
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
                 return;
             }
             (EventDic[eventName] as VLArgEventHandle).funcs -= Event;
@@ -512,12 +506,12 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName) || EventDic[eventName] == null)
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
             }
             else
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"Excute event :  {eventName}", "Event");
+                    Log.Warning($"Excute event :  {eventName}", "Event");
 
                 return (EventDic[eventName] as VLArgEventHandle)?.funcs?.Invoke(args);
             }
@@ -528,12 +522,12 @@ namespace GDG.ModuleManager
             if (!EventDic.ContainsKey(eventName) || EventDic[eventName] == null)
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"\"{eventName}\" Doesn't exist in EventDic");
+                    Log.Warning($"\"{eventName}\" Doesn't exist in EventDic");
             }
             else
             {
                 if (EnableEventLog)
-                    LogManager.Instance.LogWarning($"Excute event :  {eventName}", "Event");
+                    Log.Warning($"Excute event :  {eventName}", "Event");
 
                 (EventDic[eventName] as VLArgEventHandle)?.actions?.Invoke(args);
             }

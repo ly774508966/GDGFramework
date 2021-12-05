@@ -4,11 +4,39 @@ using UnityEngine;
 using GDG.ECS;
 using UnityEngine.SceneManagement;
 using GDG.Utils;
-
+using System.Text.RegularExpressions;
 
 public static class UnityExtension
 {
     #region GameObject
+    public static T ClearNameWithClone<T>(this T obj)where T : Object
+    {
+        if(obj==null)
+            return null;
+        obj.name = Regex.Replace(obj.name, "\\(Clone\\)", "");
+        return obj;
+    }
+    public static GameObject ClearNameWithClone(this GameObject gameObject)
+    {
+        if(gameObject==null)
+            return null;
+        gameObject.name = Regex.Replace(gameObject.name, "\\(Clone\\)", "");
+        return gameObject;
+    }
+    /// <summary>
+    /// 返回第一个为该名字的子物体
+    /// </summary>
+    public static GameObject FindChildWithName(this GameObject gameObject,string name,bool includeInactive = true)
+    {
+        foreach(var item in gameObject.GetComponentsInChildren<Transform>(includeInactive))
+        {
+            if(item.name.Equals(name))
+            {
+                return item.gameObject;
+            }
+        }
+        return null;
+    }
     public static T RequireComponent<T>(this GameObject gameObject) where T : Component
     {
         T component = gameObject.GetComponent<T>();
@@ -50,7 +78,7 @@ public static class UnityExtension
     public static float Distance(this GameObject gameObject,GameObject other)
     {
         return Distance(gameObject.transform.position , other.transform.position);
-    }    
+    }
     public static Entity GetEntity(this GameObject gameObject)
     {
         foreach(var item in World.EntityManager.GetAllEntity())
@@ -123,7 +151,20 @@ public static class UnityExtension
     {
         return transform.gameObject.TryGetEntity(out entity);
     }
-    
+    /// <summary>
+    /// 返回第一个为该名字的子物体
+    /// </summary>
+    public static Transform FindChildWithName(this Transform trans,string name,bool includeInactive = true)
+    {
+        foreach(var item in trans.GetComponentsInChildren<Transform>(includeInactive))
+        {
+            if(item.name.Equals(name))
+            {
+                return item.transform;
+            }
+        }
+        return null;
+    }
     #endregion
     #region RectTransform
     public static void Reset(this RectTransform rectTransform)

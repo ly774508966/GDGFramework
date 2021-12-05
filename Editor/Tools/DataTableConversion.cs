@@ -141,7 +141,7 @@ public class DataTableConversion : EditorWindow
                 }
                 else
                 {
-                    Log.Editor($"Convert successfully ! TargetPath : {targetPath}");
+                    Log.Sucess($"Convert successfully ! TargetPath : {targetPath}");
                 }
             }
             EditorGUILayout.Space(50f, false);

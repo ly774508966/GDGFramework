@@ -14,7 +14,7 @@ namespace GDG.ModuleManager
                 return instance;
             }
         }
-        public virtual void Awake()
+        protected virtual void Awake()
         {
             if (instance == null)
             {

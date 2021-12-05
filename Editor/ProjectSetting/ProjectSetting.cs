@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using GDG.Config;
 using GDG.Editor;
 using GDG.Utils;
 using UnityEditor;
@@ -14,21 +15,8 @@ public partial class ProjectSetting : EditorWindow
         EditorWindow.GetWindow<ProjectSetting>(false, "ProjectSetting", true);
     }
     private GUINavigationBar SelectionBar;
-    private static string[] s_SelectionItemList = new string[]{"Logger","Input","Audio","Macro"};
+    private static string[] s_SelectionItemList = new string[]{"Logger","Input","Audio","Macro","Locale"};
     private static int s_CurrentSelect = 0 ;
-    private void Awake() 
-    {
-        string path = "";
-#if UNITY_ANDROID
-        path = Application.persistentDataPath;
-#else
-        path = Application.dataPath;
-#endif
-        m_MacroConfigPath = path + m_MacroConfigPath;
-        m_LoggerConfigPath = path + m_LoggerConfigPath;
-        m_InputConfigPath = path + m_InputConfigPath;
-        m_AudioConfigPath = path + m_AudioConfigPath;
-    }
     private void OnEnable()
     {
         SelectionBar = new GUINavigationBar(s_SelectionItemList);
@@ -36,6 +24,7 @@ public partial class ProjectSetting : EditorWindow
         LoadLoggerConfig();
         LoadInputConfig();
         LoadAudioConfig();
+        LoadLocalizationConfig();
     }
     private void OnGUI()
     {
@@ -73,6 +62,13 @@ public partial class ProjectSetting : EditorWindow
                     {
                         DrawSplitLine("MACRO");
                         FixGroup(DrawMacro);
+                    }
+                    break;
+                case 4:
+                    using (new EditorGUILayout.VerticalScope())
+                    {
+                        DrawSplitLine("LOCALE");
+                        FixGroup(DrawLocalization);
                     }
                     break;
             }

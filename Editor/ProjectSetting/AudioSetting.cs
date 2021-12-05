@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using GDG.Config;
 using GDG.ModuleManager;
 using GDG.Utils;
 using UnityEditor;
@@ -13,7 +14,6 @@ public partial class ProjectSetting
         public float GlobalVolume;
         public float BGMVolume;
         public float SoundVolume;
-
         public AudioHandle(bool enableAudio, float allAudioVolume, float musicVolume, float soundVolume)
         {
             this.EnableAudio = enableAudio;
@@ -22,7 +22,7 @@ public partial class ProjectSetting
             this.SoundVolume = soundVolume;
         }
     }
-    private string m_AudioConfigPath = "/GDGFramework/Config/AudioConfig.json";
+    private string m_AudioConfigPath = Configurations.ConfigPath + "\\AudioConfig.json";
     private static bool s_EnableAudio
     {
         get => AudioManager.IsMute;
@@ -61,7 +61,7 @@ public partial class ProjectSetting
         var audioHandle = new AudioHandle(s_EnableAudio, s_AllAudioVolume, s_MusicVolume, s_SoundVolume);
         JsonManager.SaveData<AudioHandle>(audioHandle, m_AudioConfigPath);
         AssetDatabase.Refresh();
-        Log.Editor("Save Succesfully !");
+        Log.Sucess("Save Succesfully !");
     }
     private void LoadAudioConfig()
     {

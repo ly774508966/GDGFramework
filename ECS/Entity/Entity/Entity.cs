@@ -10,10 +10,10 @@ namespace GDG.ECS
     public class Entity : IEquatable<Entity>
     {
         internal Action<Entity> setNameCallBack;
-        internal Action initCallback;
-        internal Action enableCallback;
-        internal Action recycleCallback;
-        internal Action destroyCallback;
+        internal Action<Entity> initCallback;
+        internal Action<Entity> enableCallback;
+        internal Action<Entity> recycleCallback;
+        internal Action<Entity> destroyCallback;
         public string Name { get; set; }
         public ulong Index { get;private set; }
         public int Version { get;private set; }
@@ -26,28 +26,30 @@ namespace GDG.ECS
         internal void SetActive(bool isActived) => this.IsActived = isActived;
         internal Entity(){}
         internal virtual void OnInit()
-        {
+        {            
+            
+            initCallback?.Invoke(this);
+            setNameCallBack?.Invoke(this);
             Version = 1;
             IsActived = true;
-
-            initCallback?.Invoke();
-            setNameCallBack?.Invoke(this);
         }
         internal virtual void OnEnable()
         {
+            enableCallback?.Invoke(this);
             IsActived = true;
-            enableCallback?.Invoke();
+            
         }
         internal virtual void OnRecycle()
         {
+            recycleCallback?.Invoke(this);
             Version++;
             IsActived = false;
-            recycleCallback?.Invoke();
         }
         internal virtual void OnDestroy()
         {
+            destroyCallback?.Invoke(this);
             IsActived = false;
-            destroyCallback?.Invoke();
+            
         }
     
         public bool Equals(Entity other) => Index == other.Index;

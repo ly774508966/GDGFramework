@@ -1,10 +1,4 @@
-﻿/*
- * @Author: 关东关 
- * @Date: 2021-03-11 22:04:40 
- * @Last Modified by: 关东关
- * @Last Modified time: 2021-03-16 14:48:02
- */
-using System.Reflection;
+﻿using System.Reflection;
 using System;
 using System.Collections;
 using UnityEngine;

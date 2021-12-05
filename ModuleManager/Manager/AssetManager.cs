@@ -27,7 +27,7 @@ namespace GDG.ModuleManager
 #elif UNITY_ANDROID
             return "Android";
 #else
-                return "PC";
+            return "PC";
 #endif
             }
         }
@@ -86,7 +86,8 @@ namespace GDG.ModuleManager
 
             //返回目标包资源
             T obj = bundle.LoadAsset(assetname) as T;
-            return obj is GameObject ? GameObject.Instantiate<T>(obj) : obj;
+            obj.ClearNameWithClone();
+            return obj is GameObject ? GameObject.Instantiate<T>(obj).ClearNameWithClone() : obj;
         }
         public Object LoadAsset(string bundlename, string assetname, System.Type type, string path = null, string mainABName = null)
         {
@@ -97,11 +98,15 @@ namespace GDG.ModuleManager
 
             //返回目标包资源
             Object obj = bundle.LoadAsset(assetname, type);
-            return obj is GameObject ? GameObject.Instantiate(obj) : obj;
+            return obj is GameObject ? GameObject.Instantiate(obj).ClearNameWithClone() : obj;
 
         }
         #endregion
         #region 异步加载
+        internal void TryLoadAssetAsync<T>(string bundlename, string assetname, UnityAction<T> callback) where T : Object
+        {
+            World.monoWorld.StartCoroutine(CoroutineTryLoadAssetAsync<T>(bundlename, assetname, callback));
+        }
         public void LoadAssetAsync<T>(string bundlename, string assetname, UnityAction<T> callback) where T : Object
         {
             World.monoWorld.StartCoroutine(CoroutineLoadAssetAsync<T>(bundlename, assetname, callback));
@@ -128,7 +133,7 @@ namespace GDG.ModuleManager
             if (request.asset == null)
                 Log.Error($"Load asset failed ! Bundle：'{bundlename}' Asset：'{assetname}'");
             if (request.asset is GameObject)
-                callback(GameObject.Instantiate(request.asset as T));
+                callback(GameObject.Instantiate(request.asset as T).ClearNameWithClone<T>());
             else
                 callback(request.asset as T);
         }
@@ -142,7 +147,7 @@ namespace GDG.ModuleManager
             if (request.asset == null)
                 Log.Error($"Load asset failed ! Bundle：'{bundlename}' Asset：'{assetname}'");
             if (request.asset is GameObject)
-                callback(GameObject.Instantiate(request.asset as T));
+                callback(GameObject.Instantiate(request.asset as T).ClearNameWithClone<T>());
             else
                 callback(request.asset as T);
         }
@@ -156,7 +161,7 @@ namespace GDG.ModuleManager
             if (request.asset == null)
                 Log.Error($"Load asset failed ! Bundle：'{bundlename}' Asset：'{assetname}'");
             if (request.asset is GameObject)
-                callback(GameObject.Instantiate(request.asset));
+                callback(GameObject.Instantiate(request.asset).ClearNameWithClone());
             else
                 callback(request.asset);
 
@@ -171,10 +176,27 @@ namespace GDG.ModuleManager
             if (request.asset == null)
                 Log.Error($"Load asset failed ! Bundle：'{bundlename}' Asset：'{assetname}'");
             if (request.asset is GameObject)
-                callback(GameObject.Instantiate(request.asset));
+                callback(GameObject.Instantiate(request.asset).ClearNameWithClone());
             else
                 callback(request.asset);
 
+        }
+        IEnumerator CoroutineTryLoadAssetAsync<T>(string bundlename, string assetname, UnityAction<T> callback) where T : Object
+         {
+            LoadMainAndManifest(bundlename);
+
+            //异步加载目标包资源
+            AssetBundleRequest request = ABDic[bundlename].LoadAssetAsync(assetname);
+            yield return request;
+            if (request.asset != null)
+            {
+                if (request.asset is GameObject)
+                    callback(GameObject.Instantiate(request.asset as T).ClearNameWithClone<T>());
+                else
+                    callback(request.asset as T);                
+            }
+            else
+                callback(null);
         }
         #endregion
         //卸载Asset

@@ -14,7 +14,7 @@ namespace GDG.Utils
             [CallerFilePath] string callerFilePath = "unknown",
             [CallerLineNumber] int callerLineNumber = -1)
         {
-            LogManager.Instance.LogInfo(message, tag, invoker, callerFilePath, callerLineNumber);
+            LogManager.LogInfo(message, tag, invoker, callerFilePath, callerLineNumber);
         }
         public static void Sucess(
             object message,
@@ -23,7 +23,7 @@ namespace GDG.Utils
             [CallerFilePath] string callerFilePath = "unknown",
             [CallerLineNumber] int callerLineNumber = -1)
         {
-            LogManager.Instance.LogSucess(message, tag, invoker, callerFilePath, callerLineNumber);
+            LogManager.LogSucess(message, tag, invoker, callerFilePath, callerLineNumber);
         }
         public static void Warning(
             object message,
@@ -32,7 +32,7 @@ namespace GDG.Utils
             [CallerFilePath] string callerFilePath = "unknown",
             [CallerLineNumber] int callerLineNumber = -1)
         {
-            LogManager.Instance.LogWarning(message, tag, invoker, callerFilePath, callerLineNumber);
+            LogManager.LogWarning(message, tag, invoker, callerFilePath, callerLineNumber);
         }
         public static void Error(
             object message,
@@ -41,7 +41,7 @@ namespace GDG.Utils
             [CallerFilePath] string callerFilePath = "unknown",
             [CallerLineNumber] int callerLineNumber = -1)
         {
-            LogManager.Instance.LogError(message, tag, invoker, callerFilePath, callerLineNumber);
+            LogManager.LogError(message, tag, invoker, callerFilePath, callerLineNumber);
         }
         public void Custom(object message,
         string tag,
@@ -50,7 +50,7 @@ namespace GDG.Utils
         [CallerFilePath] string callerFilePath = "unknown",
         [CallerLineNumber] int callerLineNumber = -1)
         {
-            LogManager.Instance.LogCustom(message,tag,color,invoker, callerFilePath, callerLineNumber);
+            LogManager.LogCustom(message,tag,color,invoker, callerFilePath, callerLineNumber);
         }
         public static void Editor(
             object message,

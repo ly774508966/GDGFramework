@@ -5,6 +5,7 @@ using UnityEngine.Events;
 using Object = UnityEngine.Object;
 using GDG.ECS;
 using System;
+using GDG.Utils;
 
 namespace GDG.ModuleManager
 {
@@ -15,10 +16,10 @@ namespace GDG.ModuleManager
             T res = Resources.Load<T>(prefabpath);
             if (res == null)
             {
-                LogManager.Instance.LogError($"Can't Find Resources , Path : '{prefabpath}'");
+                Log.Error($"Can't Find Resources, Path : '{prefabpath}'");
             }
             if (res is GameObject)
-                return GameObject.Instantiate(res);
+                return GameObject.Instantiate(res).ClearNameWithClone();
             else
                 return res;
         }
@@ -27,10 +28,10 @@ namespace GDG.ModuleManager
             var res = Resources.Load(prefabpath, type);
             if (res == null)
             {
-                LogManager.Instance.LogError($"Can't Find Resources , Path : '{prefabpath}'");
+                Log.Error($"Can't Find Resources, Path : '{prefabpath}'");
             }
             if (res is GameObject)
-                return GameObject.Instantiate(res);
+                return GameObject.Instantiate(res).ClearNameWithClone();
             else
                 return res;
         }
@@ -42,13 +43,32 @@ namespace GDG.ModuleManager
         {
             World.monoWorld.StartCoroutine(CoroutineLoadAsync(prefabpath, type, callback));
         }
+        internal void TryLoadResourceAsync<T>(string prefabpath,UnityAction<T> callback) where T:Object
+        {
+            World.monoWorld.StartCoroutine(CoroutineTryLoadAsync(prefabpath, callback));
+        }
+        private IEnumerator CoroutineTryLoadAsync<T>(string prefabpath, UnityAction<T> callback) where T : Object
+        {
+            ResourceRequest request = Resources.LoadAsync<T>(prefabpath);
+            yield return request;
+            //加载完后执行回调函数
+            if (request.asset != null)
+            {
+                if (request.asset is GameObject)
+                    callback(GameObject.Instantiate(request.asset as T));
+                else
+                    callback(request.asset as T);
+            }
+            else
+                callback(null);
+        }
         private IEnumerator CoroutineLoadAsync<T>(string prefabpath, UnityAction<T> callback) where T : Object
         {
             ResourceRequest request = Resources.LoadAsync<T>(prefabpath);
             yield return request;
             //加载完后执行回调函数
             if (request.asset == null)
-                LogManager.Instance.LogError($"Can't Find Resources , Path : '{prefabpath}'");
+                Log.Error($"Can't Find Resources, Path : '{prefabpath}'");
             if (request.asset is GameObject)
                 callback(GameObject.Instantiate(request.asset as T));
             else
@@ -61,7 +81,7 @@ namespace GDG.ModuleManager
 
             //加载完后执行回调函数
             if (request.asset == null)
-                LogManager.Instance.LogError($"Can't Find Resources , Path : '{prefabpath}'");
+                Log.Error($"Can't Find Resources, Path : '{prefabpath}'");
             if (request.asset is GameObject)
                 callback(GameObject.Instantiate(request.asset as GameObject));
             else

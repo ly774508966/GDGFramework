@@ -28,59 +28,44 @@ namespace GDG.ECS
     }
     internal static class EntityCallbackExcuteExtension
     {
+        //selectID : EcuteInfo = 1 : 1
+        //  Entity : EcuteInfo = 1 : n
         private static void CallbackExcute(Entity entity, ExcuteInfo excuteInfo, ISystem system, Action callback)
         {
             if (excuteInfo.selectId != int.MinValue)
             {
-                if (system.m_SelectId2ExcuteInfo.TryGetValue(excuteInfo.selectId, out ExcuteInfo _excuteInfo))
-                {
-                    if (_excuteInfo.excuteTime < GDGTools.Timer.CurrentTime || _excuteInfo.excuteFrame < GDGTools.Timer.CurrentFrame)
-                    {
-                        return;
-                    }
-                }
-                else
+                if (!system.TryGetExcuteInfo(excuteInfo.selectId, out ExcuteInfo _excuteInfo))
                 {
                     _excuteInfo = excuteInfo;
-                    system.m_SelectId2ExcuteInfo.Add(excuteInfo.selectId, _excuteInfo);
+                    system.AddSelectId2ExcuteInfoMapping(excuteInfo.selectId, _excuteInfo);
                 }
-
-                if (system.m_Index2ExcuteInfoListMapping.TryGetValue(entity.Index,out List<ExcuteInfo> checkList))
+                //对于不同SelectId：
+                //如果该实体已经注册过该ExcuteInfo则返回
+                if (system.TryGetExcuteInfos(entity.Index, out List<int> checkList))
                 {
-                    if(checkList.Contains(_excuteInfo))
+                    if (checkList.Contains(_excuteInfo.selectId))
                         return;
-                }
-                
-                //检查是否注册了ExcuteInfo列表
-                if (!system.m_ExcuteInfo2EntityListMapping.TryGetValue(_excuteInfo, out List<ulong> indexList))
-                {
-                    indexList = new List<ulong>();
-                    system.m_ExcuteInfo2EntityListMapping.Add(_excuteInfo, indexList);
-                }
-                //检查Entity是否注册了ExcuteInfo
-                if (!indexList.Contains(entity.Index))
-                {
-                    indexList.Add(entity.Index);
-                    if(system.m_Index2ExcuteInfoListMapping.TryGetValue(entity.Index, out List<ExcuteInfo> excuteInfoList))
-                    {
-                        excuteInfoList.Add(_excuteInfo);
-                    }
                     else
-                    {
-                        system.m_Index2ExcuteInfoListMapping.Add(entity.Index, new List<ExcuteInfo>(){_excuteInfo});
-                    }
+                        checkList.Add(_excuteInfo.selectId);
                 }
+                //否则进行注册
+                else
+                {
+                    checkList = new List<int>() { _excuteInfo.selectId };
+                    system.AddEntity2SelectIdMapping(entity.Index, checkList);
+                }
+                #region ExcuteInfo 处理
+
                 //是否存在事件
                 if (!string.IsNullOrEmpty(_excuteInfo.eventName))
                 {
                     UnityAction action = null;
                     action = () =>
                     {
-                        if(!entity.IsActived)
+                        if (!entity.IsActived)
                         {
                             GDGTools.EventCenter.RemoveActionListener(_excuteInfo.eventName, action);
-                            system.m_Index2ExcuteInfoListMapping.Remove(entity.Index);
-                            system.m_ExcuteInfo2EntityListMapping[_excuteInfo].Remove(entity.Index);
+                            system.RemoveEntity2ExcuteInfosMapping(entity.Index);
                         }
                         else
                             callback();
@@ -88,38 +73,37 @@ namespace GDG.ECS
                     EventManager.Instance.AddActionListener(_excuteInfo.eventName, action);
                 }
                 //是否注册了延迟时间
-                if (_excuteInfo.excuteTime != double.MaxValue)
+                else if (_excuteInfo.excuteTime != double.MaxValue)
                 {
                     ulong taskIndex = 0;
-                    taskIndex = GDGTools.Timer.DelayTimeExcute(_excuteInfo.delayTime,0, () =>
-                    {
-                        
-                        if(!entity.IsActived)
-                        {
-                            GDGTools.Timer.RemoveTask(taskIndex);
-                            system.m_Index2ExcuteInfoListMapping.Remove(entity.Index);
-                            system.m_ExcuteInfo2EntityListMapping[_excuteInfo].Remove(entity.Index);
-                        }
-                        else
-                            callback();
-                    });
+                    taskIndex = GDGTools.Timer.DelayTimeExcute(_excuteInfo.delayTime, 0, () =>
+                     {
+                         if (!entity.IsActived)
+                         {
+                             GDGTools.Timer.RemoveTask(taskIndex);
+                             system.RemoveEntity2ExcuteInfosMapping(entity.Index);
+                         }
+                         else
+                             callback();
+                     });
                 }
                 //是否注册了延迟帧
-                if (_excuteInfo.excuteFrame != ulong.MaxValue)
+                else if (_excuteInfo.excuteFrame != ulong.MaxValue)
                 {
                     ulong taskIndex = 0;
-                    taskIndex = GDGTools.Timer.DelayFrameExcute(_excuteInfo.delayFrame,0, () =>
-                    {
-                        if(!entity.IsActived)
-                        {
-                            GDGTools.Timer.RemoveTask(taskIndex);
-                            system.m_Index2ExcuteInfoListMapping.Remove(entity.Index);
-                            system.m_ExcuteInfo2EntityListMapping[_excuteInfo].Remove(entity.Index);
-                        }
-                        else
-                            callback();
-                    });
+                    taskIndex = GDGTools.Timer.DelayFrameExcute(_excuteInfo.delayFrame, 0, () =>
+                     {
+                         if (!entity.IsActived)
+                         {
+                             GDGTools.Timer.RemoveTask(taskIndex);
+                             system.RemoveEntity2ExcuteInfosMapping(entity.Index);
+                         }
+                         else
+                             callback();
+                     });
                 }
+                #endregion
+
             }
             else
                 callback();
@@ -130,35 +114,35 @@ namespace GDG.ECS
         }
         internal static void CallbackExcute<E, T>(this E entity, ExcuteInfo excuteInfo, ISystem system, SystemCallback<E, T> callback, T t) where E : Entity where T : class, IComponent
         {
-            CallbackExcute(entity, excuteInfo, system, () => { callback(entity,t); });
+            CallbackExcute(entity, excuteInfo, system, () => { callback(entity, t); });
         }
         internal static void CallbackExcute<E, T1, T2>(this E entity, ExcuteInfo excuteInfo, ISystem system, SystemCallback<E, T1, T2> callback, T1 t1, T2 t2) where E : Entity where T1 : class, IComponent where T2 : class, IComponent
         {
-            CallbackExcute(entity, excuteInfo, system, () => { callback(entity,t1,t2); });
+            CallbackExcute(entity, excuteInfo, system, () => { callback(entity, t1, t2); });
         }
         internal static void CallbackExcute<E, T1, T2, T3>(this E entity, ExcuteInfo excuteInfo, ISystem system, SystemCallback<E, T1, T2, T3> callback, T1 t1, T2 t2, T3 t3) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
         {
-            CallbackExcute(entity, excuteInfo, system, () => { callback(entity,t1,t2,t3); });
+            CallbackExcute(entity, excuteInfo, system, () => { callback(entity, t1, t2, t3); });
         }
         internal static void CallbackExcute<E, T1, T2, T3, T4>(this E entity, ExcuteInfo excuteInfo, ISystem system, SystemCallback<E, T1, T2, T3, T4> callback, T1 t1, T2 t2, T3 t3, T4 t4) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
         {
-            CallbackExcute(entity, excuteInfo, system, () => { callback(entity,t1,t2,t3,t4); });
+            CallbackExcute(entity, excuteInfo, system, () => { callback(entity, t1, t2, t3, t4); });
         }
         internal static void CallbackExcute<E, T1, T2, T3, T4, T5>(this E entity, ExcuteInfo excuteInfo, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5> callback, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
         {
-            CallbackExcute(entity, excuteInfo, system, () => { callback(entity,t1,t2,t3,t4,t5); });
+            CallbackExcute(entity, excuteInfo, system, () => { callback(entity, t1, t2, t3, t4, t5); });
         }
         internal static void CallbackExcute<E, T1, T2, T3, T4, T5, T6>(this E entity, ExcuteInfo excuteInfo, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5, T6> callback, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
         {
-            CallbackExcute(entity, excuteInfo, system, () => { callback(entity,t1,t2,t3,t4,t5,t6); });
+            CallbackExcute(entity, excuteInfo, system, () => { callback(entity, t1, t2, t3, t4, t5, t6); });
         }
         internal static void CallbackExcute<E, T1, T2, T3, T4, T5, T6, T7>(this E entity, ExcuteInfo excuteInfo, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, T7 t7) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
         {
-            CallbackExcute(entity, excuteInfo, system, () => { callback(entity,t1,t2,t3,t4,t5,t6,t7); });
+            CallbackExcute(entity, excuteInfo, system, () => { callback(entity, t1, t2, t3, t4, t5, t6, t7); });
         }
         internal static void CallbackExcute<E, T1, T2, T3, T4, T5, T6, T7, T8>(this E entity, ExcuteInfo excuteInfo, ISystem system, SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, T7 t7, T8 t8) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
         {
-            CallbackExcute(entity, excuteInfo, system, () => { callback(entity,t1,t2,t3,t4,t5,t6,t7,t8); });
+            CallbackExcute(entity, excuteInfo, system, () => { callback(entity, t1, t2, t3, t4, t5, t6, t7, t8); });
         }
     }
     public class SystemHandle<E> : SystemHandleBase<E> where E : Entity
@@ -167,9 +151,9 @@ namespace GDG.ECS
         public SystemCallback<E> callback;
         public override void Excute()
         {
-            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count()==0 )
+            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count() == 0)
                 return;
-            for (int index = 0; index < result.Count();index++)
+            for (int index = 0; index < result.Count(); index++)
             {
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback);
             }
@@ -182,11 +166,11 @@ namespace GDG.ECS
         public SystemCallback<E, T> callback;
         public override void Excute()
         {
-            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count()==0)
+            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count() == 0)
                 return;
-            
-            
-            for (int index = 0; index < result.Count();index++)
+
+
+            for (int index = 0; index < result.Count(); index++)
             {
                 foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
@@ -197,7 +181,7 @@ namespace GDG.ECS
                     }
                 }
             }
-            ObjectPool<SystemHandle<E,T>>.Instance.Push(this);
+            ObjectPool<SystemHandle<E, T>>.Instance.Push(this);
         }
     }
     public class SystemHandle<E, T1, T2> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent
@@ -206,13 +190,13 @@ namespace GDG.ECS
         public SystemCallback<E, T1, T2> callback;
         public override void Excute()
         {
-            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count()==0 )
+            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count() == 0)
                 return;
             T1 t1 = null;
             T2 t2 = null;
-            
-            
-            for (int index = 0; index < result.Count();index++)
+
+
+            for (int index = 0; index < result.Count(); index++)
             {
                 foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
@@ -221,7 +205,7 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2);
             }
-            ObjectPool<SystemHandle<E,T1,T2>>.Instance.Push(this);
+            ObjectPool<SystemHandle<E, T1, T2>>.Instance.Push(this);
         }
     }
     public class SystemHandle<E, T1, T2, T3> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
@@ -230,14 +214,14 @@ namespace GDG.ECS
         public SystemCallback<E, T1, T2, T3> callback;
         public override void Excute()
         {
-            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count()==0 )
+            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count() == 0)
                 return;
             T1 t1 = null;
             T2 t2 = null;
             T3 t3 = null;
-            
-            
-            for (int index = 0; index < result.Count();index++)
+
+
+            for (int index = 0; index < result.Count(); index++)
             {
                 foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
@@ -247,7 +231,7 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3);
             }
-            ObjectPool<SystemHandle<E,T1,T2,T3>>.Instance.Push(this);
+            ObjectPool<SystemHandle<E, T1, T2, T3>>.Instance.Push(this);
         }
     }
     public class SystemHandle<E, T1, T2, T3, T4> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
@@ -256,15 +240,15 @@ namespace GDG.ECS
         public SystemCallback<E, T1, T2, T3, T4> callback;
         public override void Excute()
         {
-            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count()==0 )
+            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count() == 0)
                 return;
             T1 t1 = null;
             T2 t2 = null;
             T3 t3 = null;
             T4 t4 = null;
-            
-            
-            for (int index = 0; index < result.Count();index++)
+
+
+            for (int index = 0; index < result.Count(); index++)
             {
                 foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
@@ -275,7 +259,7 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3, t4);
             }
-            ObjectPool<SystemHandle<E,T1,T2,T3,T4>>.Instance.Push(this);
+            ObjectPool<SystemHandle<E, T1, T2, T3, T4>>.Instance.Push(this);
         }
     }
     public class SystemHandle<E, T1, T2, T3, T4, T5> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
@@ -284,16 +268,16 @@ namespace GDG.ECS
         public SystemCallback<E, T1, T2, T3, T4, T5> callback;
         public override void Excute()
         {
-            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count()==0 )
+            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count() == 0)
                 return;
             T1 t1 = null;
             T2 t2 = null;
             T3 t3 = null;
             T4 t4 = null;
             T5 t5 = null;
-            
-            
-            for (int index = 0; index < result.Count();index++)
+
+
+            for (int index = 0; index < result.Count(); index++)
             {
                 foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
@@ -305,7 +289,7 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3, t4, t5);
             }
-            ObjectPool<SystemHandle<E,T1,T2,T3,T4,T5>>.Instance.Push(this);
+            ObjectPool<SystemHandle<E, T1, T2, T3, T4, T5>>.Instance.Push(this);
         }
     }
     public class SystemHandle<E, T1, T2, T3, T4, T5, T6> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
@@ -314,7 +298,7 @@ namespace GDG.ECS
         public SystemCallback<E, T1, T2, T3, T4, T5, T6> callback;
         public override void Excute()
         {
-            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count()==0 )
+            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count() == 0)
                 return;
             T1 t1 = null;
             T2 t2 = null;
@@ -322,9 +306,9 @@ namespace GDG.ECS
             T4 t4 = null;
             T5 t5 = null;
             T6 t6 = null;
-            
-            
-            for (int index = 0; index < result.Count();index++)
+
+
+            for (int index = 0; index < result.Count(); index++)
             {
                 foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
@@ -337,7 +321,7 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3, t4, t5, t6);
             }
-            ObjectPool<SystemHandle<E,T1,T2,T3,T4,T5,T6>>.Instance.Push(this);
+            ObjectPool<SystemHandle<E, T1, T2, T3, T4, T5, T6>>.Instance.Push(this);
         }
     }
     public class SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
@@ -346,7 +330,7 @@ namespace GDG.ECS
         public SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback;
         public override void Excute()
         {
-            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count()==0 )
+            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count() == 0)
                 return;
             T1 t1 = null;
             T2 t2 = null;
@@ -355,9 +339,9 @@ namespace GDG.ECS
             T5 t5 = null;
             T6 t6 = null;
             T7 t7 = null;
-            
-            
-            for (int index = 0; index < result.Count();index++)
+
+
+            for (int index = 0; index < result.Count(); index++)
             {
                 foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
@@ -371,7 +355,7 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3, t4, t5, t6, t7);
             }
-            ObjectPool<SystemHandle<E,T1,T2,T3,T4,T5,T6,T7>>.Instance.Push(this);
+            ObjectPool<SystemHandle<E, T1, T2, T3, T4, T5, T6, T7>>.Instance.Push(this);
         }
     }
     public class SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> : SystemHandleBase<E> where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
@@ -380,7 +364,7 @@ namespace GDG.ECS
         public SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback;
         public override void Excute()
         {
-            if ( !excuteInfo.canBeExcuted || result == null || callback == null || result.Count()==0)
+            if (!excuteInfo.canBeExcuted || result == null || callback == null || result.Count() == 0)
                 return;
             T1 t1 = null;
             T2 t2 = null;
@@ -389,8 +373,8 @@ namespace GDG.ECS
             T5 t5 = null;
             T6 t6 = null;
             T7 t7 = null;
-            T8 t8 = null;   
-            for (int index = 0; index < result.Count();index++)
+            T8 t8 = null;
+            for (int index = 0; index < result.Count(); index++)
             {
                 foreach (var component in World.EntityManager.GetComponents(result.ElementAt(index)))
                 {
@@ -405,7 +389,7 @@ namespace GDG.ECS
                 }
                 result.ElementAt(index).CallbackExcute(excuteInfo, system, callback, t1, t2, t3, t4, t5, t6, t7, t8);
             }
-            ObjectPool<SystemHandle<E,T1,T2,T3,T4,T5,T6,T7,T8>>.Instance.Push(this);
+            ObjectPool<SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8>>.Instance.Push(this);
         }
     }
 }

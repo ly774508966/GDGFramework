@@ -35,7 +35,7 @@ namespace GDG.ModuleManager
             var reg = Regex.Replace(filepath, @".json", "");
 
             //如果不是一个完整的路径
-            if (!UserFileManager.IsCompletePath(filepath))
+            if (!filepath.IsFormatPath())
             {
                 filepath = $"{Path}/{reg}.json";
             }
@@ -59,14 +59,13 @@ namespace GDG.ModuleManager
             var reg = Regex.Replace(filepath, @".json", "");
 
             //如果不是一个完整的路径
-            if (!UserFileManager.IsCompletePath(filepath))
+            if (!filepath.IsFormatPath())
             {
                 filepath = $"{Path}/{reg}.json";
             }
-
             if (!File.Exists(filepath))
             {
-                throw new Exception("Error file ath!");
+                throw new Exception($"Error file path!:{filepath}");
             }
 
             string jsonStr = string.Empty;
@@ -89,7 +88,7 @@ namespace GDG.ModuleManager
             var reg = Regex.Replace(filepath, @".json", "");
 
             //如果不是一个完整的路径
-            if (!UserFileManager.IsCompletePath(filepath))
+            if (!filepath.IsFormatPath())
             {
                 filepath = $"{Path}/{reg}.json";
             }
@@ -105,7 +104,7 @@ namespace GDG.ModuleManager
             var reg = Regex.Replace(filepath, @".json", "");
 
             //如果不是一个完整的路径
-            if (!UserFileManager.IsCompletePath(filepath))
+            if (!filepath.IsFormatPath())
             {
                 filepath = $"{Path}/{reg}.json";
             }

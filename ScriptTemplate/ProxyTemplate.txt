@@ -1,8 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using GDG.ECS;
 using GDG.Utils;
+
 public class #SCRIPTNAME# : MonoBehaviour, IEntityProxy
 {
     public void Convert(Entity entity, EntityManager entityManager)

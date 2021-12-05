@@ -7,6 +7,7 @@ using GDG.Utils;
 using GDG.ECS;
 using GDG.Async;
 using GDG.Base;
+
 namespace GDG.AI
 {
     public enum GridType

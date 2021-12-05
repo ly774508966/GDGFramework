@@ -8,7 +8,6 @@ using System;
 using GDG.ModuleManager;
 using GDG.Utils;
 using UnityEngine.Events;
-using GDG.Base;
 
 namespace GDG.ECS
 {
@@ -175,14 +174,14 @@ namespace GDG.ECS
 
             if (entity.Version == 1)
             {
-                if(gameObject==null)
+                if (gameObject == null)
                 {
                     if (rename == null)
                         gameObject = new GameObject("Entity" + entity.Index);
                     else
-                        gameObject = new GameObject(rename);                    
+                        gameObject = new GameObject(rename);
                 }
-                else if(rename!=null)
+                else if (rename != null)
                     gameObject.name = rename;
             }
             entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = gameObject; });
@@ -209,7 +208,7 @@ namespace GDG.ECS
         /// <param name="rename">重命名</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Entity CreateEntityFromResources<T>(ComponentTypes componentTypes, string path, string rename = null) where T : UnityEngine.Object
+        public Entity CreateEntityFromResources<T>(ComponentTypes componentTypes, string path, string rename) where T : UnityEngine.Object
         {
             if (componentTypes == null)
                 componentTypes = new ComponentTypes(typeof(AssetComponent));
@@ -221,35 +220,77 @@ namespace GDG.ECS
 
             var entity = CreateEntity(componentTypes);
 
-            if (entity.Version == 1)
-            {
-                T res = AssetPool.Instance.Pop<T>(path);
-                if (rename != null)
-                    res.name = rename;
+            T res = AssetPool.Instance.Pop<T>(path);
+            if (rename != null)
+                res.name = rename;
 
-                if (res is GameObject gameObject)
-                {
-                    entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = gameObject; });
-                    if (rename != null)
-                        entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject.name = rename; });
-                }
-                entity.Name = res.name;
-                entity.SetComponentData<AssetComponent>((Asset) => { Asset.asset = res; });
+            if (res is GameObject gameObject)
+            {
+                entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = gameObject; });
+                if (rename != null)
+                    entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject.name = rename; });
             }
+            entity.Name = res.name;
+            entity.SetComponentData<AssetComponent>((Asset) => { Asset.asset = res; Asset.assetName = path; });
+            
             return entity;
         }
-        /// <summary>
-        /// 从Resources文件夹中创建实体
-        /// </summary>
-        /// <param name="path">资源所在的Resources下路径</param>
-        /// <param name="rename">重命名</param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public Entity CreateEntityFromResources<T>(string path, string rename = null) where T : UnityEngine.Object
+        public Entity CreateEntityFromResources<T>(ComponentTypes componentTypes, string path) where T : UnityEngine.Object
+        {
+            return CreateEntityFromResources<T>(componentTypes, path, null);
+        }
+        public Entity CreateEntityFromResources<T>(string path, string rename) where T : UnityEngine.Object
         {
             return CreateEntityFromResources<T>(null, path, rename);
         }
+        public Entity CreateEntityFromResources<T>(string path) where T : UnityEngine.Object
+        {
+            return CreateEntityFromResources<T>(null, path, null);
+        }
+        //异步
+        public void CreateEntityFromResourcesAsync<T>(ComponentTypes componentTypes, string path, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        {
+            if (componentTypes == null)
+                componentTypes = new ComponentTypes(typeof(AssetComponent));
+            else
+                componentTypes.Add(typeof(AssetComponent));
 
+            if (typeof(T) == typeof(GameObject))
+                componentTypes.Add(typeof(GameObjectComponent));
+
+            var entity = CreateEntity(componentTypes);
+            BaseWorld.Instance.AddOrRemoveEntityFromSystems(entity, false);
+
+            AssetPool.Instance.PopAsync<T>(path, (res) =>
+                {
+                    if (rename != null)
+                        res.name = rename;
+
+                    if (res is GameObject gameObject)
+                    {
+                        entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = gameObject; });
+                        if (rename != null)
+                            entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject.name = rename; });
+                    }
+                    entity.Name = res.name;
+                    entity.SetComponentData<AssetComponent>((Asset) => { Asset.asset = res; Asset.assetName = path; });
+                    callback?.Invoke(entity,res);
+                    BaseWorld.Instance.AddOrRemoveEntityFromSystems(entity, true);
+                });
+
+        }
+        public void CreateEntityFromResourcesAsync<T>(ComponentTypes componentTypes, string path, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        {
+            CreateEntityFromResourcesAsync<T>(componentTypes, path, null, callback);
+        }
+        public void CreateEntityFromResourcesAsync<T>(string path, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        {
+            CreateEntityFromResourcesAsync<T>(null, path, rename, callback);
+        }
+        public void CreateEntityFromResourcesAsync<T>(string path, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        {
+            CreateEntityFromResourcesAsync<T>(null, path, null, callback);
+        }
         #endregion
         #region CreateEntityFromAssetBundle
         /// <summary>
@@ -263,7 +304,7 @@ namespace GDG.ECS
         /// <param name="rename">重命名</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string assetName, string bundleName, string mainABName, string path, string rename) where T : UnityEngine.Object
+        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string bundleName, string assetName, string mainABName, string path, string rename) where T : UnityEngine.Object
         {
             if (componentTypes == null)
                 componentTypes = new ComponentTypes(typeof(AssetComponent));
@@ -276,51 +317,111 @@ namespace GDG.ECS
             var entity = CreateEntity(componentTypes);
             if (entity.Version == 1)
             {
-                var asset = AssetPool.Instance.Pop<T>(assetName, bundleName, path, mainABName);
+                var asset = AssetPool.Instance.Pop<T>(bundleName, assetName, path, mainABName);
 
                 if (rename != null)
                     asset.name = rename;
 
                 if (asset is GameObject gameObject)
                 {
-                     entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = gameObject; });
+                    entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = gameObject; });
                     if (rename != null)
                         entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject.name = rename; });
                 }
                 entity.Name = asset.name;
-                entity.SetComponentData<AssetComponent>((Asset) => { Asset.asset = asset; });
+                entity.SetComponentData<AssetComponent>((Asset) => { Asset.asset = asset; Asset.assetName = asset.name; });
             }
             return entity;
         }
-        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string assetName, string bundleName, string mainABName,string rename) where T : UnityEngine.Object
+        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string assetName, string bundleName, string mainABName, string rename) where T : UnityEngine.Object
         {
-            return CreateEntityFromAssetBundle<T>(componentTypes, assetName, bundleName, mainABName , null, rename);
+            return CreateEntityFromAssetBundle<T>(componentTypes, assetName, bundleName, mainABName, null, rename);
         }
         public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string assetName, string bundleName, string rename) where T : UnityEngine.Object
         {
-            return CreateEntityFromAssetBundle<T>(componentTypes, assetName, bundleName, null , null, rename);
+            return CreateEntityFromAssetBundle<T>(componentTypes, assetName, bundleName, null, null, rename);
         }
         public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string assetName, string bundleName) where T : UnityEngine.Object
         {
-             return CreateEntityFromAssetBundle<T>(componentTypes, assetName, bundleName, null , null, null);
+            return CreateEntityFromAssetBundle<T>(componentTypes, assetName, bundleName, null, null, null);
         }
         public Entity CreateEntityFromAssetBundle<T>(string assetName, string bundleName, string mainABName, string path, string rename) where T : UnityEngine.Object
         {
-            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, mainABName , path, rename); 
+            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, mainABName, path, rename);
         }
         public Entity CreateEntityFromAssetBundle<T>(string assetName, string bundleName, string mainABName, string rename) where T : UnityEngine.Object
         {
-            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, mainABName , null, rename); 
+            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, mainABName, null, rename);
         }
         public Entity CreateEntityFromAssetBundle<T>(string assetName, string bundleName, string rename) where T : UnityEngine.Object
         {
-            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, null , null, rename); 
+            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, null, null, rename);
         }
         public Entity CreateEntityFromAssetBundle<T>(string assetName, string bundleName) where T : UnityEngine.Object
         {
-            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, null , null, null); 
+            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, null, null, null);
         }
-        
+
+        //异步
+        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string bundleName, string assetName, string mainABName, string path, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        {
+            if (componentTypes == null)
+                componentTypes = new ComponentTypes(typeof(AssetComponent));
+            else
+                componentTypes.Add(typeof(AssetComponent));
+
+            if (typeof(T) == typeof(GameObject))
+                componentTypes.Add(typeof(GameObjectComponent));
+
+            var entity = CreateEntity(componentTypes);
+            BaseWorld.Instance.AddOrRemoveEntityFromSystems(entity, false);
+
+            AssetPool.Instance.PopAsync<T>(bundleName, assetName, path, mainABName, (asset) =>
+             {
+                 if (rename != null)
+                     asset.name = rename;
+
+                 if (asset is GameObject gameObject)
+                 {
+                     entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = gameObject; });
+                     if (rename != null)
+                         entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject.name = rename; });
+                 }
+                 entity.Name = asset.name;
+                 entity.SetComponentData<AssetComponent>((Asset) => { Asset.asset = asset; Asset.assetName = assetName; });
+                 callback?.Invoke(entity,asset);
+                 BaseWorld.Instance.AddOrRemoveEntityFromSystems(entity, true);
+             });
+        }
+        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string assetName, string bundleName, string mainABName, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        {
+            CreateEntityFromAssetBundleAsync<T>(componentTypes, assetName, bundleName, mainABName, null, rename, callback);
+        }
+        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string assetName, string bundleName, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        {
+            CreateEntityFromAssetBundleAsync<T>(componentTypes, assetName, bundleName, null, null, rename, callback);
+        }
+        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string assetName, string bundleName, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        {
+            CreateEntityFromAssetBundleAsync<T>(componentTypes, assetName, bundleName, null, null, null, callback);
+        }
+        public void CreateEntityFromAssetBundleAsync<T>(string assetName, string bundleName, string mainABName, string path, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        {
+            CreateEntityFromAssetBundleAsync<T>(null, assetName, bundleName, mainABName, path, rename, callback);
+        }
+        public void CreateEntityFromAssetBundleAsync<T>(string assetName, string bundleName, string mainABName, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        {
+            CreateEntityFromAssetBundleAsync<T>(null, assetName, bundleName, mainABName, null, rename, callback);
+        }
+        public void CreateEntityFromAssetBundleAsync<T>(string assetName, string bundleName, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        {
+            CreateEntityFromAssetBundleAsync<T>(null, assetName, bundleName, null, null, rename, callback);
+        }
+        public void CreateEntityFromAssetBundleAsync<T>(string assetName, string bundleName, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        {
+            CreateEntityFromAssetBundleAsync<T>(null, assetName, bundleName, null, null, null, callback);
+        }
+
         #endregion
         #region SelectEntity
         public bool TrySelectEntityWithIndex<T>(ulong index, out T result) where T : Entity
@@ -481,16 +582,16 @@ namespace GDG.ECS
             }
             if (Components.Contains(component))
                 return;
-            if (component is ISetNameable setname)
+            if (component is IEntityNamedable setname)
                 entity.setNameCallBack += setname.SetName;
-            if (component is IInitable init)
-                entity.initCallback += init.OnInit;
-            if (component is IEnable enable)
-                entity.enableCallback += enable.OnEnable;
-            if (component is IRecyclable recycle)
-                entity.recycleCallback += recycle.OnRecycle;
-            if (component is IDestroyable destroy)
-                entity.destroyCallback += destroy.OnDestroy;
+            if (component is IEntityInitable init)
+                entity.initCallback += init.InitEntity;
+            if (component is IEntityEnable enable)
+                entity.enableCallback += enable.EnableEntity;
+            if (component is IEntityRecyclable recycle)
+                entity.recycleCallback += recycle.RecycleEntity;
+            if (component is IEntityDestoryable destroy)
+                entity.destroyCallback += destroy.DestroyEntity;
 
 
             Components.Add(component);
@@ -507,16 +608,16 @@ namespace GDG.ECS
                 Log.Error($"AddComponentToList failed ! Cant't Find Index in m_Index2EntityMapping, Index: {index}");
                 return false;
             }
-            if (component is ISetNameable setname)
+            if (component is IEntityNamedable setname)
                 entity.setNameCallBack -= setname.SetName;
-            if (component is IInitable init)
-                entity.initCallback -= init.OnInit;
-            if (component is IEnable enable)
-                entity.enableCallback -= enable.OnEnable;
-            if (component is IRecyclable recycle)
-                entity.recycleCallback -= recycle.OnRecycle;
-            if (component is IDestroyable destroy)
-                entity.destroyCallback -= destroy.OnDestroy;
+            if (component is IEntityInitable init)
+                entity.initCallback -= init.InitEntity;
+            if (component is IEntityEnable enable)
+                entity.enableCallback -= enable.EnableEntity;
+            if (component is IEntityRecyclable recycle)
+                entity.recycleCallback -= recycle.RecycleEntity;
+            if (component is IEntityDestoryable destroy)
+                entity.destroyCallback -= destroy.DestroyEntity;
 
             return Components.Remove(component);
         }
@@ -524,7 +625,7 @@ namespace GDG.ECS
         {
             if (!entity.IsActived)
             {
-                LogManager.Instance.LogError("Illegal Operation! Entity is not actived");
+                Log.Error("Illegal Operation! Entity is not actived");
                 return null;
             }
             AddComponentTypes(entity, componentTypes);
@@ -539,7 +640,7 @@ namespace GDG.ECS
         {
             if (!entity.IsActived)
             {
-                LogManager.Instance.LogError("Illegal Operation! Entity is not actived");
+                Log.Error("Illegal Operation! Entity is not actived");
                 return default(T);
             }
             AddComponentTypes<T>(entity);
@@ -549,7 +650,7 @@ namespace GDG.ECS
         {
             if (!entity.IsActived)
             {
-                LogManager.Instance.LogError("Illegal Operation! Entity is IsActived");
+                Log.Error("Illegal Operation! Entity is IsActived");
                 return false;
             }
             return RemoveComponentTypes(entity, componentTypes);
@@ -558,7 +659,7 @@ namespace GDG.ECS
         {
             if (!entity.IsActived)
             {
-                LogManager.Instance.LogError("Illegal Operation! Entity is IsActived");
+                Log.Error("Illegal Operation! Entity is IsActived");
                 return false;
             }
             return RemoveComponentTypes<T>(entity);
@@ -578,7 +679,7 @@ namespace GDG.ECS
                     return;
                 }
             }
-            LogManager.Instance.LogError($"Entity doesn't exist Component!Index:{entity.Index}, Component:{typeof(T)}");
+            Log.Error($"Entity doesn't exist Component!Index:{entity.Index}, Component:{typeof(T)}");
         }
         public void SetComponentData<T>(Entity entity, Action<T> action) where T : class, IComponent
         {
@@ -587,7 +688,7 @@ namespace GDG.ECS
                 action?.Invoke(component);
                 return;
             }
-            LogManager.Instance.LogError($"Entity doesn't exist Component!Index:{entity.Index}, Component:{typeof(T)}");
+            Log.Error($"Entity doesn't exist Component!Index:{entity.Index}, Component:{typeof(T)}");
         }
         #region Details
         //实体组件类型在字典中的引用对实体引用计数-1，只用于对实体组件的修改件之前以及实体的销毁时使用
@@ -611,13 +712,13 @@ namespace GDG.ECS
                 {
                     tempComponentTypes.SetTypeId(0);//设置为未申请
                     if (m_TypeId2IndexMapping.Remove(entity.TypeId))//清空该组件对实体的映射
-                        LogManager.Instance.LogError($"Remove entity failed ! Can't Find TypeId to Index Mapping:TypeId:{entity.TypeId},ComponentTypes:{entity.Index}");
+                        Log.Error($"Remove entity failed ! Can't Find TypeId to Index Mapping:TypeId:{entity.TypeId},ComponentTypes:{entity.Index}");
                     m_TypeId2ComponentTypeMapping.Remove(entity.TypeId);//清空该typeId对组件的映射
                 }
                 return true;
             }
             else
-                LogManager.Instance.LogError($"Remove component failed ! Can't Find ComponentTypes in World ! TypeId:{entity.TypeId}");
+                Log.Error($"Remove component failed ! Can't Find ComponentTypes in World ! TypeId:{entity.TypeId}");
             return false;
         }
         private ComponentTypes AddComponentTypes(Entity entity, ComponentTypes componentTypes)
@@ -649,7 +750,7 @@ namespace GDG.ECS
             //如果未已向世界申请
             if (!afterTypes.IsRequested)
             {
-                LogManager.Instance.LogError($"Add component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
+                Log.Error($"Add component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
                 return afterTypes;
             }
             entity.SetTypeId(afterTypes.TypeId);
@@ -660,7 +761,7 @@ namespace GDG.ECS
                 outComponentTypes.SetEntityRefCount(outComponentTypes.EntityRefCount + 1);
                 return outComponentTypes;
             }
-            LogManager.Instance.LogError($"Add component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
+            Log.Error($"Add component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
             return null;
         }
         private bool RemoveComponentTypes(Entity entity, ComponentTypes componentTypes)
@@ -687,7 +788,7 @@ namespace GDG.ECS
                     {
                         if (!RemoveComponentToList(entity.Index, componentList[i]))
                         {
-                            LogManager.Instance.LogError($"Remove component failed ! Can't Find Component in Entity !Entity.Index:{index}");
+                            Log.Error($"Remove component failed ! Can't Find Component in Entity !Entity.Index:{index}");
                             return false;
                         }
                         continue;
@@ -699,7 +800,7 @@ namespace GDG.ECS
 
             if (afterTypes.IsRequested)
             {
-                LogManager.Instance.LogError($"Remove component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
+                Log.Error($"Remove component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
                 return false;
             }
             entity.SetTypeId(afterTypes.TypeId);
@@ -709,7 +810,7 @@ namespace GDG.ECS
                 outComponentTypes.SetEntityRefCount(afterTypes.EntityRefCount + 1);//对之后的组件引用计数+1
                 return true;
             }
-            LogManager.Instance.LogError($"Remove component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
+            Log.Error($"Remove component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
             return true;
         }
         private T AddComponentTypes<T>(Entity entity) where T : IComponent
@@ -739,7 +840,7 @@ namespace GDG.ECS
             //如果未已向世界申请
             if (!afterTypes.IsRequested)
             {
-                LogManager.Instance.LogError($"Add component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
+                Log.Error($"Add component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
                 return component;
             }
             entity.SetTypeId(afterTypes.TypeId);
@@ -750,7 +851,7 @@ namespace GDG.ECS
                 outComponentTypes.SetEntityRefCount(outComponentTypes.EntityRefCount + 1);
                 return component;
             }
-            LogManager.Instance.LogError($"Add component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
+            Log.Error($"Add component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
             return default(T);
         }
         private bool RemoveComponentTypes<T>(Entity entity) where T : IComponent
@@ -774,7 +875,7 @@ namespace GDG.ECS
                 {
                     if (!RemoveComponentToList(entity.Index, item))
                     {
-                        LogManager.Instance.LogError($"Remove component failed ! Can't Find Component in Entity !Entity.Index:{index}");
+                        Log.Error($"Remove component failed ! Can't Find Component in Entity !Entity.Index:{index}");
                         return false;
                     }
                 }
@@ -784,7 +885,7 @@ namespace GDG.ECS
 
             if (afterTypes.IsRequested)
             {
-                LogManager.Instance.LogError($"Remove component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
+                Log.Error($"Remove component failed ! ComponentTypes never be requested! TypeId:{afterTypes.TypeId}");
                 return false;
             }
             entity.SetTypeId(afterTypes.TypeId);
@@ -795,7 +896,7 @@ namespace GDG.ECS
                 outComponentTypes.SetEntityRefCount(afterTypes.EntityRefCount + 1);//对之后的组件引用计数+1
                 return true;
             }
-            LogManager.Instance.LogError($"Remove component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
+            Log.Error($"Remove component failed ! Can't Find TypeId to ComponentType Mapping:TypeId:{entity.TypeId},ComponentTypes:{afterTypes.ToString()}");
             return true;
         }
         #endregion
@@ -859,7 +960,7 @@ namespace GDG.ECS
         {
             if (!m_TypeId2ComponentTypeMapping.TryGetValue(typeId, out ComponentTypes outComponentTypes))
             {
-                LogManager.Instance.LogError($"Get ComponentTypes failed ! TypeId can't be found , TypeId:{typeId}");
+                Log.Error($"Get ComponentTypes failed ! TypeId can't be found , TypeId:{typeId}");
             }
             return outComponentTypes;
         }
@@ -867,7 +968,7 @@ namespace GDG.ECS
         {
             if (!m_TypeId2IndexMapping.TryGetValue(typeId, out List<ulong> indexList))
             {
-                LogManager.Instance.LogError($"Get EntityIndexes failed ! TypeId can't be found , TypeId:{typeId}");
+                Log.Error($"Get EntityIndexes failed ! TypeId can't be found , TypeId:{typeId}");
             }
             return indexList;
         }
@@ -882,7 +983,7 @@ namespace GDG.ECS
                 }
                 else
                 {
-                    LogManager.Instance.LogError($"Remove index failed ! Index can't be found , Index:{index}");
+                    Log.Error($"Remove index failed ! Index can't be found , Index:{index}");
                     return false;
                 }
                 return true;
@@ -911,7 +1012,7 @@ namespace GDG.ECS
                 }
                 else
                 {
-                    LogManager.Instance.LogError($"Add index failed ! Index is repeated , Index:{index}");
+                    Log.Error($"Add index failed ! Index is repeated , Index:{index}");
                     return false;
                 }
                 return true;

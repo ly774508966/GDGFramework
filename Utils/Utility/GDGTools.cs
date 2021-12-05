@@ -21,6 +21,7 @@ namespace GDG.Utils
         public static ResourcesManager ResourceLoder{ get => ResourcesManager.Instance; }
         public static AssetManager AssetLoder { get => AssetManager.Instance; }
         public static PanelManager PanelControl { get => PanelManager.Instance; }
+        public static LocalizationConfig LocalLanguage { get => LocalizationConfig.Instance; }
         #endregion
 
         #region 静态方法

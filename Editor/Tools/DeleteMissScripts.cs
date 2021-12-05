@@ -27,10 +27,10 @@ namespace GDG.RTS
 	        catch (Exception)
 	        {
 	            isDeleteSuccessfully = false;
-	            throw new CustomErrorException($"Delete failed!");
+	            Log.Error($"Delete failed!");
 	        }
 	        if(isDeleteSuccessfully)
-	            Log.Editor("Delete successfully!");
+	            Log.Sucess("Delete successfully!");
 	    }
 	    //用于获取所有Hierarchy中的物体，包括被禁用的物体
 	    static void RemoveMissingScriptInScene()

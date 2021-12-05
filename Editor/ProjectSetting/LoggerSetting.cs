@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using GDG.Config;
 using GDG.ModuleManager;
 using GDG.Utils;
 using UnityEditor;
@@ -35,7 +36,7 @@ partial class ProjectSetting
             LoggerMaxMBSize = loggerMaxMBSize;
         }
     }
-    private string m_LoggerConfigPath = "/GDGFramework/Config/LoggerConfig.json";
+    private string m_LoggerConfigPath = Configurations.ConfigPath + "\\LoggerConfig.json";
     private static bool s_IsEnableLog { get => LogManager.EnableLog; set => LogManager.EnableLog = value; }
     public static bool s_IsEnableConsoleLog { get => LogManager.EnableConsoleLog; set => LogManager.EnableConsoleLog = value; }
     public static bool s_IsEnableRuntimeLog { get => LogManager.EnableRuntimeLog; set => LogManager.EnableRuntimeLog = value; }
@@ -54,7 +55,7 @@ partial class ProjectSetting
         s_LogErrorOrThrowException, s_LoggerMaxMBSize);
         JsonManager.SaveData<LogHandle>(LogHandle, m_LoggerConfigPath);
         AssetDatabase.Refresh();
-        Log.Editor("Save Succesfully !");
+        Log.Sucess("Save Succesfully !");
     }
     public void LoadLoggerConfig()
     {

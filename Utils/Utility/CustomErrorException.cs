@@ -17,9 +17,7 @@ namespace GDG.Utils
             [CallerLineNumber] int callerLineNumber = -1
             )
         {
-            var logMgr = LogManager.Instance;
-
-            var info = logMgr.MessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
+            var info = LogManager.MessageFormat(message, tag, invoker, callerFilePath, callerLineNumber);
             if (LogManager.EnableConsoleLog)
                 throw new Exception(info);
         }
