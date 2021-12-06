@@ -24,7 +24,6 @@
     * Website: https://www.gatongone.site/
     * Github: [@Gatongone](https://github.com/Gatongone)
     * Email: [gatongone@gmail.com]()
-    * Bilibili: [关东关](https://space.bilibili.com/26209665)
 ---
 
 * ## Include Projects:
