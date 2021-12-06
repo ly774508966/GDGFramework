@@ -1,11 +1,31 @@
 ![GDGFramework](https://github.com/Gatongone/GDGFramework/blob/main/GDGFramework.png)
-# GDGFramework
+<p>
+  <img alt="GDGFramework Version" src="https://img.shields.io/badge/Version-v1.0-D90A0E.svg?cacheSeconds=2592000" />
+  <img alt="Unity3D Version" src="https://img.shields.io/badge/Unity3D-Unity 2018.5.x ~ 2021.x-D95B0A.svg?cacheSeconds=2592000" />
+  <img alt=".Net Version" src="https://img.shields.io/badge/.net->=4.7-ABD90A.svg?cacheSeconds=2592000"/>
+  <img alt="Author" src="https://img.shields.io/badge/Author-Gatongone-0AD994.svg?cacheSeconds=2592000"/>
+  <a href="https://github.com/Gatongone/GDGFramework/actions">
+    <img alt="CI" src="https://img.shields.io/badge/CI-passing-0AA3D9.svg?cacheSeconds=2592000" />
+  </a>
+  <a>
+    <img alt="Document" src="https://img.shields.io/badge/docs-docsforge-0A4FD9.svg?cacheSeconds=2592000"/>
+  </a>
+  <a href="https://codecov.io/gh/Gatongone/GDGFramework">
+    <img src="https://codecov.io/gh/Gatongone/GDGFramework/branch/main/graph/badge.svg?token=4Z6XFG95MN"/>
+  </a>
+</p>
 
-GDGFramework 是一个基于 Unity3D 引擎的游戏框架，内置了简易实用的 ECS 架构，且支持原生的 Unity Mono 开发。打包好的 unitypackage 可以在[发布版本](https://github.com/Gatongone/GDGFramework/releases)中进行下载。
+> GDGFramework 是一个基于 Unity3D 引擎的游戏框架，内置了简易实用的 ECS 架构，且支持原生的 Unity Mono 开发。打包好的 unitypackage 可以在[发布版本](https://github.com/Gatongone/GDGFramework/releases)中进行下载。
 
-* ## 环境： 
-    * .Net4.7
-    * Unity 2018.5.x ~ 2021.x
+* ## Author
+
+  👤 **Gatongone**
+
+    * Website: https://www.gatongone.site/
+    * Github: [@Gatongone](https://github.com/Gatongone)
+    * Email: [gatongone@gmail.com]()
+    * Bilibili: [关东关](https://space.bilibili.com/26209665)
+---
 
 * ## Include Projects:
 
@@ -14,6 +34,8 @@ GDGFramework 是一个基于 Unity3D 引擎的游戏框架，内置了简易实�
     3. [EPPlus](https://github.com/EPPlusSoftware/EPPlus)
     4. [SerializableDictionary](https://github.com/azixMcAze/Unity-SerializableDictionary)
     5. [GDGLogger](https://github.com/Gatongone/GDGLogger)
+
+---
 
 * ## ECS 实体组件系统
 
@@ -139,6 +161,8 @@ GDGFramework 是一个基于 Unity3D 引擎的游戏框架，内置了简易实�
 
         当场景中的 GameObject 被加上一个`GameObjectToEntity` Mono组件时，它就成为一个挂载有 `GameObjectComponent`组件的实体，你可以通过给它加上一个代理（继承至`IEntityProxy`的 MonoBehaviour）来为其增加额外的ECS组件。
 
+---
+
 * ## ProjectSetting 项目管理
   
   在 GDGFramework/ProjectSetting 中打开项目管理界面。
@@ -168,6 +192,8 @@ GDGFramework 是一个基于 Unity3D 引擎的游戏框架，内置了简易实�
 
     `LocalizationText` 和 `LocalizationTMPText` 都可以自定义文字样式，包括字体、间距等。`LocalizationImage` 若设置了 SpriteStyle 则将以 SpriteStyle 中的图片为最终效果，但在该语言版本下必须有至少一个任意内容，否则 SpriteStyle 将无效。
 
+---
+
 * ## GDGTools 常用工具模块
     
     GDGTools 是一个静态工具类，内置了以下游戏中常用工具模块：
@@ -195,13 +221,19 @@ GDGFramework 是一个基于 Unity3D 引擎的游戏框架，内置了简易实�
     * ### LocalLanguage 本地化语言管理
         通过设置 `CurrentLanguage` 即可立即切换语言版本
 
+---
+
 * ## FlowFieldController 流场寻路
 
     基于流场的AI寻路系统，支持2D和3D两种网格。使用 `FlowFieldController.GenerateFlowField` 来生成一个流场，默认障碍物Layer为 “Impassible”。通过`SetDestination` 方法来为流场设置一个目的地，通过 `GetFieldDirection` 方法来获得某一网格的流场方向。
 
+---
+
 * ## 日志打印模块
 
     支持为Log添加tag，方便过滤日志。内置两种模式：Game下的日志（通过`this.log`打印）、Console下日志（通过`Log.Info`打印）。包含了 Info、Sucess、Warning、Error、Editor、Custom 几种风格的打印信息。可以在ProjectSetting选择是否将日志写入文件，在`StreamingAssets/User/Logger/UnityLogger.txt`中找到被写入的日志文件，可以用于将客户端打印信息上传到服务器。
+
+---
 
 * ## Async 异步模块
 
@@ -214,6 +246,8 @@ GDGFramework 是一个基于 Unity3D 引擎的游戏框架，内置了简易实�
     * ### AsyncWebRequest 异步网络请求
         用于异步下载网络资源，并且支持 Get 或者 Post 方法向服务器发送请求并获取响应数据。
 
+---
+
 * ## 其它编辑器拓展工具
 
     * ### Auto Namespace
@@ -222,3 +256,5 @@ GDGFramework 是一个基于 Unity3D 引擎的游戏框架，内置了简易实�
         支持 Json、Xml、Excel 数据表之间的转换
     * ### Remove Missing Scripts
         自动删除场景中以及Assets文件夹下所有 Miss 的脚本
+
+---
