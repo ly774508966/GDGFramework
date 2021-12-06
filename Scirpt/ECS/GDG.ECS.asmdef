@@ -1,0 +1,17 @@
+{
+    "name": "GDG.ECS",
+    "rootNamespace": "",
+    "references": [
+        "GUID:536dd45aef70bf14a93e4d73cba3707e",
+        "GUID:1045917fc164d574d9b4790f8f0e3192"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

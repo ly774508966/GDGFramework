@@ -1,0 +1,16 @@
+{
+    "name": "GDG.Base",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2fec972a9726b66468dad44a62995430"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -139,28 +139,28 @@ GDGFramework（.Net4.7） 是一个基于 Unity3D 引擎的游戏框架，内置
 
   * ### Logger：日志管理
 
-        为了开发测试与游戏发布分离，可以在游戏发布前将日志关闭，所有的 `Log.XXX` 和 `this.logxxx` 都将不再生效
+    为了开发测试与游戏发布分离，可以在游戏发布前将日志关闭，所有的 `Log.XXX` 和 `this.logxxx` 都将不再生效
 
   * ### Input 输入键位设置
 
-        可以快速的增加一个键名，并且可以像游戏中一样监听键盘按键并快速设置键位，至多支持三个组合键的绑定。
+    可以快速的增加一个键名，并且可以像游戏中一样监听键盘按键并快速设置键位，至多支持三个组合键的绑定。
 
   * ### Audio 音量管理
 
-        静音，或者修改全局音量、BGM音量、音效音量。
+    静音，或者修改全局音量、BGM音量、音效音量。
 
   * ### Marco 全局宏管理
 
-        快速设置宏，并且可以选择是否启用。
+    快速设置宏，并且可以选择是否启用。
 
   * ### Locale：本地化管理方案
 
-        一键切换 UI 语言版本，支持 Text、TMP_Text、Image 的本地化方案，本地化配置表在 Config 文件夹下可以被找到。在 UI 中添加 `LocalizationImage` 或 `LocalizationText` 或 `LocalizationTMPText` 脚本，并设置key值，在 ProjectSetting 中即可为各个语言的 key 值设置不同的 value。这里的 key 指的是每一个 UI 的唯一 handle，value 的含义根据不同的 UI 有不同的含义：
+    一键切换 UI 语言版本，支持 Text、TMP_Text、Image 的本地化方案，本地化配置表在 Config 文件夹下可以被找到。在 UI 中添加 `LocalizationImage` 或 `LocalizationText` 或 `LocalizationTMPText` 脚本，并设置key值，在 ProjectSetting 中即可为各个语言的 key 值设置不同的 value。这里的 key 指的是每一个 UI 的唯一 handle，value 的含义根据不同的 UI 有不同的含义：
 
-        1. 若为 Text，则 Value 指的是在该语言版本下的文字信息
-        2. 若为 Image，则 Value 指的是在 Resources 文件夹下的 Sprite 路径，或者是 AB 包资源路径（格式为 bundleName/assetName）
+    1. 若为 Text，则 Value 指的是在该语言版本下的文字信息
+    2. 若为 Image，则 Value 指的是在 Resources 文件夹下的 Sprite 路径，或者是 AB 包资源路径（格式为 bundleName/assetName）
 
-        `LocalizationText` 和 `LocalizationTMPText` 都可以自定义文字样式，包括字体、间距等。`LocalizationImage` 若设置了 SpriteStyle 则将以 SpriteStyle 中的图片为最终效果，但在该语言版本下必须有至少一个任意内容，否则 SpriteStyle 将无效。
+    `LocalizationText` 和 `LocalizationTMPText` 都可以自定义文字样式，包括字体、间距等。`LocalizationImage` 若设置了 SpriteStyle 则将以 SpriteStyle 中的图片为最终效果，但在该语言版本下必须有至少一个任意内容，否则 SpriteStyle 将无效。
 
 * ## GDGTools 常用工具模块
     

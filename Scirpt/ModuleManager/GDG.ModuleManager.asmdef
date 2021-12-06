@@ -1,0 +1,18 @@
+{
+    "name": "GDG.ModuleManager",
+    "rootNamespace": "",
+    "references": [
+        "GUID:4f546ef1b31bced459132a8a054cf19e",
+        "GUID:1045917fc164d574d9b4790f8f0e3192",
+        "GUID:4bfe325c1678657419733b885a011887"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

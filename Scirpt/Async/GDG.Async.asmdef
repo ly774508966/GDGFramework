@@ -1,0 +1,17 @@
+{
+    "name": "GDG.Async",
+    "rootNamespace": "",
+    "references": [
+        "GUID:1045917fc164d574d9b4790f8f0e3192",
+        "GUID:f66a85b4947d96049890776374c7bf18"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

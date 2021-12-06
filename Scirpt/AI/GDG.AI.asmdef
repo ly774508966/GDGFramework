@@ -1,0 +1,19 @@
+{
+    "name": "GDG.AI",
+    "rootNamespace": "",
+    "references": [
+        "GUID:1045917fc164d574d9b4790f8f0e3192",
+        "GUID:c860edb6a9250a74ab74bc22ddedf764",
+        "GUID:536dd45aef70bf14a93e4d73cba3707e",
+        "GUID:affef6e02bc787742859999b82ad9eba"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
