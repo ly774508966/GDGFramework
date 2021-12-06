@@ -7,7 +7,7 @@
   <a href="https://github.com/Gatongone/GDGFramework/actions">
     <img alt="CI" src="https://img.shields.io/badge/CI-passing-0AA3D9.svg?cacheSeconds=2592000" />
   </a>
-  <a>
+  <a href="https://gdgframework.docsforge.com/">
     <img alt="Document" src="https://img.shields.io/badge/docs-docsforge-0A4FD9.svg?cacheSeconds=2592000"/>
   </a>
   <a href="https://codecov.io/gh/Gatongone/GDGFramework">
