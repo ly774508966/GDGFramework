@@ -1,0 +1,27 @@
+{
+    "name": "GDG.Core",
+    "rootNamespace": "",
+    "references": [
+        "GUID:af5be4bf64a324f48ad3c5ec0a61927d",
+        "GUID:affef6e02bc787742859999b82ad9eba",
+        "GUID:1045917fc164d574d9b4790f8f0e3192",
+        "GUID:c860edb6a9250a74ab74bc22ddedf764",
+        "GUID:7e97ab39b46e6f14a8c76e54c0877e60",
+        "GUID:536dd45aef70bf14a93e4d73cba3707e",
+        "GUID:533b522b013957d4d97d648ee018f207",
+        "GUID:def669779edabb54ca158607740a5ee8",
+        "GUID:d480d539ac1db494caa33036d669b470",
+        "GUID:f66a85b4947d96049890776374c7bf18",
+        "GUID:4bfe325c1678657419733b885a011887",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
