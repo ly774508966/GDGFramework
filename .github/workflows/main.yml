@@ -35,4 +35,4 @@ jobs:
           echo Add other actions to build,
           echo test, and deploy your project.
       - with:
-          token: ${{secrets.CI_TOKEN}}
+          CI_TOKEN: ${{secrets.CI_TOKEN}}
