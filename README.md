@@ -2,9 +2,11 @@
 
 GDGFramework 是一个基于 Unity3D 引擎的游戏框架，内置了简易实用的 ECS 架构，且支持原生的 Unity Mono 开发。打包好的 unitypackage 可以在[发布版本](https://github.com/Gatongone/GDGFramework/releases)中进行下载。
 
-环境： .Net4.7
+* ## 环境： 
+    * .Net4.7
+    * Unity 2018.5.x ~ 2021.x
 
-* ## 依赖插件：
+* ## Include Projects:
 
     1. [LitJson](https://github.com/LitJSON/litjson)
     2. [JsonNet](https://github.com/JamesNK/Newtonsoft.Json)
