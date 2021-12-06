@@ -38,5 +38,4 @@ jobs:
         uses: codecov/codecov-action@v1.0.2  
         with:
           token: ${{secrets.CI_TOKEN}}
-        env:
-          CI_TOKEN: ${{ secrets.CI_TOKEN }}
+          file: ./coverage.xml
