@@ -8,6 +8,7 @@ GDGFramework（.Net4.7） 是一个基于 Unity3D 引擎的游戏框架，内置
     2. [JsonNet](https://github.com/JamesNK/Newtonsoft.Json)
     3. [EPPlus](https://github.com/EPPlusSoftware/EPPlus)
     4. [SerializableDictionary](https://github.com/azixMcAze/Unity-SerializableDictionary)
+    5. [GDGLogger](https://github.com/Gatongone/GDGLogger)
 
 * ## ECS 实体组件系统
 
