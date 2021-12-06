@@ -1,3 +1,4 @@
+![GDGFramework](https://github.com/Gatongone/GDGFramework/blob/main/GDGFramework.png)
 # GDGFramework
 
 GDGFramework 是一个基于 Unity3D 引擎的游戏框架，内置了简易实用的 ECS 架构，且支持原生的 Unity Mono 开发。打包好的 unitypackage 可以在[发布版本](https://github.com/Gatongone/GDGFramework/releases)中进行下载。
