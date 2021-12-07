@@ -15,9 +15,9 @@
   </a>
 </p>
 
-[中文]()|[English]()
-
 > GDGframework is a game framework based on unity3d engine. It has built-in simple and practical ECS architecture and supports the development of native unity mono. Packaged unitypackage can be in [Release Version](https://github.com/Gatongone/GDGFramework/releases) Download from.
+
+> [中文](https://github.com/Gatongone/GDGFramework/edit/main/README.md)|[English](https://github.com/Gatongone/GDGFramework/edit/main/README_ENG.md)
 
 * ## Author
 
