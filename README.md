@@ -15,6 +15,8 @@
   </a>
 </p>
 
+[中文](https://github.com/Gatongone/GDGFramework/edit/main/README.md)|[English](https://github.com/Gatongone/GDGFramework/edit/main/README_ENG.md)
+
 > GDGFramework 是一个基于 Unity3D 引擎的游戏框架，内置了简易实用的 ECS 架构，且支持原生的 Unity Mono 开发。打包好的 unitypackage 可以在[发布版本](https://github.com/Gatongone/GDGFramework/releases)中进行下载。
 
 * ## 作者
@@ -109,24 +111,28 @@
         
             public override void OnUpdate()
             {
+                // 1 ---------
                 Select((Entity entity) =>
                 {
                     Log.Info("每帧打印");
                 })
                 .Excute();
-
+                
+                // 2 ---------
                 Select((Entity entity) =>
                 {
                     Log.Info("直到名为 Log 的事件被触发时打印");
                 })
                 .ExcuteWithEvent("Log",1);//右边的参数为Select的唯一Id号（需要用户自己定义），下同
-
+                
+                // 3 ---------
                 Select((Entity entity) =>
                 {
                     Log.Info("每隔2s打印");
                 })
                 .ExcuteDelayTime(2f,2);
-
+                
+                // 4 ---------
                 Select((Entity entity) =>
                 {
                     Log.Info("每隔5帧打印");
@@ -230,7 +236,7 @@
 
 * ## 日志打印模块
 
-    支持为Log添加tag，方便过滤日志。内置两种模式：Game下的日志（通过`this.log`打印）、Console下日志（通过`Log.Info`打印）。包含了 Info、Sucess、Warning、Error、Editor、Custom 几种风格的打印信息。可以在ProjectSetting选择是否将日志写入文件，在`StreamingAssets/User/Logger/UnityLogger.txt`中找到被写入的日志文件，可以用于将客户端打印信息上传到服务器。
+    支持为Log添加tag，方便过滤日志。内置两种模式：Game下的日志（通过`this.log`打印）、Console下日志（通过`Log.Info`打印）。包含了 Info、Sucess、Warning、Error、Editor、Custom 几种风格的打印信息。可以在ProjectSetting选择是否将日志写入文件，在`Application.persistentdatapath/logger/UnityLogger.txt`中找到被写入的日志文件，可以用于将客户端打印信息上传到服务器。
 
 ---
 
