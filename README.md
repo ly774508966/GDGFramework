@@ -82,7 +82,7 @@
 
     * ### Component
 
-        每一个 Entity 中的每一份数据都是一个Component（组件），一组不同的组件叫做一个 ComponentTypes，根据组件的不同，ComponentTypes 将会有不同的 TypeId。所有的组件都应该继承 `GDG.ECS.IComponent` 接口。一般来说组件不应该有任何行为，但你可以通过 IEntityRecyclable、IEntityDestoryable、IEntityCreateable 接口来在实体的生命周期中实现一些自己的逻辑：
+        每一个 Entity 中的每一份数据都是一个Component（组件），一组不同的组件叫做一个 ComponentTypes，根据组件的不同，ComponentTypes 将会有不同的 TypeId。所有的组件都应该继承 `GDG.ECS.IComponent` 接口。一般来说组件不应该有任何行为，但你可以通过`IEntityNamedable`、`IEntityInitable`、`IEntityEnable`、`IEntityRecyclable`、`IEntityDestoryable` 接口来在实体的生命周期中实现一些自己的逻辑：
 
         ```C#
         public class MoveComponent : IComponent,IEntityDestoryable
