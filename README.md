@@ -1,7 +1,7 @@
 ![GDGFramework](https://github.com/Gatongone/GDGFramework/blob/main/GDGFramework.png)
 <p>
   <img alt="GDGFramework Version" src="https://img.shields.io/badge/Version-v1.0-D90A0E.svg?cacheSeconds=2592000" />
-  <img alt="Unity3D Version" src="https://img.shields.io/badge/Unity3D-Unity 2020.3.3 ~ 2021.x-D95B0A.svg?cacheSeconds=2592000" />
+  <img alt="Unity3D Version" src="https://img.shields.io/badge/Unity3D-2020.3.3 ~ 2021.x-D95B0A.svg?cacheSeconds=2592000" />
   <img alt=".Net Version" src="https://img.shields.io/badge/.net->=4.7.1-ABD90A.svg?cacheSeconds=2592000"/>
   <img alt="Author" src="https://img.shields.io/badge/Author-Gatongone-0AD994.svg?cacheSeconds=2592000"/>
   <a href="https://github.com/Gatongone/GDGFramework/actions">
