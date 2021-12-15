@@ -333,33 +333,33 @@ namespace GDG.ECS
             }
             return entity;
         }
-        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string assetName, string bundleName, string mainABName, string rename) where T : UnityEngine.Object
+        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string bundleName, string assetName,  string mainABName, string rename) where T : UnityEngine.Object
         {
-            return CreateEntityFromAssetBundle<T>(componentTypes, assetName, bundleName, mainABName, null, rename);
+            return CreateEntityFromAssetBundle<T>(componentTypes, bundleName, assetName, mainABName, null, rename);
         }
-        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string assetName, string bundleName, string rename) where T : UnityEngine.Object
+        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string bundleName,string assetName, string rename) where T : UnityEngine.Object
         {
-            return CreateEntityFromAssetBundle<T>(componentTypes, assetName, bundleName, null, null, rename);
+            return CreateEntityFromAssetBundle<T>(componentTypes, bundleName, assetName, null, null, rename);
         }
-        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string assetName, string bundleName) where T : UnityEngine.Object
+        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string bundleName, string assetName) where T : UnityEngine.Object
         {
-            return CreateEntityFromAssetBundle<T>(componentTypes, assetName, bundleName, null, null, null);
+            return CreateEntityFromAssetBundle<T>(componentTypes, bundleName, assetName, null, null, null);
         }
-        public Entity CreateEntityFromAssetBundle<T>(string assetName, string bundleName, string mainABName, string path, string rename) where T : UnityEngine.Object
+        public Entity CreateEntityFromAssetBundle<T>(string bundleName, string assetName,  string mainABName, string path, string rename) where T : UnityEngine.Object
         {
-            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, mainABName, path, rename);
+            return CreateEntityFromAssetBundle<T>(null, bundleName, assetName, mainABName, path, rename);
         }
-        public Entity CreateEntityFromAssetBundle<T>(string assetName, string bundleName, string mainABName, string rename) where T : UnityEngine.Object
+        public Entity CreateEntityFromAssetBundle<T>(string bundleName, string assetName,  string mainABName, string rename) where T : UnityEngine.Object
         {
-            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, mainABName, null, rename);
+            return CreateEntityFromAssetBundle<T>(null, bundleName, assetName, mainABName, null, rename);
         }
-        public Entity CreateEntityFromAssetBundle<T>(string assetName, string bundleName, string rename) where T : UnityEngine.Object
+        public Entity CreateEntityFromAssetBundle<T>(string bundleName, string assetName,  string rename) where T : UnityEngine.Object
         {
-            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, null, null, rename);
+            return CreateEntityFromAssetBundle<T>(null, bundleName, assetName, null, null, rename);
         }
-        public Entity CreateEntityFromAssetBundle<T>(string assetName, string bundleName) where T : UnityEngine.Object
+        public Entity CreateEntityFromAssetBundle<T>(string bundleName, string assetName) where T : UnityEngine.Object
         {
-            return CreateEntityFromAssetBundle<T>(null, assetName, bundleName, null, null, null);
+            return CreateEntityFromAssetBundle<T>(null, bundleName, assetName, null, null, null);
         }
 
         //异步
@@ -393,34 +393,35 @@ namespace GDG.ECS
                  BaseWorld.Instance.AddOrRemoveEntityFromSystems(entity, true);
              });
         }
-        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string assetName, string bundleName, string mainABName, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string bundleName, string assetName,  string mainABName, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
         {
-            CreateEntityFromAssetBundleAsync<T>(componentTypes, assetName, bundleName, mainABName, null, rename, callback);
+            CreateEntityFromAssetBundleAsync<T>(componentTypes, bundleName, assetName, mainABName, null, rename, callback);
         }
-        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string assetName, string bundleName, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string bundleName, string assetName,  string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
         {
-            CreateEntityFromAssetBundleAsync<T>(componentTypes, assetName, bundleName, null, null, rename, callback);
+            CreateEntityFromAssetBundleAsync<T>(componentTypes, bundleName, assetName, null, null, rename, callback);
         }
-        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string assetName, string bundleName, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string bundleName, string assetName,  UnityAction<Entity,T> callback) where T : UnityEngine.Object
         {
-            CreateEntityFromAssetBundleAsync<T>(componentTypes, assetName, bundleName, null, null, null, callback);
+            CreateEntityFromAssetBundleAsync<T>(componentTypes, bundleName, assetName, null, null, null, callback);
         }
-        public void CreateEntityFromAssetBundleAsync<T>(string assetName, string bundleName, string mainABName, string path, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromAssetBundleAsync<T>(string bundleName, string assetName,  string mainABName, string path, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
         {
-            CreateEntityFromAssetBundleAsync<T>(null, assetName, bundleName, mainABName, path, rename, callback);
+            CreateEntityFromAssetBundleAsync<T>(null, bundleName, assetName, mainABName, path, rename, callback);
         }
-        public void CreateEntityFromAssetBundleAsync<T>(string assetName, string bundleName, string mainABName, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromAssetBundleAsync<T>(string bundleName, string assetName,  string mainABName, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
         {
-            CreateEntityFromAssetBundleAsync<T>(null, assetName, bundleName, mainABName, null, rename, callback);
+            CreateEntityFromAssetBundleAsync<T>(null, bundleName, assetName, mainABName, null, rename, callback);
         }
-        public void CreateEntityFromAssetBundleAsync<T>(string assetName, string bundleName, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromAssetBundleAsync<T>(string bundleName, string assetName,  string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
         {
-            CreateEntityFromAssetBundleAsync<T>(null, assetName, bundleName, null, null, rename, callback);
+            CreateEntityFromAssetBundleAsync<T>(null, bundleName, assetName, null, null, rename, callback);
         }
-        public void CreateEntityFromAssetBundleAsync<T>(string assetName, string bundleName, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromAssetBundleAsync<T>(string bundleName, string assetName,  UnityAction<Entity,T> callback) where T : UnityEngine.Object
         {
-            CreateEntityFromAssetBundleAsync<T>(null, assetName, bundleName, null, null, null, callback);
+            CreateEntityFromAssetBundleAsync<T>(null, bundleName, assetName, null, null, null, callback);
         }
+
 
         #endregion
         #region SelectEntity
