@@ -36,7 +36,7 @@ namespace GDG.ECS
         }
         public void SetActive(bool isActived)
         {
-            if(isActived == this.isActived)
+            if (isActived == this.isActived)
                 return;
 
             this.isActived = isActived;
@@ -57,11 +57,11 @@ namespace GDG.ECS
         }
         public bool RemoveEntity(Entity entity)
         {
-            if(Entities.Contains(entity))
+            if (Entities.Contains(entity))
             {
-                if(!Entities.Remove(entity))
+                if (!Entities.Remove(entity))
                     return false;
-                if(entity2SelectIdListMapping.ContainsKey(entity.Index))
+                if (entity2SelectIdListMapping.ContainsKey(entity.Index))
                 {
                     return entity2SelectIdListMapping.Remove(entity.Index);
                 }
@@ -91,7 +91,7 @@ namespace GDG.ECS
         {
             return selectId2ExcuteInfoListMapping.Remove(selectedId);
         }
-        public void AddEntity2SelectIdMapping(ulong index,List<int> excuteInfos)
+        public void AddEntity2SelectIdMapping(ulong index, List<int> excuteInfos)
         {
             entity2SelectIdListMapping.Add(index, excuteInfos);
         }
@@ -103,253 +103,274 @@ namespace GDG.ECS
         #endregion
 
         #region E
-        private SystemHandle<E> AssembleSystemHandle<E>(IEnumerable<E> queryResult, SystemCallback<E> callback) where E : Entity
+        List<Entity> result = new List<Entity>();
+        private SystemHandle AssembleSystemHandle(List<Entity> queryResult, SystemCallback callback)
         {
-            SystemHandle<E> handle = ObjectPool<SystemHandle<E>>.Instance.Pop();
+            SystemHandle handle = ObjectPool<SystemHandle>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
             handle.excuteInfo.Init();
             return handle;
         }
-        private SystemHandle<E> ForEach<E>(SystemCallback<E> callback) where E : Entity
+        private SystemHandle ForEach(SystemCallback callback)
         {
             if (entities == null)
                 return null;
-            var result =
-            from obj in entities
-            select obj as E;
-            return AssembleSystemHandle<E>(result, callback);
+
+            result.Clear();
+            foreach (var obj in entities)
+            {
+                result.Add(obj);
+            }
+            return AssembleSystemHandle(result, callback);
         }
-        public SystemHandle<E> Select<E>(SystemCallback<E> callback) where E : Entity
+        public SystemHandle Select(SystemCallback callback)
         {
             if (entities == null)
                 return null;
-            return ForEach<E>(callback);
+            return ForEach(callback);
         }
         #endregion
         #region E,T
-        private SystemHandle<E, T> AssembleSystemHandle<E, T>(IEnumerable<E> queryResult, SystemCallback<E, T> callback) where E : Entity where T : class, IComponent
+        private SystemHandle<T> AssembleSystemHandle<T>(List<Entity> queryResult, SystemCallback<T> callback) where T : class, IComponent
         {
-            SystemHandle<E, T> handle = ObjectPool<SystemHandle<E,T>>.Instance.Pop();
+            SystemHandle<T> handle = ObjectPool<SystemHandle<T>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
             handle.excuteInfo.Init();
             return handle;
         }
-        private SystemHandle<E, T> ForEach<E, T>(SystemCallback<E, T> callback) where E : Entity where T : class, IComponent
+        private SystemHandle<T> ForEach<T>(SystemCallback<T> callback) where T : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E, T>.None;
-            var result =
-                from obj in entities
-            where obj.IsExistComponent<T>()
-            select obj as E;
+                return SystemHandle<T>.None;
 
-            return AssembleSystemHandle<E, T>(result, callback);
+            result.Clear();
+            foreach (var obj in entities)
+            {
+                if (obj.IsExistComponent<T>())
+                    result.Add(obj);
+            }
+            return AssembleSystemHandle<T>(result, callback);
         }
-        public SystemHandle<E, T> Select<E, T>(SystemCallback<E, T> callback) where E : Entity where T : class, IComponent
+        public SystemHandle<T> Select<T>(SystemCallback<T> callback) where T : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E, T>.None;
-            return ForEach<E, T>(callback);
+                return SystemHandle<T>.None;
+            return ForEach<T>(callback);
         }
         #endregion
         #region E,T1,T2
-        private SystemHandle<E, T1, T2> AssembleSystemHandle<E, T1, T2>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent
+        private SystemHandle<T1, T2> AssembleSystemHandle<T1, T2>(List<Entity> queryResult, SystemCallback<T1, T2> callback) where T1 : class, IComponent where T2 : class, IComponent
         {
-            SystemHandle<E, T1, T2> handle = ObjectPool<SystemHandle<E,T1,T2>>.Instance.Pop();
+            SystemHandle<T1, T2> handle = ObjectPool<SystemHandle<T1, T2>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
             handle.excuteInfo.Init();
             return handle;
         }
-        private SystemHandle<E, T1, T2> ForEach<E, T1, T2>(SystemCallback<E, T1, T2> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent
+        private SystemHandle<T1, T2> ForEach<T1, T2>(SystemCallback<T1, T2> callback) where T1 : class, IComponent where T2 : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E,T1,T2>.None;;
-            var result =
-            from obj in entities
-            where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>()
-            select obj as E;
+                return SystemHandle<T1, T2>.None; ;
 
-            return AssembleSystemHandle<E, T1, T2>(result, callback);
+            result.Clear();
+            foreach (var obj in entities)
+            {
+                if (obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>())
+                    result.Add(obj);
+            }
+
+            return AssembleSystemHandle<T1, T2>(result, callback);
         }
-        public SystemHandle<E, T1, T2> Select<E, T1, T2>(SystemCallback<E, T1, T2> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent
+        public SystemHandle<T1, T2> Select<T1, T2>(SystemCallback<T1, T2> callback) where T1 : class, IComponent where T2 : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E, T1,T2>.None;
-            return ForEach<E, T1, T2>(callback);
+                return SystemHandle<T1, T2>.None;
+            return ForEach<T1, T2>(callback);
         }
         #endregion
         #region E,T1,T2,T3
-        private SystemHandle<E, T1, T2, T3> AssembleSystemHandle<E, T1, T2, T3>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
+        private SystemHandle<T1, T2, T3> AssembleSystemHandle<T1, T2, T3>(List<Entity> queryResult, SystemCallback<T1, T2, T3> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
         {
-            SystemHandle<E, T1, T2, T3> handle = ObjectPool<SystemHandle<E,T1,T2,T3>>.Instance.Pop();
+            SystemHandle<T1, T2, T3> handle = ObjectPool<SystemHandle<T1, T2, T3>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
             handle.excuteInfo.Init();
             return handle;
         }
-        private SystemHandle<E, T1, T2, T3> ForEach<E, T1, T2, T3>(SystemCallback<E, T1, T2, T3> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
+        private SystemHandle<T1, T2, T3> ForEach<T1, T2, T3>(SystemCallback<T1, T2, T3> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E, T1, T2, T3>.None;
-            var result =
-            from obj in entities
-            where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>()
-            select obj as E;
+                return SystemHandle<T1, T2, T3>.None;
+            result.Clear();
+            foreach (var obj in entities)
+            {
+                if (obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>())
+                    result.Add(obj);
+            }
 
-            return AssembleSystemHandle<E, T1, T2, T3>(result, callback);
+            return AssembleSystemHandle<T1, T2, T3>(result, callback);
         }
-        public SystemHandle<E, T1, T2, T3> Select<E, T1, T2, T3>(SystemCallback<E, T1, T2, T3> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
+        public SystemHandle<T1, T2, T3> Select<T1, T2, T3>(SystemCallback<T1, T2, T3> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E, T1, T2, T3>.None;
-            return ForEach<E, T1, T2, T3>(callback);
+                return SystemHandle<T1, T2, T3>.None;
+            return ForEach<T1, T2, T3>(callback);
         }
         #endregion
         #region E,T1,T2,T3,T4
-        private SystemHandle<E, T1, T2, T3, T4> AssembleSystemHandle<E, T1, T2, T3, T4>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3, T4> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
+        private SystemHandle<T1, T2, T3, T4> AssembleSystemHandle<T1, T2, T3, T4>(List<Entity> queryResult, SystemCallback<T1, T2, T3, T4> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
         {
-            SystemHandle<E, T1, T2, T3, T4> handle = ObjectPool<SystemHandle<E,T1,T2,T3,T4>>.Instance.Pop();
+            SystemHandle<T1, T2, T3, T4> handle = ObjectPool<SystemHandle<T1, T2, T3, T4>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
             handle.excuteInfo.Init();
             return handle;
         }
-        private SystemHandle<E, T1, T2, T3, T4> ForEach<E, T1, T2, T3, T4>(SystemCallback<E, T1, T2, T3, T4> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
+        private SystemHandle<T1, T2, T3, T4> ForEach<T1, T2, T3, T4>(SystemCallback<T1, T2, T3, T4> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E, T1, T2, T3, T4>.None;
-            var result =
-            from obj in entities
-            where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>()
-            select obj as E;
+                return SystemHandle<T1, T2, T3, T4>.None;
+            result.Clear();
+            foreach (var obj in entities)
+            {
+                if (obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>())
+                    result.Add(obj);
+            }
 
-            return AssembleSystemHandle<E, T1, T2, T3, T4>(result, callback);
+            return AssembleSystemHandle<T1, T2, T3, T4>(result, callback);
         }
-        public SystemHandle<E, T1, T2, T3, T4> Select<E, T1, T2, T3, T4>(SystemCallback<E, T1, T2, T3, T4> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
+        public SystemHandle<T1, T2, T3, T4> Select<T1, T2, T3, T4>(SystemCallback<T1, T2, T3, T4> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E, T1, T2, T3, T4>.None;
-            return ForEach<E, T1, T2, T3, T4>(callback);
+                return SystemHandle<T1, T2, T3, T4>.None;
+            return ForEach<T1, T2, T3, T4>(callback);
         }
         #endregion
         #region E,T1,T2,T3,T4,T5
-        private SystemHandle<E, T1, T2, T3, T4, T5> AssembleSystemHandle<E, T1, T2, T3, T4, T5>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3, T4, T5> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
+        private SystemHandle<T1, T2, T3, T4, T5> AssembleSystemHandle<T1, T2, T3, T4, T5>(List<Entity> queryResult, SystemCallback<T1, T2, T3, T4, T5> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
         {
-            SystemHandle<E, T1, T2, T3, T4, T5> handle = ObjectPool<SystemHandle<E,T1,T2,T3,T4,T5>>.Instance.Pop();
+            SystemHandle<T1, T2, T3, T4, T5> handle = ObjectPool<SystemHandle<T1, T2, T3, T4, T5>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
             handle.excuteInfo.Init();
             return handle;
         }
-        private SystemHandle<E, T1, T2, T3, T4, T5> ForEach<E, T1, T2, T3, T4, T5>(SystemCallback<E, T1, T2, T3, T4, T5> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
+        private SystemHandle<T1, T2, T3, T4, T5> ForEach<T1, T2, T3, T4, T5>(SystemCallback<T1, T2, T3, T4, T5> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E, T1, T2, T3, T4, T5>.None;
-            var result =
-            from obj in entities
-            where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>()
-            select obj as E;
+                return SystemHandle<T1, T2, T3, T4, T5>.None;
+            result.Clear();
+            foreach (var obj in entities)
+            {
+                if (obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>())
+                    result.Add(obj);
+            }
 
-            return AssembleSystemHandle<E, T1, T2, T3, T4, T5>(result, callback);
+            return AssembleSystemHandle<T1, T2, T3, T4, T5>(result, callback);
         }
-        public SystemHandle<E, T1, T2, T3, T4, T5> Select<E, T1, T2, T3, T4, T5>(SystemCallback<E, T1, T2, T3, T4, T5> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
+        public SystemHandle<T1, T2, T3, T4, T5> Select<T1, T2, T3, T4, T5>(SystemCallback<T1, T2, T3, T4, T5> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E, T1, T2, T3, T4, T5>.None;
-            return ForEach<E, T1, T2, T3, T4, T5>(callback);
+                return SystemHandle<T1, T2, T3, T4, T5>.None;
+            return ForEach<T1, T2, T3, T4, T5>(callback);
         }
         #endregion
         #region E,T1,T2,T3,T4,T5,T6
-        private SystemHandle<E, T1, T2, T3, T4, T5, T6> AssembleSystemHandle<E, T1, T2, T3, T4, T5, T6>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3, T4, T5, T6> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
+        private SystemHandle<T1, T2, T3, T4, T5, T6> AssembleSystemHandle<T1, T2, T3, T4, T5, T6>(List<Entity> queryResult, SystemCallback<T1, T2, T3, T4, T5, T6> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
         {
-            SystemHandle<E, T1, T2, T3, T4, T5, T6> handle = ObjectPool<SystemHandle<E,T1,T2,T3,T4,T5,T6>>.Instance.Pop();
+            SystemHandle<T1, T2, T3, T4, T5, T6> handle = ObjectPool<SystemHandle<T1, T2, T3, T4, T5, T6>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
             handle.excuteInfo.Init();
             return handle;
         }
-        private SystemHandle<E, T1, T2, T3, T4, T5, T6> ForEach<E, T1, T2, T3, T4, T5, T6>(SystemCallback<E, T1, T2, T3, T4, T5, T6> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
+        private SystemHandle<T1, T2, T3, T4, T5, T6> ForEach<T1, T2, T3, T4, T5, T6>(SystemCallback<T1, T2, T3, T4, T5, T6> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E, T1, T2, T3, T4, T5, T6>.None;
-            var result =
-            from obj in entities
-            where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>() && obj.IsExistComponent<T6>()
-            select obj as E;
+                return SystemHandle<T1, T2, T3, T4, T5, T6>.None;
+            result.Clear();
+            foreach (var obj in entities)
+            {
+                if (obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>() && obj.IsExistComponent<T6>())
+                    result.Add(obj);
+            }
 
-            return AssembleSystemHandle<E, T1, T2, T3, T4, T5, T6>(result, callback);
+            return AssembleSystemHandle<T1, T2, T3, T4, T5, T6>(result, callback);
         }
-        public SystemHandle<E, T1, T2, T3, T4, T5, T6> Select<E, T1, T2, T3, T4, T5, T6>(SystemCallback<E, T1, T2, T3, T4, T5, T6> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
+        public SystemHandle<T1, T2, T3, T4, T5, T6> Select<T1, T2, T3, T4, T5, T6>(SystemCallback<T1, T2, T3, T4, T5, T6> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E, T1, T2, T3, T4, T5, T6>.None;
-            return ForEach<E, T1, T2, T3, T4, T5, T6>(callback);
+                return SystemHandle<T1, T2, T3, T4, T5, T6>.None;
+            return ForEach<T1, T2, T3, T4, T5, T6>(callback);
         }
         #endregion
         #region E,T1,T2,T3,T4,T5,T6,T7
-        private SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> AssembleSystemHandle<E, T1, T2, T3, T4, T5, T6, T7>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
+        private SystemHandle<T1, T2, T3, T4, T5, T6, T7> AssembleSystemHandle<T1, T2, T3, T4, T5, T6, T7>(List<Entity> queryResult, SystemCallback<T1, T2, T3, T4, T5, T6, T7> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
         {
-            SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> handle = ObjectPool<SystemHandle<E,T1,T2,T3,T4,T5,T6,T7>>.Instance.Pop();
+            SystemHandle<T1, T2, T3, T4, T5, T6, T7> handle = ObjectPool<SystemHandle<T1, T2, T3, T4, T5, T6, T7>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
             handle.excuteInfo.Init();
             return handle;
         }
-        private SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> ForEach<E, T1, T2, T3, T4, T5, T6, T7>(SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
+        private SystemHandle<T1, T2, T3, T4, T5, T6, T7> ForEach<T1, T2, T3, T4, T5, T6, T7>(SystemCallback<T1, T2, T3, T4, T5, T6, T7> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E, T1, T2, T3, T4, T5, T6, T7>.None;
-            var result =
-            from obj in entities
-            where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>() && obj.IsExistComponent<T6>() && obj.IsExistComponent<T7>()
-            select obj as E;
+                return SystemHandle<T1, T2, T3, T4, T5, T6, T7>.None;
+            result.Clear();
+            foreach (var obj in entities)
+            {
+                if (obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>() && obj.IsExistComponent<T6>() && obj.IsExistComponent<T7>())
+                    result.Add(obj);
+            }
 
-            return AssembleSystemHandle<E, T1, T2, T3, T4, T5, T6, T7>(result, callback);
+            return AssembleSystemHandle<T1, T2, T3, T4, T5, T6, T7>(result, callback);
         }
-        public SystemHandle<E, T1, T2, T3, T4, T5, T6, T7> Select<E, T1, T2, T3, T4, T5, T6, T7>(SystemCallback<E, T1, T2, T3, T4, T5, T6, T7> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
+        public SystemHandle<T1, T2, T3, T4, T5, T6, T7> Select<T1, T2, T3, T4, T5, T6, T7>(SystemCallback<T1, T2, T3, T4, T5, T6, T7> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E, T1, T2, T3, T4, T5, T6, T7>.None;
-            return ForEach<E, T1, T2, T3, T4, T5, T6, T7>(callback);
+                return SystemHandle<T1, T2, T3, T4, T5, T6, T7>.None;
+            return ForEach<T1, T2, T3, T4, T5, T6, T7>(callback);
         }
         #endregion
         #region E,T1,T2,T3,T4,T5,T6,T7,T8
-        private SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> AssembleSystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8>(IEnumerable<E> queryResult, SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
+        private SystemHandle<T1, T2, T3, T4, T5, T6, T7, T8> AssembleSystemHandle<T1, T2, T3, T4, T5, T6, T7, T8>(List<Entity> queryResult, SystemCallback<T1, T2, T3, T4, T5, T6, T7, T8> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
         {
-            SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> handle = ObjectPool<SystemHandle<E,T1,T2,T3,T4,T5,T6,T7,T8>>.Instance.Pop();
+            SystemHandle<T1, T2, T3, T4, T5, T6, T7, T8> handle = ObjectPool<SystemHandle<T1, T2, T3, T4, T5, T6, T7, T8>>.Instance.Pop();
             handle.system = this;
             handle.result = queryResult;
             handle.callback = callback;
             handle.excuteInfo.Init();
             return handle;
         }
-        private SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> ForEach<E, T1, T2, T3, T4, T5, T6, T7, T8>(SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
+        private SystemHandle<T1, T2, T3, T4, T5, T6, T7, T8> ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(SystemCallback<T1, T2, T3, T4, T5, T6, T7, T8> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8>.None;
-            var result =
-            from obj in entities
-            where obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>() && obj.IsExistComponent<T6>() && obj.IsExistComponent<T7>() && obj.IsExistComponent<T8>()
-            select obj as E;
+                return SystemHandle<T1, T2, T3, T4, T5, T6, T7, T8>.None;
+            result.Clear();
+            foreach (var obj in entities)
+            {
+                if (obj.IsExistComponent<T1>() && obj.IsExistComponent<T2>() && obj.IsExistComponent<T3>() && obj.IsExistComponent<T4>() && obj.IsExistComponent<T5>() && obj.IsExistComponent<T6>() && obj.IsExistComponent<T7>() && obj.IsExistComponent<T8>())
+                    result.Add(obj);
+            }
 
-            return AssembleSystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8>(result, callback);
+            return AssembleSystemHandle<T1, T2, T3, T4, T5, T6, T7, T8>(result, callback);
         }
-        public SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8> Select<E, T1, T2, T3, T4, T5, T6, T7, T8>(SystemCallback<E, T1, T2, T3, T4, T5, T6, T7, T8> callback) where E : Entity where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
+        public SystemHandle<T1, T2, T3, T4, T5, T6, T7, T8> Select<T1, T2, T3, T4, T5, T6, T7, T8>(SystemCallback<T1, T2, T3, T4, T5, T6, T7, T8> callback) where T1 : class, IComponent where T2 : class, IComponent where T3 : class, IComponent where T4 : class, IComponent where T5 : class, IComponent where T6 : class, IComponent where T7 : class, IComponent where T8 : class, IComponent
         {
             if (entities == null)
-                return SystemHandle<E, T1, T2, T3, T4, T5, T6, T7, T8>.None;
-            return ForEach<E, T1, T2, T3, T4, T5, T6, T7, T8>(callback);
+                return SystemHandle<T1, T2, T3, T4, T5, T6, T7, T8>.None;
+            return ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(callback);
             #endregion
         }
     }
