@@ -40,7 +40,11 @@
 
 * ## ECS (Entity-Component-System)
 
+<<<<<<< HEAD
     Based on the implementation of object pool. The usage is similar to that of dots-ecs. It supports traversal and filtering of entities during event triggering, interval time and interval frame in OnUpdate. In addition, a visual EntitiesViewer is also set to view the current running systems, entities status and component details.
+=======
+    Based on the implementation of object pool, The usage is similar to that of dots-ecs. It supports traversal and filtering of entities during event triggering, interval time and interval frame in OnUpdate. In addition, a visual EntitiesViewer is also set to view the current running systems, entities status and component details.
+>>>>>>> main
 
     * ### Entity
 
