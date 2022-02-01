@@ -15,10 +15,7 @@ namespace GDG.AI
         {
 
 # if EDITOR_DEBUG
-            var grid = World.EntityManager.CreateEntity<GameObjectComponent>((gameObjectComponent) =>
-             {
-                 gameObjectComponent.gameObject = new GameObject("Grid");
-             });
+            var grid = World.EntityManager.CreateGameEntity(new GameObject("Grid"));
             var gameObject = grid.GetComponent<GameObjectComponent>().gameObject;
             gameObject.transform.SetParent(MonoWorld.Instance.transform);
 #endif

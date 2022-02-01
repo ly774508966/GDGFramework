@@ -18,6 +18,8 @@ namespace GDG.ECS
         private readonly Dictionary<uint, ComponentTypes> m_TypeId2ComponentTypeMapping;
         private readonly Dictionary<uint, List<ulong>> m_TypeId2IndexMapping;
         private readonly Dictionary<ulong, List<IComponent>> m_Index2ComponentMapping;
+        private readonly Dictionary<GameObject, Entity> m_GameObject2EntityMapping;
+
         internal readonly List<Entity> m_ActivedEntityList;
         private ulong entityMaxIndex;
         private uint maxTypeId;
@@ -30,6 +32,7 @@ namespace GDG.ECS
             m_TypeId2IndexMapping = new Dictionary<uint, List<ulong>>();
             m_ActivedEntityList = new List<Entity>();//活跃实体列表，供世界使用
             m_Index2ComponentMapping = new Dictionary<ulong, List<IComponent>>();
+            m_GameObject2EntityMapping = new Dictionary<GameObject, Entity>();
         }
         internal void EntityMaxIndexIncrease()
         {
@@ -61,11 +64,42 @@ namespace GDG.ECS
             m_TypeId2ComponentTypeMapping.Add(componentTypes.TypeId, componentTypes);
             return componentTypes.TypeId;
         }
+        internal Entity FindEntityInGameObjectMapping(GameObject gameObject)
+        {
+            if (m_GameObject2EntityMapping.TryGetValue(gameObject, out Entity entity))
+            {
+                return entity;
+            }
+            return null;
+        }
         /// <summary>
         /// 回收实体
         /// </summary>
         public void RecycleEntity(Entity entity)
         {
+            if (entity.TryGetComponent<AssetComponent>(out AssetComponent asset))
+            {
+                if (asset.asset is GameObject gameObject)
+                {
+                    if (gameObject != null)
+                    {
+                        //gameObject.SetActive(false);
+                        AssetPool.Instance.Push<GameObject>(asset.assetName, gameObject, null, false);
+                        gameObject.transform.SetParent(World.monoWorld.EntityPool.transform);
+                        m_GameObject2EntityMapping.Remove(gameObject);
+                    }
+                }
+            }
+            else if (entity.TryGetComponent<GameObjectComponent>(out GameObjectComponent game))
+            {
+                if (game.gameObject != null)
+                {
+                    //game.gameObject.SetActive(false);
+                    AssetPool.Instance.Push<GameObject>(game.gameObject.name, game.gameObject, null, false);
+                    game.gameObject.transform.SetParent(World.monoWorld.EntityPool.transform);
+                    m_GameObject2EntityMapping.Remove(game.gameObject);
+                }
+            }
             AddTypeId2EntityPoolMapping(entity.TypeId, out EntityPool entityPool, (pool) => { pool.PushEntity(entity); }, (pool) => { pool.PushEntity(entity); });
             m_ActivedEntityList.Remove(entity);
             BaseWorld.Instance.UpdateEntitiesOfSystems(m_ActivedEntityList);
@@ -75,6 +109,25 @@ namespace GDG.ECS
         /// </summary>
         public void DestroyEntity(Entity entity)
         {
+            if (entity.TryGetComponent<GameObjectComponent>(out GameObjectComponent game))
+            {
+                if (game.gameObject != null)
+                {
+                    m_GameObject2EntityMapping.Remove(game.gameObject);
+                    GameObject.Destroy(game.gameObject);
+                }
+            }
+            else if (entity.TryGetComponent<AssetComponent>(out AssetComponent asset))
+            {
+                if (asset.asset != null)
+                {
+                    if (asset.asset is GameObject gameObject)
+                    {
+                        m_GameObject2EntityMapping.Remove(gameObject);
+                    }
+                    UnityEngine.Object.Destroy(asset.asset);
+                }
+            }
             entity.SetActive(false);
             EntityRefCountDecrementOne(entity);
             RemoveTypeId2IndexMapping(entity.TypeId, entity.Index);
@@ -184,7 +237,11 @@ namespace GDG.ECS
                 else if (rename != null)
                     gameObject.name = rename;
             }
-            entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = gameObject; });
+            entity.SetComponentData<GameObjectComponent>((game) =>
+            {
+                game.gameObject = gameObject;
+                m_GameObject2EntityMapping.Add(gameObject, entity);
+            });
             entity.Name = gameObject.name;
             return entity;
         }
@@ -227,12 +284,15 @@ namespace GDG.ECS
             if (res is GameObject gameObject)
             {
                 entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = gameObject; });
-                if (rename != null)
-                    entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject.name = rename; });
+
+                gameObject.transform.SetParent(null);
+                gameObject.RemoveFromDontDestoryOnLoad();
+                gameObject.SetActive(true);
+                m_GameObject2EntityMapping.Add(gameObject, entity);
             }
             entity.Name = res.name;
             entity.SetComponentData<AssetComponent>((Asset) => { Asset.asset = res; Asset.assetName = path; });
-            
+
             return entity;
         }
         public Entity CreateEntityFromResources<T>(ComponentTypes componentTypes, string path) where T : UnityEngine.Object
@@ -248,7 +308,7 @@ namespace GDG.ECS
             return CreateEntityFromResources<T>(null, path, null);
         }
         //异步
-        public void CreateEntityFromResourcesAsync<T>(ComponentTypes componentTypes, string path, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromResourcesAsync<T>(ComponentTypes componentTypes, string path, string rename, UnityAction<Entity, T> callback) where T : UnityEngine.Object
         {
             if (componentTypes == null)
                 componentTypes = new ComponentTypes(typeof(AssetComponent));
@@ -269,25 +329,28 @@ namespace GDG.ECS
                     if (res is GameObject gameObject)
                     {
                         entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = gameObject; });
-                        if (rename != null)
-                            entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject.name = rename; });
+
+                        gameObject.transform.SetParent(null);
+                        gameObject.RemoveFromDontDestoryOnLoad();
+                        gameObject.SetActive(true);
+                        m_GameObject2EntityMapping.Add(gameObject, entity);
                     }
                     entity.Name = res.name;
                     entity.SetComponentData<AssetComponent>((Asset) => { Asset.asset = res; Asset.assetName = path; });
-                    callback?.Invoke(entity,res);
+                    callback?.Invoke(entity, res);
                     BaseWorld.Instance.AddOrRemoveEntityFromSystems(entity, true);
                 });
 
         }
-        public void CreateEntityFromResourcesAsync<T>(ComponentTypes componentTypes, string path, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromResourcesAsync<T>(ComponentTypes componentTypes, string path, UnityAction<Entity, T> callback) where T : UnityEngine.Object
         {
             CreateEntityFromResourcesAsync<T>(componentTypes, path, null, callback);
         }
-        public void CreateEntityFromResourcesAsync<T>(string path, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromResourcesAsync<T>(string path, string rename, UnityAction<Entity, T> callback) where T : UnityEngine.Object
         {
             CreateEntityFromResourcesAsync<T>(null, path, rename, callback);
         }
-        public void CreateEntityFromResourcesAsync<T>(string path, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromResourcesAsync<T>(string path, UnityAction<Entity, T> callback) where T : UnityEngine.Object
         {
             CreateEntityFromResourcesAsync<T>(null, path, null, callback);
         }
@@ -325,19 +388,21 @@ namespace GDG.ECS
                 if (asset is GameObject gameObject)
                 {
                     entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = gameObject; });
-                    if (rename != null)
-                        entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject.name = rename; });
+                    gameObject.transform.SetParent(null);
+                    gameObject.RemoveFromDontDestoryOnLoad();
+                    gameObject.SetActive(true);
+                    m_GameObject2EntityMapping.Add(gameObject, entity);
                 }
                 entity.Name = asset.name;
                 entity.SetComponentData<AssetComponent>((Asset) => { Asset.asset = asset; Asset.assetName = asset.name; });
             }
             return entity;
         }
-        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string bundleName, string assetName,  string mainABName, string rename) where T : UnityEngine.Object
+        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string bundleName, string assetName, string mainABName, string rename) where T : UnityEngine.Object
         {
             return CreateEntityFromAssetBundle<T>(componentTypes, bundleName, assetName, mainABName, null, rename);
         }
-        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string bundleName,string assetName, string rename) where T : UnityEngine.Object
+        public Entity CreateEntityFromAssetBundle<T>(ComponentTypes componentTypes, string bundleName, string assetName, string rename) where T : UnityEngine.Object
         {
             return CreateEntityFromAssetBundle<T>(componentTypes, bundleName, assetName, null, null, rename);
         }
@@ -345,15 +410,15 @@ namespace GDG.ECS
         {
             return CreateEntityFromAssetBundle<T>(componentTypes, bundleName, assetName, null, null, null);
         }
-        public Entity CreateEntityFromAssetBundle<T>(string bundleName, string assetName,  string mainABName, string path, string rename) where T : UnityEngine.Object
+        public Entity CreateEntityFromAssetBundle<T>(string bundleName, string assetName, string mainABName, string path, string rename) where T : UnityEngine.Object
         {
             return CreateEntityFromAssetBundle<T>(null, bundleName, assetName, mainABName, path, rename);
         }
-        public Entity CreateEntityFromAssetBundle<T>(string bundleName, string assetName,  string mainABName, string rename) where T : UnityEngine.Object
+        public Entity CreateEntityFromAssetBundle<T>(string bundleName, string assetName, string mainABName, string rename) where T : UnityEngine.Object
         {
             return CreateEntityFromAssetBundle<T>(null, bundleName, assetName, mainABName, null, rename);
         }
-        public Entity CreateEntityFromAssetBundle<T>(string bundleName, string assetName,  string rename) where T : UnityEngine.Object
+        public Entity CreateEntityFromAssetBundle<T>(string bundleName, string assetName, string rename) where T : UnityEngine.Object
         {
             return CreateEntityFromAssetBundle<T>(null, bundleName, assetName, null, null, rename);
         }
@@ -363,7 +428,7 @@ namespace GDG.ECS
         }
 
         //异步
-        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string bundleName, string assetName, string mainABName, string path, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string bundleName, string assetName, string mainABName, string path, string rename, UnityAction<Entity, T> callback) where T : UnityEngine.Object
         {
             if (componentTypes == null)
                 componentTypes = new ComponentTypes(typeof(AssetComponent));
@@ -384,40 +449,43 @@ namespace GDG.ECS
                  if (asset is GameObject gameObject)
                  {
                      entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject = gameObject; });
-                     if (rename != null)
-                         entity.SetComponentData<GameObjectComponent>((game) => { game.gameObject.name = rename; });
+
+                     gameObject.transform.SetParent(null);
+                     gameObject.RemoveFromDontDestoryOnLoad();
+                     gameObject.SetActive(true);
+                     m_GameObject2EntityMapping.Add(gameObject, entity);
                  }
                  entity.Name = asset.name;
                  entity.SetComponentData<AssetComponent>((Asset) => { Asset.asset = asset; Asset.assetName = assetName; });
-                 callback?.Invoke(entity,asset);
+                 callback?.Invoke(entity, asset);
                  BaseWorld.Instance.AddOrRemoveEntityFromSystems(entity, true);
              });
         }
-        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string bundleName, string assetName,  string mainABName, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string bundleName, string assetName, string mainABName, string rename, UnityAction<Entity, T> callback) where T : UnityEngine.Object
         {
             CreateEntityFromAssetBundleAsync<T>(componentTypes, bundleName, assetName, mainABName, null, rename, callback);
         }
-        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string bundleName, string assetName,  string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string bundleName, string assetName, string rename, UnityAction<Entity, T> callback) where T : UnityEngine.Object
         {
             CreateEntityFromAssetBundleAsync<T>(componentTypes, bundleName, assetName, null, null, rename, callback);
         }
-        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string bundleName, string assetName,  UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromAssetBundleAsync<T>(ComponentTypes componentTypes, string bundleName, string assetName, UnityAction<Entity, T> callback) where T : UnityEngine.Object
         {
             CreateEntityFromAssetBundleAsync<T>(componentTypes, bundleName, assetName, null, null, null, callback);
         }
-        public void CreateEntityFromAssetBundleAsync<T>(string bundleName, string assetName,  string mainABName, string path, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromAssetBundleAsync<T>(string bundleName, string assetName, string mainABName, string path, string rename, UnityAction<Entity, T> callback) where T : UnityEngine.Object
         {
             CreateEntityFromAssetBundleAsync<T>(null, bundleName, assetName, mainABName, path, rename, callback);
         }
-        public void CreateEntityFromAssetBundleAsync<T>(string bundleName, string assetName,  string mainABName, string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromAssetBundleAsync<T>(string bundleName, string assetName, string mainABName, string rename, UnityAction<Entity, T> callback) where T : UnityEngine.Object
         {
             CreateEntityFromAssetBundleAsync<T>(null, bundleName, assetName, mainABName, null, rename, callback);
         }
-        public void CreateEntityFromAssetBundleAsync<T>(string bundleName, string assetName,  string rename, UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromAssetBundleAsync<T>(string bundleName, string assetName, string rename, UnityAction<Entity, T> callback) where T : UnityEngine.Object
         {
             CreateEntityFromAssetBundleAsync<T>(null, bundleName, assetName, null, null, rename, callback);
         }
-        public void CreateEntityFromAssetBundleAsync<T>(string bundleName, string assetName,  UnityAction<Entity,T> callback) where T : UnityEngine.Object
+        public void CreateEntityFromAssetBundleAsync<T>(string bundleName, string assetName, UnityAction<Entity, T> callback) where T : UnityEngine.Object
         {
             CreateEntityFromAssetBundleAsync<T>(null, bundleName, assetName, null, null, null, callback);
         }

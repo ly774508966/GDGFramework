@@ -14,10 +14,7 @@ namespace GDG.AI
         public Grid2D(int width, int height, float cellSize, T defaultValue = default(T), Vector3 localPosition = default(Vector3), UnityAction<T,int,int,Vector3> i_j_localPos_Callback = null) : base(width, height, cellSize, defaultValue, localPosition,i_j_localPos_Callback)
         {
 # if EDITOR_DEBUG
-            var grid = World.EntityManager.CreateEntity<GameObjectComponent>((gameObjectComponent) =>
-             {
-                 gameObjectComponent.gameObject = new GameObject("Grid");
-             });
+             var grid = World.EntityManager.CreateGameEntity(new GameObject("Grid"));
             var gameObject = grid.GetComponent<GameObjectComponent>().gameObject;
             gameObject.transform.SetParent(MonoWorld.Instance.transform);
 #endif

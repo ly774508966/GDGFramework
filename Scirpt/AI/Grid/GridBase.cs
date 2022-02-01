@@ -77,10 +77,7 @@ namespace GDG.AI
         {
             ComponentTypes componentTypes = new ComponentTypes(typeof(GridComponent));
 
-            var entity = World.EntityManager.CreateEntity<GameObjectComponent>((gameObjectComponent) =>
-            {
-                gameObjectComponent.gameObject = new GameObject("WorldText", typeof(TextMesh));
-            });
+            var entity = World.EntityManager.CreateGameEntity(new GameObject("WorldText", typeof(TextMesh)));
 
 
             if(callback!=null)

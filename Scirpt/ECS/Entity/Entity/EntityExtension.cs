@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GDG.Utils;
 namespace GDG.ECS
 {
     public static class EntityExtension
@@ -73,30 +74,13 @@ namespace GDG.ECS
         }
         public static Entity GetEntity(this GameObject gameObject)
         {
-            foreach (var item in World.EntityManager.GetAllEntity())
-            {
-                if (item.TryGetComponent<GameObjectComponent>(out GameObjectComponent game))
-                {
-                    if (game.gameObject == gameObject)
-                        return item;
-                }
-            }
-            return null;
+            return World.EntityManager.FindEntityInGameObjectMapping(gameObject);
         }
         public static bool TryGetEntity(this GameObject gameObject, out Entity entity)
         {
-            entity = null;
-            foreach (var item in World.EntityManager.GetAllEntity())
-            {
-                if (item.TryGetComponent<GameObjectComponent>(out GameObjectComponent game))
-                {
-                    if (game.gameObject == gameObject)
-                    {
-                        entity = item;
-                        return true;
-                    }
-                }
-            }
+            entity = World.EntityManager.FindEntityInGameObjectMapping(gameObject);
+            if(entity!=null)
+                return true;
             return false;
         }
         public static Entity GetEntity(this Transform transform)
@@ -106,6 +90,60 @@ namespace GDG.ECS
         public static bool TryGetEntity(this Transform transform, out Entity entity)
         {
             return transform.gameObject.TryGetEntity(out entity);
+        }
+        public static T GetMonoComponent<T>(this Entity entity) where T:MonoBehaviour
+        {
+            if(entity.TryGetComponent<GameObjectComponent>(out GameObjectComponent game))
+            {
+                if(game.gameObject != null)
+                {
+                    return game.gameObject.GetComponent<T>();
+                }
+                else
+                {
+                    Log.Error("GameObject is null !");
+                }
+            }
+            else
+            {
+                Log.Error($"Entity doesn't have GameObjectComponent ! Entity: {entity}");
+            }
+            return null;
+        }
+        public static bool TryGetMonoComponent<T>(this Entity entity,out T monoComponent) where T:MonoBehaviour
+        {
+            monoComponent = null;
+            if(entity.TryGetComponent<GameObjectComponent>(out GameObjectComponent game))
+            {
+                if(game.gameObject != null)
+                {
+                    monoComponent = game.gameObject.GetComponent<T>();
+                    return true;
+                }
+            }
+            return false;
+        }
+        public static T GetMonoComponent<T>(this GameObjectComponent game) where T:MonoBehaviour
+        {
+            if(game.gameObject != null)
+            {
+                return game.gameObject.GetComponent<T>();
+            }
+            else
+            {
+                Log.Error("GameObject is null !");
+            }
+            return null;
+        }
+        public static bool TryGetMonoComponent<T>(this GameObjectComponent game,out T monoComponent) where T:MonoBehaviour
+        {
+            monoComponent = null;
+            if(game.gameObject != null)
+            {
+                monoComponent = game.gameObject.GetComponent<T>();
+                return true;
+            }
+            return false;
         }
     }
 }
