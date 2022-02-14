@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 using TMPro;
 using System.Text.RegularExpressions;
 using GDG.Utils;
-
+using GDG.ECS;
 namespace GDG.UI
 {
     public interface IPanel
@@ -18,7 +18,6 @@ namespace GDG.UI
         void OnResume();
         List<T> GetControls<T>() where T : UIBehaviour;
         T GetControl<T>(string controlname) where T : UIBehaviour;
-        List<T> GetControls<T>(string controlname, int count) where T : UIBehaviour;
         void LogAllControlName();
     }
 
@@ -118,25 +117,6 @@ namespace GDG.UI
                     if (ui is T)
                     {
                         list.Add(ui as T);
-                    }
-                }
-            }
-            return list;
-        }
-        public List<T> GetControls<T>(string controlname, int count) where T : UIBehaviour
-        {
-            var list = new List<T>();
-            int i = 0;
-            foreach (var uilist in controlDic.Values)
-            {
-                foreach (var ui in uilist)
-                {
-                    if (ui is T && Regex.Replace(ui.gameObject.name, @" \(.*\)", "") == controlname)
-                    {
-                        list.Add(ui as T);
-                        ++i;
-                        if (i == count)
-                            return list;
                     }
                 }
             }
